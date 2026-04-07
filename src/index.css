@@ -1,23 +1,85 @@
 body {
   font-family: 'Arial', sans-serif;
-  background-color: #f0f0f0;
-  color: #333;
+  background-color: #3b3b3b;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Georgia', serif;
-  color: #000;
+  color: #fff;
 }
 
 p {
-  color: #666;
+  color: #fff;
 }
 
 a {
-  color: #000;
   text-decoration: none;
+  color: #fff;
+}
+
+a:link, a:visited {
+  color: #fff;
 }
 
 a:hover {
-  color: #999;
+  color: #fff;
+}
+
+li {
+  text-decoration: none;
+  color: #fff;
+}
+
+.app {
+  position: absolute;
+  height: 100%;
+}
+
+.home {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  margin-left: 30vh;
+  margin-top: 11vh;
+}
+
+.navbar {
+  background-color: #1D1D1D;
+  color: #fff;
+  padding: 1rem;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: -1%;
+  height: 11vh;
+  width: 100%;
+  border: #7d7d7d solid 1px;
+}
+
+.sidebar {
+  height: 100%;
+  width: 30vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #1D1D1D;
+  overflow-x: hidden;
+  padding-top: 20px;
+  margin-top: 10vh;
+  border: #7d7d7d solid 1px;
+  float:left;
+}
+
+.sideBox {
+  background-color: #2d2d2d;
+  color: #fff;
+  text-align: center;
+  margin-top: 10vh;
+}
+
+.sideBox:hover {
+  background-color: #3b3b3b;
+  cursor: pointer;
 }

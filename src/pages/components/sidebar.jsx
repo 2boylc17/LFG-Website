@@ -1,0 +1,16 @@
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+
+export default function Sidebar() {
+    const navigate = useNavigate();
+
+    return (
+        <aside className="sidebar">
+            <div className="sideBox" id="gamesBox">Games</div>
+            <div className="sideBox" id="friendsBox">Friends</div>
+            <div className="sideBox" id="recommendedBox">Recommended</div>
+            <div className="sideBox" id="messagesBox">Messages</div>
+            <div className="sideBox" id="calendarBox">Calendar</div>
+        </aside>
+    );
+}
