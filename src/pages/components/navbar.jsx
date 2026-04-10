@@ -15,7 +15,7 @@ export default function Navbar() {
     <nav className="navbar">
         <h1>LFG Website</h1>
         <ul>
-            <li><Link to="/">Home</Link></li>
+            <li><Link to="/login">Login</Link></li>
         </ul>
     </nav>
   );

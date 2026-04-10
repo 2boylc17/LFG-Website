@@ -45,4 +45,26 @@ router.post('/login', async (req, res) => {
     }
 });
 
+router.post('/register', async (req, res) => {
+    console.log("Yes")
+    try {
+        const existingUser = await User.findOne({ username: req.body.username });
+        if (existingUser) {
+            return res.status(400).json({ message: 'Username already exists' });
+        } else if (req.body.password == "") {
+            return res.status(400).json({ message: 'Password cannot be empty' });
+        } else {
+            const user = await User.create({
+                username: req.body.username,
+                password: req.body.password
+            });
+            generateTokenAndSetCookie(user._id, res);
+            res.status(201).json({ message: 'User registered successfully' });
+        }
+    } catch (err) {
+        console.error("Registration error:", err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 export default router;

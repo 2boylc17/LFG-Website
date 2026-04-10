@@ -4,6 +4,7 @@ import morgan from 'morgan';
 import mongoose from 'mongoose';
 import ViteExpress from 'vite-express';
 import dotenv from 'dotenv';
+import authRoutes from './routes/auth.mjs';
 
 dotenv.config();
 
@@ -23,6 +24,8 @@ mongoose.connect(DB_URI).then(() =>
     console.log('Connected to MongoDB')
 ).catch((err) => 
     console.log(error));
+
+app.use('/api/auth', authRoutes);
 
 ViteExpress.listen(app, PORT, () => {
     console.log(`Server running on port ${PORT}`);

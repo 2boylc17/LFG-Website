@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Navbar from "./pages/components/navbar.jsx";
 import Sidebar from "./pages/components/sidebar.jsx";
 import Home from "./pages/home.jsx";
+import Login from "./pages/login.jsx";
 
 export default function App() {
     return (
@@ -13,6 +14,7 @@ export default function App() {
             <main>
                 <Routes>
                     <Route path="/" element={<Home />} />
+                    <Route path="/login" element={<Login />} />
                 </Routes>
             </main>
         </Router>

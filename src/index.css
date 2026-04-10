@@ -66,7 +66,7 @@ li {
   left: 0;
   background-color: #1D1D1D;
   overflow-x: hidden;
-  padding-top: 20px;
+  padding-top: 2vh;
   margin-top: 10vh;
   border: #7d7d7d solid 1px;
   float:left;
@@ -82,4 +82,20 @@ li {
 .sideBox:hover {
   background-color: #3b3b3b;
   cursor: pointer;
+}
+
+.login-container {
+  background-color: #1D1D1D;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  border-radius: 80px;
+  border: #7d7d7d solid 1px;
+  margin-left: 43vw;
+  margin-top: 40vh;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 20vw;
 }
