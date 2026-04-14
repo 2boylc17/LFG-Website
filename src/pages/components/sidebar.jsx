@@ -6,7 +6,7 @@ export default function Sidebar() {
 
     return (
         <aside className="sidebar">
-            <div className="sideBox" id="gamesBox">Games</div>
+            <div className="sideBox" id="gamesBox" onClick={() => navigate('/games')}>Games</div>
             <div className="sideBox" id="friendsBox">Friends</div>
             <div className="sideBox" id="recommendedBox">Recommended</div>
             <div className="sideBox" id="messagesBox">Messages</div>

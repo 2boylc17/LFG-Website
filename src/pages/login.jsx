@@ -41,8 +41,8 @@ export default function Login({ onLogin, onLogout, isLoggedIn }) {
                 if (!response.ok) throw new Error('Login failed');
                 return response.json();
             })
-            .then(userData => {
-                onLogin(userData.username);
+            .then((data) => {
+                onLogin(trimmed.username);
                 navigate('/');
             })
             .catch(error => {
@@ -74,8 +74,8 @@ export default function Login({ onLogin, onLogout, isLoggedIn }) {
                 if (!response.ok) throw new Error('Registration failed');
                 return response.json();
             })
-            .then(userData => {
-                onLogin(userData.username);
+            .then((data) => {
+                onLogin(data.username);
                 navigate('/home');
             })
             .catch(error => {

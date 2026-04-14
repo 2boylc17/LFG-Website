@@ -1,3 +1,5 @@
+
+/* ================= BASE ELEMENTS ================= */
 body {
   font-family: 'Arial', sans-serif;
   background-color: #3b3b3b;
@@ -29,20 +31,26 @@ li {
   text-decoration: none;
   color: #fff;
 }
+/* =============== END BASE ELEMENTS =============== */
 
+
+/* ================= LAYOUT CLASSES ================= */
 .app {
   position: absolute;
   height: 100%;
 }
 
-.home {
+.page {
   display: flex;
   flex-direction: column;
   height: 100vh;
   margin-left: 30vh;
   margin-top: 11vh;
 }
+/* =============== END LAYOUT CLASSES =============== */
 
+
+/* ================= NAVBAR RELATED CLASSES ================= */
 .navbar {
   background-color: #1D1D1D;
   color: #fff;
@@ -58,6 +66,63 @@ li {
   border: #7d7d7d solid 1px;
 }
 
+.navbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.navbar-title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  color: #fff;
+  font-family: 'Georgia', serif;
+  font-size: 3rem;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.settings-link {
+  font-size: 3rem;
+  cursor: pointer;
+  position: absolute;
+  right: 4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+  padding: 0;
+}
+
+.username-label {
+  font-size: 1.5rem;
+  cursor: pointer;
+  position: absolute;
+  right: 8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+  padding: 0;
+}
+
+.log-link {
+  font-size: 1rem;
+  cursor: pointer;
+  position: absolute;
+  right: 4.5rem;
+  top: 80%;
+  transform: translateY(-50%);
+  margin: 0;
+  padding: 0;
+  border: 2px solid #7d7d7d;
+}
+/* =============== END NAVBAR RELATED CLASSES =============== */
+
+
+/* ================= SIDEBAR RELATED CLASSES ================= */
 .sidebar {
   height: 100%;
   width: 30vh;
@@ -83,7 +148,10 @@ li {
   background-color: #3b3b3b;
   cursor: pointer;
 }
+/* =============== END SIDEBAR RELATED CLASSES =============== */
 
+
+/* ================= LOGIN RELATED CLASSES ================= */
 .login-container {
   background-color: #1D1D1D;
   color: #fff;
@@ -99,3 +167,60 @@ li {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   width: 20vw;
 }
+/* =============== END LOGIN RELATED CLASSES =============== */
+
+
+/* ================= GAMES PAGE RELATED CLASSES ================= */
+
+
+
+.gameListStyle {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px 24px;
+  margin: 40px 0 0 0;
+  width: 100%;
+  padding-left: 24px;
+  padding-right: 24px;
+  box-sizing: border-box;
+}
+
+
+@media (max-width: 900px) {
+  .gameListStyle {
+    grid-template-columns: repeat(2, 1fr);
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+
+@media (max-width: 600px) {
+  .gameListStyle {
+    grid-template-columns: 1fr;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+.gameItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #fff;
+}
+
+.placeholderStyle {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #e0e0e0;
+  border-radius: 16px;
+  max-width: 180px;
+  min-width: 80px;
+  transition: width 0.2s;
+}
+
+
+/* =============== END GAMES PAGE RELATED CLASSES =============== */
+
+

@@ -35,7 +35,7 @@ router.post('/login', async (req, res) => {
             const passwordCorrect = await bcrypt.compare(req.body.password, userFound.password);
             if (passwordCorrect) {
                 generateTokenAndSetCookie(userFound._id, userFound.username, res);
-                res.status(200).json({ message: 'Login successful' });
+                res.status(200).json({ message: 'Login successful', username: userFound.username });
             } else {
                 res.status(400).json({ message: 'Invalid username or password' });
             }

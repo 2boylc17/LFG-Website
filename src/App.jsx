@@ -5,6 +5,7 @@ import Navbar from "./pages/components/navbar.jsx";
 import Sidebar from "./pages/components/sidebar.jsx";
 import Home from "./pages/home.jsx";
 import Login from "./pages/login.jsx";
+import Games from "./pages/games.jsx";
 import { set } from "mongoose";
 
 export default function App() {
@@ -80,7 +81,7 @@ export default function App() {
 
     return (
         <Router classname="app">
-            <Navbar />
+            <Navbar isLoggedIn={isLoggedIn} onLogout={handleLogout} username={username} />
             <Sidebar />
             <main>
                 <Routes>
@@ -90,9 +91,11 @@ export default function App() {
                             isLoggedIn={isLoggedIn}
                             onLogin={handleLogin} 
                             onLogout={handleLogout}
+                            username={username}
                         />
                         } 
                     />
+                    <Route path="/games" element={<Games />} />
                 </Routes>
             </main>
         </Router>

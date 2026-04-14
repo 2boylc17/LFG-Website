@@ -13,7 +13,7 @@ const Home = () => {
   };
 
   return (
-    <div className="home">
+    <div className="page">
       <header>
         <nav>
           <h1>LFG Website</h1>
