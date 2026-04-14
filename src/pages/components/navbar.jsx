@@ -1,21 +1,29 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-export default function Navbar() {
+export default function Navbar({
+  isLoggedIn,
+  onLogout,
+  username
+}) {
   const navigate = useNavigate();
-    const handleLogout = () => {      // Clear user session or token here
-        // For example, if using localStorage:
-        //localStorage.removeItem('userToken');
-        // Redirect to login page
-        //navigate('/login');
-        alert('Logged out!');
+    const handleLogout = async() => {
+        await onLogout();
+        navigate('/');
     };
 
   return (
     <nav className="navbar">
         <h1>LFG Website</h1>
         <ul>
-            <li><Link to="/login">Login</Link></li>
+            {isLoggedIn ? (
+                <li>
+                    <span>Welcome, {username}!</span>
+                    <button onClick={handleLogout}>Logout</button>
+                </li>
+            ) : (
+                <li><Link to="/login">Login</Link></li>
+            )}
         </ul>
     </nav>
   );

@@ -1,34 +1,41 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export default function Login({ onLogin}) {
+export default function Login({ onLogin, onLogout, isLoggedIn }) {
 
     const [formData, setFormData] = useState({ username: "", password: "" });
     const [message, setMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
 
-    const handleSubmitPlaceholder = async (e) => {
-        e.preventDefault();
-        alert('Login functionality is not implemented yet!');
-    }
+    useEffect(() => {
+        if (isLoggedIn && onLogout) {
+            onLogout();
+        }
+    }, [isLoggedIn, onLogout]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         formData.username = document.getElementById("username").value;
-        formData.username = formData.username.trim();
         formData.password = document.getElementById("password").value;
-        formData.password = formData.password.trim();
 
-        if (formData.username === "" || formData.password === "") {
+        const trimmed = {
+            username: formData.username.trim(),
+            password: formData.password.trim()
+        }
+
+        alert(trimmed + "gap" + JSON.stringify(trimmed));
+
+        if (trimmed.username === "" || trimmed.password === "") {
             setErrorMessage("Enter a Username and Password");
             return;
         } else {
             fetch('/api/auth/login', {
                 method: 'POST',
+                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(trimmed)
             })
             .then(response => {
                 if (!response.ok) throw new Error('Login failed');
@@ -36,7 +43,7 @@ export default function Login({ onLogin}) {
             })
             .then(userData => {
                 onLogin(userData.username);
-                navigate('/home');
+                navigate('/');
             })
             .catch(error => {
                 setErrorMessage("Invalid username or password");
@@ -79,7 +86,7 @@ export default function Login({ onLogin}) {
     };
 
     const [newButton, setNewButton] = useState(
-        <button onClick={handleSubmitPlaceholder}>Login</button>
+        <button onClick={handleSubmit}>Login</button>
     );
 
     function buttonChangeRegister() {
@@ -117,7 +124,7 @@ export default function Login({ onLogin}) {
     return (
         <div className="login-container">
             <h2>Login</h2>
-            <form onSubmit={handleSubmitPlaceholder}>
+            <form onSubmit={handleSubmit}>
                 <input type="text" id="username" placeholder="Username" value={formData.username.value} />
                 <input type="password" id="password" placeholder="Password" value={formData.password.value} />
                 {newButton}
