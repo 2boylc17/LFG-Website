@@ -6,6 +6,9 @@ import Sidebar from "./pages/components/sidebar.jsx";
 import Home from "./pages/home.jsx";
 import Login from "./pages/login.jsx";
 import Games from "./pages/games.jsx";
+import GameDetails from "./pages/gameDetails.jsx";
+import CreateGame from "./pages/createGame.jsx";
+import CreateGroup from "./pages/createGroup.jsx";
 import { set } from "mongoose";
 
 export default function App() {
@@ -95,7 +98,10 @@ export default function App() {
                         />
                         } 
                     />
+                    <Route path="/createGame" element={<CreateGame />} />
+                    <Route path="/createGroup" element={<CreateGroup />} />
                     <Route path="/games" element={<Games />} />
+                    <Route path="/games/:gameSlug" element={<GameDetails />} />
                 </Routes>
             </main>
         </Router>

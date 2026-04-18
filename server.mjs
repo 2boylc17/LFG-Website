@@ -5,6 +5,8 @@ import mongoose from 'mongoose';
 import ViteExpress from 'vite-express';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.mjs';
+import gameRoutes from './routes/games.mjs';
+import groupRoutes from './routes/groups.mjs';
 
 dotenv.config();
 
@@ -23,9 +25,11 @@ app.use(morgan('dev'));
 mongoose.connect(DB_URI).then(() => 
     console.log('Connected to MongoDB')
 ).catch((err) => 
-    console.log(error));
+    console.log(err));
 
 app.use('/api/auth', authRoutes);
+app.use('/api/games', gameRoutes);
+app.use('/api/groups', groupRoutes);
 
 ViteExpress.listen(app, PORT, () => {
     console.log(`Server running on port ${PORT}`);
