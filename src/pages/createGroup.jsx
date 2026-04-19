@@ -1,12 +1,14 @@
 import React, { useState } from "react";
+import { useParams } from "react-router-dom";
 
 export default function CreateGroup() {
+	const { gameSlug } = useParams();
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
-	const [gameName, setGameName] = useState("");
 	const [platform, setPlatform] = useState("");
-	const [members, setMembers] = useState("");
 	const [message, setMessage] = useState("");
+
+	const selectedGameName = decodeURIComponent(gameSlug || "").replace(/-/g, " ").trim();
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -15,16 +17,16 @@ export default function CreateGroup() {
 		const body = {
 			name: name.trim(),
 			description: description.trim(),
-			gameName: gameName.trim(),
-			platform: platform.trim(),
-			members: members
-				.split(",")
-				.map((id) => id.trim())
-				.filter((id) => id.length > 0)
+			gameName: selectedGameName,
+			platform: platform.trim()
 		};
 
 		try {
-			const response = await fetch('/api/groups/add', {
+			if (!selectedGameName) {
+				throw new Error('Missing game context. Open this page from a game details page.');
+			}
+
+			const response = await fetch(`/api/groups/add/${encodeURIComponent(selectedGameName)}`, {
 				method: 'POST',
 				credentials: 'include',
 				headers: { 'Content-Type': 'application/json' },
@@ -38,9 +40,7 @@ export default function CreateGroup() {
 
 			setName("");
 			setDescription("");
-			setGameName("");
 			setPlatform("");
-			setMembers("");
 			setMessage('Group added successfully');
 		} catch (error) {
 			setMessage(`Error: ${error.message}`);
@@ -48,10 +48,12 @@ export default function CreateGroup() {
 	};
 
 	return (
-		<div className="page">
-			<h2>Create a New Group</h2>
-			<form onSubmit={handleSubmit}>
-				<div>
+		<div className="page create-group-page">
+			<div className="create-group-shell">
+				<h2>Create a New Group</h2>
+				<p className="create-group-game">Game: {selectedGameName || 'No game selected'}</p>
+				<form className="create-group-form" onSubmit={handleSubmit}>
+				<div className="create-group-field">
 					<label>Name:</label>
 					<input
 						type="text"
@@ -60,7 +62,7 @@ export default function CreateGroup() {
 						required
 					/>
 				</div>
-				<div>
+				<div className="create-group-field">
 					<label>Description:</label>
 					<input
 						type="text"
@@ -68,16 +70,7 @@ export default function CreateGroup() {
 						onChange={(e) => setDescription(e.target.value)}
 					/>
 				</div>
-				<div>
-					<label>Game name:</label>
-					<input
-						type="text"
-						value={gameName}
-						onChange={(e) => setGameName(e.target.value)}
-						required
-					/>
-				</div>
-				<div>
+				<div className="create-group-field">
 					<label>Platform:</label>
 					<input
 						type="text"
@@ -85,17 +78,10 @@ export default function CreateGroup() {
 						onChange={(e) => setPlatform(e.target.value)}
 					/>
 				</div>
-				<div>
-					<label>Member ids (comma separated):</label>
-					<input
-						type="text"
-						value={members}
-						onChange={(e) => setMembers(e.target.value)}
-					/>
-				</div>
-				<button type="submit">Add Group</button>
+				<button className="create-group-submit" type="submit">Add Group</button>
 			</form>
-			{message && <p>{message}</p>}
+			{message && <p className="create-group-message">{message}</p>}
+			</div>
 		</div>
 	);
 }

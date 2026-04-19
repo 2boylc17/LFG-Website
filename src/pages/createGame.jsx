@@ -21,15 +21,7 @@ export default function CreateGame() {
                     reader.readAsDataURL(selectedImage);
                 });
             }
-
-            // const formattedGenres = genres.map((g) => (
-            //     g.name
-            // ))
-
-            // const formattedPlatforms = platforms.map((p) => (
-            //     p.name
-            // ))
-
+            
             const body = {
                 name: name.trim(),
                 genres: genres,

@@ -6,9 +6,11 @@ import Game from '../models/Game.mjs';
 const router = express.Router();
 
 // Route to add a new group
-router.post('/add', async (req, res) => {
+router.post('/add/:gameName?', async (req, res) => {
 	try {
 		const { name, description, game, gameName, platform, members } = req.body;
+		const gameNameFromPath = req.params.gameName ? decodeURIComponent(req.params.gameName).trim() : '';
+		const resolvedGameName = gameNameFromPath || (gameName ? String(gameName).trim() : '');
 
 		if (!name || !String(name).trim()) {
 			return res.status(400).json({ message: 'Group name is required' });
@@ -17,8 +19,8 @@ router.post('/add', async (req, res) => {
 		let gameId = null;
 		if (game && mongoose.Types.ObjectId.isValid(game)) {
 			gameId = game;
-		} else if (gameName && String(gameName).trim()) {
-			const matchedGame = await Game.findOne({ name: String(gameName).trim() }, { _id: 1 });
+		} else if (resolvedGameName) {
+			const matchedGame = await Game.findOne({ name: resolvedGameName }, { _id: 1 });
 			if (!matchedGame) {
 				return res.status(404).json({ message: 'Game not found' });
 			}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 export default function GameDetails() {
 	const { gameSlug } = useParams();
@@ -53,6 +53,9 @@ export default function GameDetails() {
 		<div className="page">
 			<div className="games-header">
 				<h1>{gameName} Groups</h1>
+				<Link className="create-group-link" to={`/createGroup/${encodeURIComponent(gameSlug || "")}`}>
+					Create Group For This Game
+				</Link>
 			</div>
 
 			{loading && <p>Loading groups...</p>}

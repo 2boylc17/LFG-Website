@@ -9,6 +9,8 @@ import Games from "./pages/games.jsx";
 import GameDetails from "./pages/gameDetails.jsx";
 import CreateGame from "./pages/createGame.jsx";
 import CreateGroup from "./pages/createGroup.jsx";
+import SocketTest from "./pages/socketTest.jsx";
+import { connectSocket, disconnectSocket } from "./lib/socket.js";
 import { set } from "mongoose";
 
 export default function App() {
@@ -50,6 +52,25 @@ export default function App() {
         initAuth();
     }, []);
 
+    useEffect(() => {
+        if (isLoggedIn) {
+            const socket = connectSocket();
+
+            const onReady = (payload) => {
+                console.log('Socket connected for user:', payload?.username || payload?.userId);
+            };
+
+            socket.on('socket:ready', onReady);
+
+            return () => {
+                socket.off('socket:ready', onReady);
+            };
+        }
+
+        disconnectSocket();
+        return undefined;
+    }, [isLoggedIn]);
+
     const handleLogin = (usernameFromLogin) => {
         setIsLoggedIn(true);
         const finalUsername = usernameFromLogin || "";
@@ -71,6 +92,7 @@ export default function App() {
         } catch (error) {
             console.error("Logout error:", error);
         } finally {
+            disconnectSocket();
             setIsLoggedIn(false);
             setUsername("");
             localStorage.removeItem('username');
@@ -100,8 +122,10 @@ export default function App() {
                     />
                     <Route path="/createGame" element={<CreateGame />} />
                     <Route path="/createGroup" element={<CreateGroup />} />
+                    <Route path="/createGroup/:gameSlug" element={<CreateGroup />} />
                     <Route path="/games" element={<Games />} />
                     <Route path="/games/:gameSlug" element={<GameDetails />} />
+                    <Route path="/socket-test" element={<SocketTest />} />
                 </Routes>
             </main>
         </Router>
