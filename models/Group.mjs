@@ -5,6 +5,10 @@ const groupSchema = new mongoose.Schema({
     description: { type: String },
     game: { type: mongoose.Schema.Types.ObjectId, ref: 'Games', required: true },
     platform: { type: String },
+    experience: { type: String, trim: true },
+    microphone: { type: String, trim: true },
+    region: { type: String, trim: true },
+    tags: [{ type: String, trim: true }],
     members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Users' }],
     createdAt: { type: Date, default: Date.now }
 });

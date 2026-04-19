@@ -9,6 +9,7 @@ import jwt from 'jsonwebtoken';
 import authRoutes from './routes/auth.mjs';
 import gameRoutes from './routes/games.mjs';
 import groupRoutes from './routes/groups.mjs';
+import Group from './models/Group.mjs';
 
 dotenv.config();
 
@@ -45,6 +46,9 @@ const io = new Server(server, {
 });
 
 app.set('io', io);
+
+const groupChatHistory = new Map();
+const MAX_GROUP_CHAT_MESSAGES = 100;
 
 const parseCookieHeader = (rawCookieHeader) => {
     if (!rawCookieHeader) return {};
@@ -126,5 +130,91 @@ io.on('connection', (socket) => {
             fromUserId: socket.userId,
             isTyping: Boolean(isTyping)
         });
+    });
+
+    socket.on('group:join', async ({ groupId }, ack) => {
+        try {
+            if (!groupId || !mongoose.Types.ObjectId.isValid(groupId)) {
+                if (typeof ack === 'function') ack({ ok: false, message: 'Valid group id is required' });
+                return;
+            }
+
+            const updatedGroup = await Group.findByIdAndUpdate(
+                groupId,
+                { $addToSet: { members: socket.userId } },
+                { new: true }
+            )
+                .populate('game', 'name')
+                .populate('members', 'username');
+
+            if (!updatedGroup) {
+                if (typeof ack === 'function') ack({ ok: false, message: 'Group not found' });
+                return;
+            }
+
+            socket.join(`group:${groupId}`);
+            const history = groupChatHistory.get(groupId) || [];
+
+            io.to(`group:${groupId}`).emit('group:members:updated', {
+                groupId,
+                group: updatedGroup
+            });
+
+            if (typeof ack === 'function') {
+                ack({
+                    ok: true,
+                    history,
+                    group: updatedGroup
+                });
+            }
+        } catch (error) {
+            if (typeof ack === 'function') ack({ ok: false, message: 'Failed to join group chat' });
+        }
+    });
+
+    socket.on('group:leave', ({ groupId }) => {
+        if (!groupId) return;
+        socket.leave(`group:${groupId}`);
+    });
+
+    socket.on('group:message:send', ({ groupId, text }, ack) => {
+        try {
+            const normalizedGroupId = String(groupId || '').trim();
+            const normalizedText = String(text || '').trim();
+
+            if (!normalizedGroupId || !mongoose.Types.ObjectId.isValid(normalizedGroupId)) {
+                if (typeof ack === 'function') ack({ ok: false, message: 'Valid group id is required' });
+                return;
+            }
+
+            if (!normalizedText) {
+                if (typeof ack === 'function') ack({ ok: false, message: 'Message text is required' });
+                return;
+            }
+
+            const messagePayload = {
+                id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+                groupId: normalizedGroupId,
+                senderId: socket.userId,
+                senderUsername: socket.username || 'Unknown',
+                text: normalizedText,
+                createdAt: new Date().toISOString()
+            };
+
+            const history = groupChatHistory.get(normalizedGroupId) || [];
+            history.push(messagePayload);
+            if (history.length > MAX_GROUP_CHAT_MESSAGES) {
+                history.splice(0, history.length - MAX_GROUP_CHAT_MESSAGES);
+            }
+            groupChatHistory.set(normalizedGroupId, history);
+
+            io.to(`group:${normalizedGroupId}`).emit('group:message:new', messagePayload);
+
+            if (typeof ack === 'function') {
+                ack({ ok: true, message: messagePayload });
+            }
+        } catch (error) {
+            if (typeof ack === 'function') ack({ ok: false, message: 'Failed to send message' });
+        }
     });
 });

@@ -7,6 +7,7 @@ import Home from "./pages/home.jsx";
 import Login from "./pages/login.jsx";
 import Games from "./pages/games.jsx";
 import GameDetails from "./pages/gameDetails.jsx";
+import ViewGroup from "./pages/viewGroup.jsx";
 import CreateGame from "./pages/createGame.jsx";
 import CreateGroup from "./pages/createGroup.jsx";
 import SocketTest from "./pages/socketTest.jsx";
@@ -125,6 +126,7 @@ export default function App() {
                     <Route path="/createGroup/:gameSlug" element={<CreateGroup />} />
                     <Route path="/games" element={<Games />} />
                     <Route path="/games/:gameSlug" element={<GameDetails />} />
+                    <Route path="/group/:groupId" element={<ViewGroup />} />
                     <Route path="/socket-test" element={<SocketTest />} />
                 </Routes>
             </main>

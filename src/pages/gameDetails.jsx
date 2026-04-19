@@ -72,6 +72,9 @@ export default function GameDetails() {
 							<p>
 								Members: {Array.isArray(group.members) ? group.members.length : 0}
 							</p>
+							<Link className="view-group-link" to={`/group/${group._id}`}>
+								Open Group
+							</Link>
 						</div>
 					</div>
 				))}
