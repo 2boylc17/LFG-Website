@@ -1,6 +1,49 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
+const TAG_SECTIONS = [
+	{
+		key: "experience",
+		label: "Experience",
+		options: ["No Experience Required", "Some Experience Required", "Experienced Players Only"]
+	},
+	{
+		key: "microphone",
+		label: "Microphone",
+		options: ["No Mic", "Mic Optional", "Mic Required"]
+	},
+	{
+		key: "region",
+		label: "Region",
+		options: ["North America", "South America", "Europe", "Asia", "Oceania", "Africa", "Middle East"]
+	}
+];
+
+const normalizePlatformName = (platformValue) => {
+	if (typeof platformValue === "string") return platformValue.trim();
+	if (platformValue && typeof platformValue === "object") return String(platformValue.name || "").trim();
+	return "";
+};
+
+const getImageSrc = (image) => {
+	if (!image?.data || !image?.contentType) return null;
+
+	if (image.data.type === "Buffer" && Array.isArray(image.data.data)) {
+		const uint8Array = new Uint8Array(image.data.data);
+		let binary = "";
+		for (let i = 0; i < uint8Array.length; i += 8192) {
+			binary += String.fromCharCode(...uint8Array.slice(i, i + 8192));
+		}
+		return `data:${image.contentType};base64,${btoa(binary)}`;
+	}
+
+	if (typeof image.data === "string") {
+		return `data:${image.contentType};base64,${image.data}`;
+	}
+
+	return null;
+};
+
 export default function CreateGroup() {
 	const { gameSlug } = useParams();
 	const [name, setName] = useState("");
@@ -18,44 +61,10 @@ export default function CreateGroup() {
 
 	const availablePlatforms = useMemo(() => {
 		if (!selectedGame || !Array.isArray(selectedGame.platforms)) return [];
-
-		return selectedGame.platforms
-			.map((platformValue) => {
-				if (typeof platformValue === "string") return platformValue.trim();
-				if (platformValue && typeof platformValue === "object") {
-					return String(platformValue.name || "").trim();
-				}
-				return "";
-			})
-			.filter((platformName) => platformName.length > 0);
+		return selectedGame.platforms.map(normalizePlatformName).filter(Boolean);
 	}, [selectedGame]);
 
-	const gameImageSrc = useMemo(() => {
-		if (!selectedGame?.image?.data || !selectedGame?.image?.contentType) {
-			return null;
-		}
-
-		if (
-			selectedGame.image.data.type === "Buffer" &&
-			Array.isArray(selectedGame.image.data.data)
-		) {
-			const uint8Array = new Uint8Array(selectedGame.image.data.data);
-			let binary = "";
-			const chunkSize = 8192;
-
-			for (let i = 0; i < uint8Array.length; i += chunkSize) {
-				binary += String.fromCharCode(...uint8Array.slice(i, i + chunkSize));
-			}
-
-			return `data:${selectedGame.image.contentType};base64,${btoa(binary)}`;
-		}
-
-		if (typeof selectedGame.image.data === "string") {
-			return `data:${selectedGame.image.contentType};base64,${selectedGame.image.data}`;
-		}
-
-		return null;
-	}, [selectedGame]);
+	const gameImageSrc = useMemo(() => getImageSrc(selectedGame?.image), [selectedGame]);
 
 	useEffect(() => {
 		const fetchGameDetails = async () => {
@@ -99,24 +108,6 @@ export default function CreateGroup() {
 			setPlatform(availablePlatforms[0]);
 		}
 	}, [availablePlatforms, platform]);
-
-	const tagSections = [
-	{
-		key: "experience",
-		label: "Experience",
-		options: ["No Experience Required", "Some Experience Required", "Experienced Players Only"]
-	},
-	{
-		key: "microphone",
-		label: "Microphone",
-		options: ["No Mic", "Mic Optional", "Mic Required"]
-	},
-	{
-		key: "region",
-		label: "Region",
-		options: ["North America", "South America", "Europe", "Asia", "Oceania", "Africa", "Middle East"]
-	}
-	];
 
 	const setTag = (sectionKey, value) => {
 		setTags((prev) => ({ ...prev, [sectionKey]: value }));
@@ -242,7 +233,7 @@ export default function CreateGroup() {
 						))}
 					</select>
 				</div>
-				{tagSections.map((section) => (
+				{TAG_SECTIONS.map((section) => (
 					<div className="create-group-field" key={section.key}>
 						<label>{section.label}:</label>
 						<div className="create-group-tag-input-row">

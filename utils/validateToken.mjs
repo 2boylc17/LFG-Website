@@ -1,9 +1,8 @@
-import jwt from 'jsonwebtoken'
+import jwt from 'jsonwebtoken';
 
 export const validateToken = (token) => {
     try {
-        const decoded = jwt.verify(token, process.env.token_secret);
-        return decoded;
+        return jwt.verify(token, process.env.token_secret);
     } catch (err) {
         console.error("Token validation error:", err);
         return null;

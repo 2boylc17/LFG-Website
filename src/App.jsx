@@ -1,5 +1,5 @@
-import React, { use, useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Navbar from "./pages/components/navbar.jsx";
 import Sidebar from "./pages/components/sidebar.jsx";
@@ -13,41 +13,33 @@ import CreateGroup from "./pages/createGroup.jsx";
 import SocketTest from "./pages/socketTest.jsx";
 import Settings from "./pages/settings.jsx";
 import { connectSocket, disconnectSocket } from "./lib/socket.js";
-import { set } from "mongoose";
 
 export default function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [username, setUsername] = useState("");
     const [checkingAuth, setCheckingAuth] = useState(true);
 
-    const validateUser = async () => {
-        try {
-            const response = await fetch('/api/auth/validate', {
-                method: 'HEAD',
-                credentials: 'include'
-            });
-            const ok = response.ok;
-            setIsLoggedIn(ok);
-            return ok;
-        } catch (error) {
-            console.error("Validation error:", error);
-            setIsLoggedIn(false);
-            return false;
-        }
+    const syncStoredUsername = (value = "") => {
+        if (value) localStorage.setItem('username', value);
+        else localStorage.removeItem('username');
     };
 
     useEffect(() => {
         const initAuth = async () => {
-            const ok = await validateUser();
-
-            if (ok) {
-                const storedUsername = localStorage.getItem('username');
-                if (storedUsername) {
-                    setUsername(storedUsername);
-                }
-            } else {
-                localStorage.removeItem('username');
+            try {
+                const response = await fetch('/api/auth/validate', {
+                    method: 'HEAD',
+                    credentials: 'include'
+                });
+                const ok = response.ok;
+                setIsLoggedIn(ok);
+                setUsername(ok ? (localStorage.getItem('username') || "") : "");
+                if (!ok) syncStoredUsername("");
+            } catch (error) {
+                console.error("Validation error:", error);
+                setIsLoggedIn(false);
                 setUsername("");
+                syncStoredUsername("");
             }
             setCheckingAuth(false);
         };
@@ -74,15 +66,10 @@ export default function App() {
     }, [isLoggedIn]);
 
     const handleLogin = (usernameFromLogin) => {
-        setIsLoggedIn(true);
         const finalUsername = usernameFromLogin || "";
+        setIsLoggedIn(true);
         setUsername(finalUsername);
-
-        if (finalUsername) {
-            localStorage.setItem('username', finalUsername);
-        } else {
-            localStorage.removeItem('username');
-        }
+        syncStoredUsername(finalUsername);
     };
 
     const handleLogout = async () => {
@@ -97,7 +84,7 @@ export default function App() {
             disconnectSocket();
             setIsLoggedIn(false);
             setUsername("");
-            localStorage.removeItem('username');
+            syncStoredUsername("");
             window.location.reload();
         }
     };
@@ -107,21 +94,13 @@ export default function App() {
     }
 
     return (
-        <Router classname="app">
+        <Router>
             <Navbar isLoggedIn={isLoggedIn} onLogout={handleLogout} username={username} />
             <Sidebar />
             <main>
                 <Routes>
                     <Route path="/" element={<Home />} />
-                    <Route path="/login" 
-                        element={<Login 
-                            isLoggedIn={isLoggedIn}
-                            onLogin={handleLogin} 
-                            onLogout={handleLogout}
-                            username={username}
-                        />
-                        } 
-                    />
+                    <Route path="/login" element={<Login onLogin={handleLogin} />} />
                     <Route path="/createGame" element={<CreateGame />} />
                     <Route path="/createGroup" element={<CreateGroup />} />
                     <Route path="/createGroup/:gameSlug" element={<CreateGroup />} />

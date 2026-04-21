@@ -1,35 +1,46 @@
-import { set } from "mongoose";
 import React, { useState } from "react";
 
 export default function CreateGame() {
     const [name, setName] = useState("");
-    const [genres, setGenres] = useState([]);
-    const [platforms, setPlatforms] = useState([]);
+    const [genresInput, setGenresInput] = useState("");
+    const [platformsInput, setPlatformsInput] = useState("");
     const [message, setMessage] = useState("");
     const [selectedImage, setSelectedImage] = useState(null);
 
-    let test = {}
+    const fileToDataUrl = (file) => new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+    });
 
-    const handleSubmitPre = async (e) => {
+    const toNameList = (csvValue) => csvValue
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .map((nameValue) => ({ name: nameValue }));
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setMessage("");
         try {
             let imageData = null;
             if (selectedImage) {
-                const reader = new FileReader();
-                imageData = await new Promise((resolve) => {
-                    reader.onload = () => resolve(reader.result);
-                    reader.readAsDataURL(selectedImage);
-                });
+                imageData = await fileToDataUrl(selectedImage);
             }
-            
+
+            const formattedGenres = toNameList(genresInput);
+            const formattedPlatforms = toNameList(platformsInput);
+
+            if (!formattedGenres.length || !formattedPlatforms.length) {
+                throw new Error("Genre and platform cannot be empty");
+            }
+
             const body = {
                 name: name.trim(),
-                genres: genres,
-                platforms: platforms,
+                genres: formattedGenres,
+                platforms: formattedPlatforms,
                 image: imageData
-            }
-            test = body;
-            console.log(body, JSON.stringify(body));
+            };
 
             const response = await fetch('/api/games/add', {
                 method: 'POST',
@@ -37,68 +48,20 @@ export default function CreateGame() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
-            const data = await response.json();
-            if (response.ok) {
-                await response.json();
-                setSelectedImage(null);
-                setName("");
-                setGenres([{ name: "" }]);
-                setPlatforms([{ name: "" }]);
-            } else {
-                setMessage(`Error 1: ${data.error}`);
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || data.message || "Add game failed");
             }
+
+            setSelectedImage(null);
+            setName("");
+            setGenresInput("");
+            setPlatformsInput("");
+            setMessage("Game added successfully");
         } catch (error) {
-            setMessage(`Error 2: ${error.message} -- ${JSON.stringify(test)}`);
+            setMessage(`Error: ${error.message}`);
         }
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-            let imageData = null;
-            if (selectedImage) {
-                const reader = new FileReader();
-                imageData = await new Promise((resolve) => {
-                    reader.onload = () => resolve(reader.result);
-                    reader.readAsDataURL(selectedImage);
-                });
-            }
-
-            const formattedGenres = genres.map((g) => ({
-                name: g.name
-            }))
-
-            const formattedPlatforms = platforms.map((p) => ({
-                name: p.name
-            }))
-
-            const body = {
-                name: name.trim(),
-                genres: formattedGenres,
-                platforms: formattedPlatforms,
-                image: imageData
-            }
-            test = body;
-            console.log(body, JSON.stringify(body));
-
-            fetch('/api/games/add', {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            })
-            .then(response => {
-                if (!response.ok) throw new Error(`Add game failed`);
-                return response.json();
-            })
-            .then(data => {
-                setSelectedImage(null);
-                setName("");
-                setGenres([{ name: "" }]);
-                setPlatforms([{ name: "" }]);
-            })
-            .catch(error => {
-                setMessage(`Error: ${error.message}`);
-            });
     };
 
     const handleImageUpload = async (e) => {
@@ -113,8 +76,6 @@ export default function CreateGame() {
         }
 
         setSelectedImage(file);
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
     };
 
 
@@ -129,11 +90,11 @@ export default function CreateGame() {
                 </div>
                 <div>
                     <label>Genres (comma separated):</label>
-                    <input type="text" value={genres.map(g => g.name).join(",")} onChange={(e) => setGenres(e.target.value.split(",").map(g => ({ name: g })))} required />
+                    <input type="text" value={genresInput} onChange={(e) => setGenresInput(e.target.value)} required />
                 </div>
                 <div>
                     <label>Platforms (comma separated):</label>
-                    <input type="text" value={platforms.map(p => p.name).join(",")} onChange={(e) => setPlatforms(e.target.value.split(",").map(p => ({ name: p })))} required />
+                    <input type="text" value={platformsInput} onChange={(e) => setPlatformsInput(e.target.value)} required />
                 </div>
                 <div>
                     <label>Image:</label>

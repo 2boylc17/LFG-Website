@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import useSearchPagination from "../lib/useSearchPagination.js";
+import { gameMatchesQuery } from "../lib/queryMatchers.js";
 
 const getImageSrc = (image) => {
 	if (!image?.data) return null;
@@ -21,14 +23,13 @@ export default function GamesPage() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [pageSize, setPageSize] = useState(6);
-	const [currentPage, setCurrentPage] = useState(1);
-	const [searchTerm, setSearchTerm] = useState("");
-	const [debouncedSearch, setDebouncedSearch] = useState("");
-
-	useEffect(() => {
-		const timer = setTimeout(() => { setDebouncedSearch(searchTerm); setCurrentPage(1); }, 300);
-		return () => clearTimeout(timer);
-	}, [searchTerm]);
+	const {
+		searchTerm,
+		setSearchTerm,
+		debouncedSearch,
+		setCurrentPage,
+		paginate
+	} = useSearchPagination(games, pageSize);
 
 	useEffect(() => {
 		const fetchGames = async () => {
@@ -52,16 +53,8 @@ export default function GamesPage() {
 	}, []);
 
 	const q = debouncedSearch.trim().toLowerCase();
-	const filteredGames = !q ? games : games.filter((game) => {
-		const name = (game.name || "").toLowerCase();
-		const genres = (game.genres || []).map((g) => g?.name || "").join(" ").toLowerCase();
-		const platforms = (game.platforms || []).map((p) => p?.name || "").join(" ").toLowerCase();
-		return name.includes(q) || genres.includes(q) || platforms.includes(q);
-	});
-
-	const totalPages = Math.max(1, Math.ceil(filteredGames.length / pageSize));
-	const safePage = Math.min(currentPage, totalPages);
-	const pagedGames = filteredGames.slice((safePage - 1) * pageSize, safePage * pageSize);
+	const filteredGames = games.filter((game) => gameMatchesQuery(game, q));
+	const { totalPages, safePage, pagedItems: pagedGames } = paginate(filteredGames);
 
 	return (
 		<div className="page">

@@ -6,6 +6,8 @@ import { validateToken } from '../utils/validateToken.mjs';
 
 const router = express.Router();
 const GROUP_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const isValidId = (value) => mongoose.Types.ObjectId.isValid(value);
+const getAuthUserId = (req) => validateToken(req.cookies?.jwt)?.userId;
 
 const normalizeTagArray = (value) => {
 	if (!Array.isArray(value)) {
@@ -71,10 +73,9 @@ router.post('/add/:gameName', async (req, res) => {
 		} = req.body;
 		const gameNameFromPath = req.params.gameName ? decodeURIComponent(req.params.gameName).trim() : '';
 		const resolvedGameName = gameNameFromPath || (gameName ? String(gameName).trim() : '');
-		const decoded = validateToken(req.cookies?.jwt);
-		const creatorId = decoded?.userId;
+		const creatorId = getAuthUserId(req);
 
-		if (!creatorId || !mongoose.Types.ObjectId.isValid(creatorId)) {
+		if (!creatorId || !isValidId(creatorId)) {
 			return res.status(401).json({ message: 'Authentication required' });
 		}
 
@@ -83,7 +84,7 @@ router.post('/add/:gameName', async (req, res) => {
 		}
 
 		let gameId = null;
-		if (game && mongoose.Types.ObjectId.isValid(game)) {
+		if (game && isValidId(game)) {
 			gameId = game;
 		} else if (resolvedGameName) {
 			const matchedGame = await Game.findOne({ name: resolvedGameName }, { _id: 1 });
@@ -118,14 +119,13 @@ router.post('/add/:gameName', async (req, res) => {
 router.post('/join/:groupId', async (req, res) => {
 	try {
 		const { groupId } = req.params;
-		const decoded = validateToken(req.cookies?.jwt);
-		const userId = decoded?.userId;
+		const userId = getAuthUserId(req);
 
-		if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+		if (!userId || !isValidId(userId)) {
 			return res.status(401).json({ message: 'Authentication required' });
 		}
 
-		if (!groupId || !mongoose.Types.ObjectId.isValid(groupId)) {
+		if (!groupId || !isValidId(groupId)) {
 			return res.status(400).json({ message: 'Valid group id is required' });
 		}
 
@@ -191,7 +191,7 @@ router.get('/id/:groupId', async (req, res) => {
 	try {
 		const { groupId } = req.params;
 
-		if (!groupId || !mongoose.Types.ObjectId.isValid(groupId)) {
+		if (!groupId || !isValidId(groupId)) {
 			return res.status(400).json({ message: 'Valid group id is required' });
 		}
 

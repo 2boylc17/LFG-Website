@@ -8,6 +8,17 @@ const TAG_SECTIONS = [
     { key: "region", label: "Region" }
 ];
 
+const getMessageFromResponse = async (response, fallbackMessage) => {
+    let message = fallbackMessage;
+    try {
+        const data = await response.json();
+        message = data?.message || data?.error || message;
+    } catch {
+        // Keep fallback message when response body is not JSON.
+    }
+    return message;
+};
+
 export default function ViewGroup() {
     const { groupId } = useParams();
     const [group, setGroup] = useState(null);
@@ -28,14 +39,7 @@ export default function ViewGroup() {
                 setLoading(true);
                 const response = await fetch(`/api/groups/id/${encodeURIComponent(groupId || "")}`);
                 if (!response.ok) {
-                    let message = "Failed to load group";
-                    try {
-                        const data = await response.json();
-                        message = data.message || data.error || message;
-                    } catch {
-                        // Use default fallback when body parsing fails.
-                    }
-                    throw new Error(message);
+                    throw new Error(await getMessageFromResponse(response, "Failed to load group"));
                 }
 
                 const data = await response.json();
@@ -77,34 +81,26 @@ export default function ViewGroup() {
     useEffect(() => {
         if (!groupId) return undefined;
 
+        const groupIdStr = String(groupId);
+
         const socket = connectSocket();
 
         const onIncomingMessage = (payload) => {
-            if (!payload || String(payload.groupId) !== String(groupId)) {
-                return;
-            }
+            if (!payload || String(payload.groupId) !== groupIdStr) return;
 
             setMessages((prev) => {
-                if (prev.some((existing) => existing.id === payload.id)) {
-                    return prev;
-                }
-
+                if (prev.some((existing) => existing.id === payload.id)) return prev;
                 return [...prev, payload];
             });
         };
 
         const onMembersUpdated = (payload) => {
-            if (!payload || String(payload.groupId) !== String(groupId) || !payload.group) {
-                return;
-            }
-
+            if (!payload || String(payload.groupId) !== groupIdStr || !payload.group) return;
             setGroup(payload.group);
         };
 
         const onGroupDeleted = (payload) => {
-            if (!payload || String(payload.groupId) !== String(groupId)) {
-                return;
-            }
+            if (!payload || String(payload.groupId) !== groupIdStr) return;
 
             setGroup(null);
             setMessages([]);
@@ -147,13 +143,9 @@ export default function ViewGroup() {
             });
 
             const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data?.message || data?.error || "Failed to join group");
-            }
+            if (!response.ok) throw new Error(data?.message || data?.error || "Failed to join group");
 
-            if (data?.group) {
-                setGroup(data.group);
-            }
+            if (data?.group) setGroup(data.group);
         } catch (err) {
             setError(err.message || "Failed to join group");
         } finally {

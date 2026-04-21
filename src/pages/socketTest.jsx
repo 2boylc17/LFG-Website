@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connectSocket, disconnectSocket, ensureSocket, getSocket } from '../lib/socket.js';
 
 export default function SocketTest() {
@@ -89,9 +89,7 @@ export default function SocketTest() {
         };
     }, []);
 
-    const statusClassName = useMemo(() => {
-        return isConnected ? 'socket-status connected' : 'socket-status disconnected';
-    }, [isConnected]);
+    const statusClassName = isConnected ? 'socket-status connected' : 'socket-status disconnected';
 
     const handleConnect = () => {
         const socket = connectSocket();

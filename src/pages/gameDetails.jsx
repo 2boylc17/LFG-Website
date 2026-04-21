@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import useSearchPagination from "../lib/useSearchPagination.js";
+import { groupMatchesQuery } from "../lib/queryMatchers.js";
 
 export default function GameDetails() {
 	const { gameSlug } = useParams();
@@ -7,15 +9,14 @@ export default function GameDetails() {
 	const [groups, setGroups] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
-	const [searchTerm, setSearchTerm] = useState("");
-	const [debouncedSearch, setDebouncedSearch] = useState("");
-	const [pageSize] = useState(6);
-	const [currentPage, setCurrentPage] = useState(1);
-
-	useEffect(() => {
-		const timer = setTimeout(() => { setDebouncedSearch(searchTerm); setCurrentPage(1); }, 300);
-		return () => clearTimeout(timer);
-	}, [searchTerm]);
+	const pageSize = 6;
+	const {
+		searchTerm,
+		setSearchTerm,
+		debouncedSearch,
+		setCurrentPage,
+		paginate
+	} = useSearchPagination(groups, pageSize);
 
 	useEffect(() => {
 		window.scrollTo({ top: 0, behavior: "auto" });
@@ -46,17 +47,8 @@ export default function GameDetails() {
 	}, [gameSlug]);
 
 	const q = debouncedSearch.trim().toLowerCase();
-	const filteredGroups = !q ? groups : groups.filter((group) => {
-		const name = (group.name || "").toLowerCase();
-		const desc = (group.description || "").toLowerCase();
-		const platform = (group.platform || "").toLowerCase();
-		const tags = (group.tags || []).join(" ").toLowerCase();
-		return name.includes(q) || desc.includes(q) || platform.includes(q) || tags.includes(q);
-	});
-
-	const totalPages = Math.max(1, Math.ceil(filteredGroups.length / pageSize));
-	const safePage = Math.min(currentPage, totalPages);
-	const pagedGroups = filteredGroups.slice((safePage - 1) * pageSize, safePage * pageSize);
+	const filteredGroups = groups.filter((group) => groupMatchesQuery(group, q));
+	const { totalPages, safePage, pagedItems: pagedGroups } = paginate(filteredGroups);
 
 	return (
 		<div className="page">

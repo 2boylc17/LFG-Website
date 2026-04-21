@@ -2,7 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const PLATFORMS = ['PC', 'PlayStation', 'Xbox', 'Nintendo Switch', 'Mobile'];
-const PLAY_STYLES = ['', 'Casual', 'Competitive', 'Mixed'];
+const PLAY_STYLES = ['Casual', 'Competitive', 'Mixed'];
+const EMPTY_MSG = { text: '', error: false };
+
+const requestJson = async (url, options = {}) => {
+    const res = await fetch(url, options);
+    const data = await res.json();
+    return { ok: res.ok, data };
+};
 
 export default function Settings({ isLoggedIn, onLogin }) {
     const navigate = useNavigate();
@@ -12,9 +19,9 @@ export default function Settings({ isLoggedIn, onLogin }) {
     const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
     const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
 
-    const [profileMsg, setProfileMsg] = useState({ text: '', error: false });
-    const [usernameMsg, setUsernameMsg] = useState({ text: '', error: false });
-    const [passwordMsg, setPasswordMsg] = useState({ text: '', error: false });
+    const [profileMsg, setProfileMsg] = useState(EMPTY_MSG);
+    const [usernameMsg, setUsernameMsg] = useState(EMPTY_MSG);
+    const [passwordMsg, setPasswordMsg] = useState(EMPTY_MSG);
 
     const [loading, setLoading] = useState(true);
 
@@ -23,23 +30,25 @@ export default function Settings({ isLoggedIn, onLogin }) {
             navigate('/login');
             return;
         }
-        fetch('/api/settings', { credentials: 'include' })
-            .then(r => r.json())
-            .then(data => {
+        const loadSettings = async () => {
+            try {
+                const { data } = await requestJson('/api/settings', { credentials: 'include' });
                 setProfile({
                     bio: data.bio || '',
                     platforms: data.platforms || [],
                     playStyle: data.playStyle || ''
                 });
+            } finally {
                 setLoading(false);
-            })
-            .catch(() => setLoading(false));
+            }
+        };
+        loadSettings();
     }, [isLoggedIn, navigate]);
 
     useEffect(() => {
         if (!isAccountModalOpen) {
-            setUsernameMsg({ text: '', error: false });
-            setPasswordMsg({ text: '', error: false });
+            setUsernameMsg(EMPTY_MSG);
+            setPasswordMsg(EMPTY_MSG);
             setUsernameForm({ newUsername: '', password: '' });
             setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
         }
@@ -57,16 +66,15 @@ export default function Settings({ isLoggedIn, onLogin }) {
 
     const handleProfileSave = async (e) => {
         e.preventDefault();
-        setProfileMsg({ text: '', error: false });
+        setProfileMsg(EMPTY_MSG);
         try {
-            const res = await fetch('/api/settings/profile', {
+            const { ok, data } = await requestJson('/api/settings/profile', {
                 method: 'PUT',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ bio: profile.bio, platforms: profile.platforms, playStyle: profile.playStyle })
             });
-            const data = await res.json();
-            setProfileMsg({ text: res.ok ? 'Profile saved.' : data.message, error: !res.ok });
+            setProfileMsg({ text: ok ? 'Profile saved.' : data.message, error: !ok });
         } catch {
             setProfileMsg({ text: 'Something went wrong.', error: true });
         }
@@ -75,16 +83,15 @@ export default function Settings({ isLoggedIn, onLogin }) {
     // ── Username ─────────────────────────────────────────────
     const handleUsernameChange = async (e) => {
         e.preventDefault();
-        setUsernameMsg({ text: '', error: false });
+        setUsernameMsg(EMPTY_MSG);
         try {
-            const res = await fetch('/api/settings/username', {
+            const { ok, data } = await requestJson('/api/settings/username', {
                 method: 'PUT',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(usernameForm)
             });
-            const data = await res.json();
-            if (res.ok) {
+            if (ok) {
                 setUsernameMsg({ text: 'Username updated. Please log in again.', error: false });
                 setUsernameForm({ newUsername: '', password: '' });
                 if (onLogin) onLogin(data.username);
@@ -100,21 +107,20 @@ export default function Settings({ isLoggedIn, onLogin }) {
     // ── Password ─────────────────────────────────────────────
     const handlePasswordChange = async (e) => {
         e.preventDefault();
-        setPasswordMsg({ text: '', error: false });
+        setPasswordMsg(EMPTY_MSG);
         if (passwordForm.newPassword !== passwordForm.confirmPassword) {
             setPasswordMsg({ text: 'New passwords do not match.', error: true });
             return;
         }
         try {
-            const res = await fetch('/api/settings/password', {
+            const { ok, data } = await requestJson('/api/settings/password', {
                 method: 'PUT',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ currentPassword: passwordForm.currentPassword, newPassword: passwordForm.newPassword })
             });
-            const data = await res.json();
-            setPasswordMsg({ text: res.ok ? 'Password updated.' : data.message, error: !res.ok });
-            if (res.ok) setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+            setPasswordMsg({ text: ok ? 'Password updated.' : data.message, error: !ok });
+            if (ok) setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
         } catch {
             setPasswordMsg({ text: 'Something went wrong.', error: true });
         }
@@ -167,7 +173,7 @@ export default function Settings({ isLoggedIn, onLogin }) {
                             onChange={e => setProfile(prev => ({ ...prev, playStyle: e.target.value }))}
                         >
                             <option value="">Select a play style</option>
-                            {PLAY_STYLES.filter(s => s !== '').map(s => (
+                            {PLAY_STYLES.map(s => (
                                 <option key={s} value={s}>{s}</option>
                             ))}
                         </select>

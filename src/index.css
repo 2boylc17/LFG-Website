@@ -10,26 +10,18 @@ h1, h2, h3, h4, h5, h6 {
   color: #fff;
 }
 
-p {
+p,
+a,
+a:link,
+a:visited,
+a:hover,
+li {
   color: #fff;
 }
 
-a {
-  text-decoration: none;
-  color: #fff;
-}
-
-a:link, a:visited {
-  color: #fff;
-}
-
-a:hover {
-  color: #fff;
-}
-
+a,
 li {
   text-decoration: none;
-  color: #fff;
 }
 /* =============== END BASE ELEMENTS =============== */
 
@@ -161,6 +153,42 @@ li {
 /* =============== END SIDEBAR RELATED CLASSES =============== */
 
 
+/* ================= SHARED SURFACES & CONTROLS ================= */
+.socket-card,
+.create-group-shell,
+.view-group-card,
+.settings-section {
+  background-color: #1D1D1D;
+  border: 1px solid #7d7d7d;
+}
+
+.games-search-input,
+.games-select,
+.socket-form-row input,
+.socket-form-row select,
+.socket-actions button,
+.socket-card button,
+.create-group-field input,
+.create-group-field select,
+.create-group-tag-add,
+.create-group-tag-chip,
+.create-group-submit,
+.view-group-link,
+.group-chat-form input,
+.group-chat-form button,
+.group-join-button,
+.settings-field input,
+.settings-field textarea,
+.settings-field select,
+.platform-btn,
+.settings-save-btn {
+  background-color: #2d2d2d;
+  color: #fff;
+  border: 1px solid #7d7d7d;
+}
+/* =============== END SHARED SURFACES & CONTROLS =============== */
+
+
 /* ================= LOGIN RELATED CLASSES ================= */
 .login-container {
   background-color: #1D1D1D;
@@ -187,8 +215,7 @@ li {
   align-items: flex-start;
   gap: 0.5rem;
   margin-top: 1.5rem;
-  padding-left: 24px;
-  padding-right: 24px;
+  padding: 0 24px;
 }
 
 .games-header h1 {
@@ -204,10 +231,7 @@ li {
 .games-search-input {
   width: 100%;
   box-sizing: border-box;
-  border: 1px solid #7d7d7d;
   border-radius: 10px;
-  background-color: #2d2d2d;
-  color: #fff;
   font-size: 1rem;
   padding: 0.65rem 2.2rem 0.65rem 0.8rem;
 }
@@ -311,9 +335,6 @@ li {
 .games-select {
   font-family: 'Arial', sans-serif;
   font-size: 0.9rem;
-  color: #fff;
-  background-color: #2d2d2d;
-  border: 1px solid #7d7d7d;
   border-radius: 8px;
   padding: 0.35rem 1.8rem 0.35rem 0.65rem;
   appearance: none;
@@ -374,10 +395,9 @@ li {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 32px 24px;
-  margin: 40px 0 0 0;
+  margin: 40px 0 0;
   width: 100%;
-  padding-left: 24px;
-  padding-right: 24px;
+  padding: 0 24px;
   box-sizing: border-box;
 }
 
@@ -385,8 +405,6 @@ li {
 @media (max-width: 900px) {
   .games-list {
     grid-template-columns: repeat(2, 1fr);
-    padding-left: 24px;
-    padding-right: 24px;
   }
 }
 
@@ -394,8 +412,6 @@ li {
 @media (max-width: 600px) {
   .games-list {
     grid-template-columns: 1fr;
-    padding-left: 24px;
-    padding-right: 24px;
   }
 }
 
@@ -423,8 +439,6 @@ li {
 }
 
 .socket-card {
-  background-color: #1d1d1d;
-  border: 1px solid #7d7d7d;
   border-radius: 12px;
   padding: 1rem;
   max-width: 900px;
@@ -477,9 +491,6 @@ li {
 .socket-form-row select,
 .socket-actions button,
 .socket-card button {
-  background-color: #2d2d2d;
-  color: #fff;
-  border: 1px solid #7d7d7d;
   border-radius: 8px;
   padding: 0.45rem 0.65rem;
 }
@@ -512,8 +523,6 @@ li {
 
 .create-group-shell {
   max-width: 760px;
-  background-color: #1D1D1D;
-  border: 1px solid #7d7d7d;
   border-radius: 14px;
   padding: 1.2rem;
 }
@@ -566,18 +575,8 @@ li {
   color: #fff;
 }
 
-.create-group-field input {
-  background-color: #2d2d2d;
-  color: #fff;
-  border: 1px solid #7d7d7d;
-  border-radius: 8px;
-  padding: 0.55rem 0.7rem;
-}
-
+.create-group-field input,
 .create-group-field select {
-  background-color: #2d2d2d;
-  color: #fff;
-  border: 1px solid #7d7d7d;
   border-radius: 8px;
   padding: 0.55rem 0.7rem;
 }
@@ -592,17 +591,9 @@ li {
 }
 
 .create-group-tag-add {
-  background-color: #2d2d2d;
-  color: #fff;
-  border: 1px solid #7d7d7d;
   border-radius: 8px;
   padding: 0.55rem 0.9rem;
   font-weight: 700;
-}
-
-.create-group-tag-add:hover {
-  cursor: pointer;
-  background-color: #3b3b3b;
 }
 
 .create-group-tag-list {
@@ -612,16 +603,8 @@ li {
 }
 
 .create-group-tag-chip {
-  background-color: #2d2d2d;
-  color: #fff;
-  border: 1px solid #7d7d7d;
   border-radius: 999px;
   padding: 0.35rem 0.7rem;
-}
-
-.create-group-tag-chip:hover {
-  cursor: pointer;
-  background-color: #3b3b3b;
 }
 
 .create-group-tag-empty {
@@ -630,11 +613,7 @@ li {
   font-size: 0.9rem;
 }
 
-.create-group-field input:focus {
-  outline: 2px solid #9a9a9a;
-  outline-offset: 2px;
-}
-
+.create-group-field input:focus,
 .create-group-field select:focus {
   outline: 2px solid #9a9a9a;
   outline-offset: 2px;
@@ -642,17 +621,9 @@ li {
 
 .create-group-submit {
   justify-self: start;
-  background-color: #2d2d2d;
-  color: #fff;
-  border: 1px solid #7d7d7d;
   border-radius: 8px;
   padding: 0.55rem 0.95rem;
   font-weight: 700;
-}
-
-.create-group-submit:hover {
-  cursor: pointer;
-  background-color: #3b3b3b;
 }
 
 .create-group-message {
@@ -668,8 +639,6 @@ li {
 
 .view-group-card {
   max-width: 900px;
-  background-color: #1D1D1D;
-  border: 1px solid #7d7d7d;
   border-radius: 14px;
   padding: 1rem;
 }
@@ -677,10 +646,8 @@ li {
 .view-group-link {
   margin-top: 0.5rem;
   display: inline-block;
-  border: 1px solid #7d7d7d;
   border-radius: 8px;
   padding: 0.45rem 0.8rem;
-  background-color: #2d2d2d;
   font-weight: 700;
 }
 
@@ -757,37 +724,27 @@ li {
 
 .group-chat-form input {
   flex: 1;
-  background-color: #2d2d2d;
-  color: #fff;
-  border: 1px solid #7d7d7d;
   border-radius: 8px;
   padding: 0.55rem 0.7rem;
 }
 
 .group-chat-form button {
-  background-color: #2d2d2d;
-  color: #fff;
-  border: 1px solid #7d7d7d;
   border-radius: 8px;
   padding: 0.55rem 0.9rem;
   font-weight: 700;
 }
 
-.group-chat-form button:hover {
-  cursor: pointer;
-  background-color: #3b3b3b;
-}
-
 .group-join-button {
   margin-top: 0.75rem;
-  background-color: #2d2d2d;
-  color: #fff;
-  border: 1px solid #7d7d7d;
   border-radius: 8px;
   padding: 0.5rem 0.85rem;
   font-weight: 700;
 }
 
+.create-group-tag-add:hover,
+.create-group-tag-chip:hover,
+.create-group-submit:hover,
+.group-chat-form button:hover,
 .group-join-button:hover {
   cursor: pointer;
   background-color: #3b3b3b;
@@ -809,8 +766,6 @@ li {
 }
 
 .settings-section {
-  background-color: #1D1D1D;
-  border: 1px solid #7d7d7d;
   border-radius: 16px;
   padding: 1.5rem 2rem;
   margin-bottom: 2rem;
@@ -856,10 +811,7 @@ li {
 .settings-field input,
 .settings-field textarea,
 .settings-field select {
-  background-color: #2d2d2d;
-  border: 1px solid #7d7d7d;
   border-radius: 8px;
-  color: #fff;
   font-size: 1rem;
   padding: 0.5rem 0.75rem;
   width: 100%;
@@ -895,10 +847,7 @@ li {
 }
 
 .platform-btn {
-  background-color: #2d2d2d;
-  border: 1px solid #7d7d7d;
   border-radius: 20px;
-  color: #fff;
   cursor: pointer;
   font-size: 0.9rem;
   padding: 0.4rem 1rem;
@@ -917,10 +866,7 @@ li {
 
 .settings-save-btn {
   align-self: flex-start;
-  background-color: #2d2d2d;
-  border: 1px solid #7d7d7d;
   border-radius: 10px;
-  color: #fff;
   cursor: pointer;
   font-size: 0.95rem;
   padding: 0.5rem 1.4rem;

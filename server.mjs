@@ -96,6 +96,10 @@ const clearPendingRemoval = (groupId, userId) => {
     }
 };
 
+const sendAck = (ack, payload) => {
+    if (typeof ack === 'function') ack(payload);
+};
+
 const removeUserFromGroup = async (groupId, userId) => {
     const group = await Group.findByIdAndUpdate(
         groupId,
@@ -230,20 +234,20 @@ io.on('connection', (socket) => {
     socket.on('group:join', async ({ groupId }, ack) => {
         try {
             if (!groupId || !mongoose.Types.ObjectId.isValid(groupId)) {
-                if (typeof ack === 'function') ack({ ok: false, message: 'Valid group id is required' });
+                sendAck(ack, { ok: false, message: 'Valid group id is required' });
                 return;
             }
 
             const existingGroup = await Group.findById(groupId);
             if (!existingGroup) {
-                if (typeof ack === 'function') ack({ ok: false, message: 'Group not found' });
+                sendAck(ack, { ok: false, message: 'Group not found' });
                 return;
             }
 
             if (isExpiredGroup(existingGroup)) {
                 await Group.deleteOne({ _id: groupId });
                 groupChatHistory.delete(String(groupId));
-                if (typeof ack === 'function') ack({ ok: false, message: 'Group is no longer available' });
+                sendAck(ack, { ok: false, message: 'Group is no longer available' });
                 return;
             }
 
@@ -256,7 +260,7 @@ io.on('connection', (socket) => {
                 .populate('members', 'username');
 
             if (!updatedGroup) {
-                if (typeof ack === 'function') ack({ ok: false, message: 'Group not found' });
+                sendAck(ack, { ok: false, message: 'Group not found' });
                 return;
             }
 
@@ -270,15 +274,13 @@ io.on('connection', (socket) => {
                 group: updatedGroup
             });
 
-            if (typeof ack === 'function') {
-                ack({
-                    ok: true,
-                    history,
-                    group: updatedGroup
-                });
-            }
+            sendAck(ack, {
+                ok: true,
+                history,
+                group: updatedGroup
+            });
         } catch (error) {
-            if (typeof ack === 'function') ack({ ok: false, message: 'Failed to join group chat' });
+            sendAck(ack, { ok: false, message: 'Failed to join group chat' });
         }
     });
 
@@ -296,12 +298,12 @@ io.on('connection', (socket) => {
             const normalizedText = String(text || '').trim();
 
             if (!normalizedGroupId || !mongoose.Types.ObjectId.isValid(normalizedGroupId)) {
-                if (typeof ack === 'function') ack({ ok: false, message: 'Valid group id is required' });
+                sendAck(ack, { ok: false, message: 'Valid group id is required' });
                 return;
             }
 
             if (!normalizedText) {
-                if (typeof ack === 'function') ack({ ok: false, message: 'Message text is required' });
+                sendAck(ack, { ok: false, message: 'Message text is required' });
                 return;
             }
 
@@ -323,11 +325,9 @@ io.on('connection', (socket) => {
 
             io.to(`group:${normalizedGroupId}`).emit('group:message:new', messagePayload);
 
-            if (typeof ack === 'function') {
-                ack({ ok: true, message: messagePayload });
-            }
+            sendAck(ack, { ok: true, message: messagePayload });
         } catch (error) {
-            if (typeof ack === 'function') ack({ ok: false, message: 'Failed to send message' });
+            sendAck(ack, { ok: false, message: 'Failed to send message' });
         }
     });
 
