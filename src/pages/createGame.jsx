@@ -23,6 +23,11 @@ export default function CreateGame() {
         e.preventDefault();
         setMessage("");
         try {
+            const trimmedName = name.trim();
+            if (!trimmedName) {
+                throw new Error("Game name cannot be empty");
+            }
+
             let imageData = null;
             if (selectedImage) {
                 imageData = await fileToDataUrl(selectedImage);
@@ -36,7 +41,7 @@ export default function CreateGame() {
             }
 
             const body = {
-                name: name.trim(),
+                name: trimmedName,
                 genres: formattedGenres,
                 platforms: formattedPlatforms,
                 image: imageData

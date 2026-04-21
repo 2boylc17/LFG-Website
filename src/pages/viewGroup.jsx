@@ -19,6 +19,8 @@ const getMessageFromResponse = async (response, fallbackMessage) => {
     return message;
 };
 
+const isValidObjectId = (value) => /^[a-f\d]{24}$/i.test(String(value || ""));
+
 export default function ViewGroup() {
     const { groupId } = useParams();
     const [group, setGroup] = useState(null);
@@ -28,8 +30,11 @@ export default function ViewGroup() {
     const [messageInput, setMessageInput] = useState("");
     const [sending, setSending] = useState(false);
     const [joining, setJoining] = useState(false);
+    const [leaving, setLeaving] = useState(false);
+    const [removingMemberId, setRemovingMemberId] = useState("");
     const chatLogRef = useRef(null);
     const shouldAutoScrollRef = useRef(true);
+    const currentUsername = localStorage.getItem("username") || "";
 
     const groupTitle = group?.name || "Group";
 
@@ -133,6 +138,16 @@ export default function ViewGroup() {
     }, [groupId]);
 
     const handleJoinGroup = async () => {
+        if (!groupId || !isValidObjectId(groupId)) {
+            setError("Invalid group id");
+            return;
+        }
+
+        if (isCurrentUserMember) {
+            setError("You are already in this group");
+            return;
+        }
+
         try {
             setJoining(true);
             setError("");
@@ -179,6 +194,91 @@ export default function ViewGroup() {
         });
     };
 
+    const handleRemoveMember = async (memberId) => {
+        if (!memberId || !groupId) return;
+
+        if (!isCurrentUserOwner) {
+            setError("Only the group owner can remove members");
+            return;
+        }
+
+        if (!isValidObjectId(groupId) || !isValidObjectId(memberId)) {
+            setError("Invalid group or member id");
+            return;
+        }
+
+        try {
+            setRemovingMemberId(memberId);
+            setError("");
+
+            const response = await fetch(`/api/groups/remove-member/${encodeURIComponent(groupId)}/${encodeURIComponent(memberId)}`, {
+                method: "POST",
+                credentials: "include"
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data?.message || data?.error || "Failed to remove member");
+
+            if (data?.group) setGroup(data.group);
+        } catch (err) {
+            setError(err.message || "Failed to remove member");
+        } finally {
+            setRemovingMemberId("");
+        }
+    };
+
+    const handleLeaveGroup = async () => {
+        if (!groupId) return;
+
+        if (!isValidObjectId(groupId)) {
+            setError("Invalid group id");
+            return;
+        }
+
+        if (!isCurrentUserMember) {
+            setError("You are not a member of this group");
+            return;
+        }
+
+        try {
+            setLeaving(true);
+            setError("");
+
+            const response = await fetch(`/api/groups/leave/${encodeURIComponent(groupId)}`, {
+                method: "POST",
+                credentials: "include"
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data?.message || data?.error || "Failed to leave group");
+
+            const socket = getSocket();
+            if (socket) {
+                socket.emit("group:leave", { groupId });
+            }
+
+            if (data?.group) {
+                setGroup(data.group);
+            } else {
+                setGroup(null);
+                setMessages([]);
+                setError("You left the group.");
+            }
+        } catch (err) {
+            setError(err.message || "Failed to leave group");
+        } finally {
+            setLeaving(false);
+        }
+    };
+
+    const ownerId = String(group?.owner?._id || "");
+    const isCurrentUserMember = Boolean(
+        Array.isArray(group?.members) && group.members.some((member) => member?.username === currentUsername)
+    );
+    const isCurrentUserOwner = Boolean(
+        group?.owner?.username && currentUsername && group.owner.username === currentUsername
+    );
+
     return (
         <div className="page view-group-page">
             {loading ? <p>Loading group...</p> : null}
@@ -222,13 +322,42 @@ export default function ViewGroup() {
                         </div>
                         <p>Members: {Array.isArray(group.members) ? group.members.length : 0}</p>
                         {Array.isArray(group.members) && group.members.length > 0 ? (
-                            <p>
-                                Member Usernames: {group.members.map((member) => member?.username || "Unknown").join(", ")}
-                            </p>
+                            <div className="view-group-members-list">
+                                {group.members.map((member) => {
+                                    const memberId = String(member?._id || "");
+                                    const canRemove = isCurrentUserOwner && memberId && memberId !== ownerId;
+
+                                    return (
+                                        <div className="view-group-member-row" key={memberId || member?.username}>
+                                            <span>
+                                                {member?.username || "Unknown"}
+                                                {memberId === ownerId ? (
+                                                    <span className="view-group-owner-badge"> (Group Owner)</span>
+                                                ) : null}
+                                            </span>
+                                            {canRemove ? (
+                                                <button
+                                                    type="button"
+                                                    className="view-group-remove-member-btn"
+                                                    onClick={() => handleRemoveMember(memberId)}
+                                                    disabled={removingMemberId === memberId}
+                                                >
+                                                    {removingMemberId === memberId ? "Removing..." : "Remove"}
+                                                </button>
+                                            ) : null}
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         ) : null}
                         <button className="group-join-button" onClick={handleJoinGroup} disabled={joining}>
                             {joining ? "Joining..." : "Join Group"}
                         </button>
+                        {isCurrentUserMember ? (
+                            <button className="group-leave-button" onClick={handleLeaveGroup} disabled={leaving}>
+                                {leaving ? "Leaving..." : "Leave Group"}
+                            </button>
+                        ) : null}
                     </section>
 
                     <section className="view-group-card">

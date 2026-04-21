@@ -111,6 +111,28 @@ li {
   padding: 0;
   border: 2px solid #7d7d7d;
 }
+
+.auth-link-row {
+  position: absolute;
+  right: 3.25rem;
+  top: 80%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.nav-auth-link {
+  font-size: 0.92rem;
+  border: 1px solid #7d7d7d;
+  border-radius: 8px;
+  padding: 0.22rem 0.58rem;
+  background-color: #2d2d2d;
+}
+
+.nav-auth-link:hover {
+  background-color: #3b3b3b;
+}
 /* =============== END NAVBAR RELATED CLASSES =============== */
 
 
@@ -190,20 +212,94 @@ li {
 
 
 /* ================= LOGIN RELATED CLASSES ================= */
+.login-page {
+  margin-left: 15vw;
+  margin-top: 11vh;
+  width: calc(100vw - 15vw);
+  height: calc(100vh - 11vh);
+  display: grid;
+  place-items: center;
+  padding: 1.2rem;
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(86, 124, 86, 0.25), transparent 55%),
+    radial-gradient(circle at 80% 70%, rgba(96, 96, 96, 0.2), transparent 60%);
+}
+
 .login-container {
   background-color: #1D1D1D;
   color: #fff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 2rem;
-  border-radius: 80px;
+  width: min(460px, 94%);
+  border-radius: 20px;
   border: #7d7d7d solid 1px;
-  margin-left: 43vw;
-  margin-top: 40vh;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  width: 20vw;
+  padding: 2rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.32);
+}
+
+.login-container h2 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.login-copy {
+  margin: 0.55rem 0 1.2rem;
+  color: #d2d2d2;
+}
+
+.login-form {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.login-input {
+  background-color: #2d2d2d;
+  border: 1px solid #7d7d7d;
+  color: #fff;
+  border-radius: 10px;
+  padding: 0.65rem 0.8rem;
+  font-size: 1rem;
+}
+
+.login-input:focus {
+  outline: 2px solid #8ea685;
+  outline-offset: 1px;
+}
+
+.login-submit {
+  background-color: #33513a;
+  color: #fff;
+  border: 1px solid #7d7d7d;
+  border-radius: 10px;
+  padding: 0.65rem 0.8rem;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.login-submit:hover {
+  background-color: #3f6548;
+}
+
+.login-toggle {
+  margin-top: 0.85rem;
+  background: transparent;
+  border: none;
+  color: #c8d7c1;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.login-error {
+  margin-top: 0.8rem;
+  color: #ff9e9e;
+}
+
+@media (max-width: 900px) {
+  .login-page {
+    margin-left: 0;
+    width: 100vw;
+  }
 }
 /* =============== END LOGIN RELATED CLASSES =============== */
 
@@ -702,6 +798,48 @@ li {
   color: #cfcfcf;
 }
 
+.view-group-members-list {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.view-group-member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #4a4a4a;
+  border-radius: 8px;
+  background-color: #2a2a2a;
+  padding: 0.45rem 0.6rem;
+}
+
+.view-group-member-row span {
+  color: #fff;
+}
+
+.view-group-owner-badge {
+  color: #4b3232;
+  font-weight: 700;
+}
+
+.view-group-remove-member-btn {
+  border: 1px solid #7d7d7d;
+  border-radius: 8px;
+  background-color: #3a2a2a;
+  color: #fff;
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
+}
+
+.view-group-remove-member-btn:hover:not(:disabled) {
+  background-color: #4a3434;
+}
+
+.view-group-remove-member-btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
 .group-chat-log {
   background-color: #111;
   border: 1px solid #444;
@@ -749,6 +887,21 @@ li {
   border-radius: 8px;
   padding: 0.5rem 0.85rem;
   font-weight: 700;
+}
+
+.group-leave-button {
+  margin-top: 0.55rem;
+  border-radius: 8px;
+  padding: 0.5rem 0.85rem;
+  font-weight: 700;
+  border: 1px solid #7d7d7d;
+  background-color: #3a2626;
+  color: #fff;
+}
+
+.group-leave-button:hover {
+  cursor: pointer;
+  background-color: #4b3232;
 }
 
 .create-group-tag-add:hover,

@@ -13,8 +13,10 @@ const requestJson = async (url, options = {}) => {
 
 export default function Settings({ isLoggedIn, onLogin }) {
     const navigate = useNavigate();
+    const currentUsername = localStorage.getItem('username') || '';
 
     const [profile, setProfile] = useState({ bio: '', platforms: [], playStyle: '' });
+    const [initialProfile, setInitialProfile] = useState({ bio: '', platforms: [], playStyle: '' });
     const [usernameForm, setUsernameForm] = useState({ newUsername: '', password: '' });
     const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
     const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
@@ -34,6 +36,11 @@ export default function Settings({ isLoggedIn, onLogin }) {
             try {
                 const { data } = await requestJson('/api/settings', { credentials: 'include' });
                 setProfile({
+                    bio: data.bio || '',
+                    platforms: data.platforms || [],
+                    playStyle: data.playStyle || ''
+                });
+                setInitialProfile({
                     bio: data.bio || '',
                     platforms: data.platforms || [],
                     playStyle: data.playStyle || ''
@@ -67,6 +74,23 @@ export default function Settings({ isLoggedIn, onLogin }) {
     const handleProfileSave = async (e) => {
         e.preventDefault();
         setProfileMsg(EMPTY_MSG);
+
+        const normalizedProfile = {
+            bio: String(profile.bio || '').trim(),
+            platforms: [...(profile.platforms || [])].sort(),
+            playStyle: String(profile.playStyle || '').trim()
+        };
+        const normalizedInitial = {
+            bio: String(initialProfile.bio || '').trim(),
+            platforms: [...(initialProfile.platforms || [])].sort(),
+            playStyle: String(initialProfile.playStyle || '').trim()
+        };
+
+        if (JSON.stringify(normalizedProfile) === JSON.stringify(normalizedInitial)) {
+            setProfileMsg({ text: 'No profile changes to save.', error: false });
+            return;
+        }
+
         try {
             const { ok, data } = await requestJson('/api/settings/profile', {
                 method: 'PUT',
@@ -75,6 +99,13 @@ export default function Settings({ isLoggedIn, onLogin }) {
                 body: JSON.stringify({ bio: profile.bio, platforms: profile.platforms, playStyle: profile.playStyle })
             });
             setProfileMsg({ text: ok ? 'Profile saved.' : data.message, error: !ok });
+            if (ok) {
+                setInitialProfile({
+                    bio: profile.bio || '',
+                    platforms: profile.platforms || [],
+                    playStyle: profile.playStyle || ''
+                });
+            }
         } catch {
             setProfileMsg({ text: 'Something went wrong.', error: true });
         }
@@ -84,12 +115,26 @@ export default function Settings({ isLoggedIn, onLogin }) {
     const handleUsernameChange = async (e) => {
         e.preventDefault();
         setUsernameMsg(EMPTY_MSG);
+
+        const newUsername = String(usernameForm.newUsername || '').trim();
+        const password = String(usernameForm.password || '').trim();
+
+        if (!newUsername || !password) {
+            setUsernameMsg({ text: 'New username and current password are required.', error: true });
+            return;
+        }
+
+        if (newUsername === currentUsername) {
+            setUsernameMsg({ text: 'New username must be different from current username.', error: true });
+            return;
+        }
+
         try {
             const { ok, data } = await requestJson('/api/settings/username', {
                 method: 'PUT',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(usernameForm)
+                body: JSON.stringify({ newUsername, password })
             });
             if (ok) {
                 setUsernameMsg({ text: 'Username updated. Please log in again.', error: false });
@@ -108,8 +153,20 @@ export default function Settings({ isLoggedIn, onLogin }) {
     const handlePasswordChange = async (e) => {
         e.preventDefault();
         setPasswordMsg(EMPTY_MSG);
+        if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+            setPasswordMsg({ text: 'All password fields are required.', error: true });
+            return;
+        }
         if (passwordForm.newPassword !== passwordForm.confirmPassword) {
             setPasswordMsg({ text: 'New passwords do not match.', error: true });
+            return;
+        }
+        if (passwordForm.newPassword.length < 6) {
+            setPasswordMsg({ text: 'New password must be at least 6 characters.', error: true });
+            return;
+        }
+        if (passwordForm.currentPassword === passwordForm.newPassword) {
+            setPasswordMsg({ text: 'New password must be different from current password.', error: true });
             return;
         }
         try {

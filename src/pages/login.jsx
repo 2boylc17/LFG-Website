@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 export default function Login({ onLogin }) {
 	const [isRegistering, setIsRegistering] = useState(false);
@@ -7,11 +7,22 @@ export default function Login({ onLogin }) {
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
 	const navigate = useNavigate();
+	const [searchParams] = useSearchParams();
+
+	useEffect(() => {
+		const mode = (searchParams.get("mode") || "").toLowerCase();
+		setIsRegistering(mode === "register");
+		setError("");
+	}, [searchParams]);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		const u = username.trim(), p = password.trim();
 		if (!u || !p) { setError("Enter a username and password"); return; }
+		if (isRegistering && p.length < 6) {
+			setError("Password must be at least 6 characters");
+			return;
+		}
 		setError("");
 		try {
 			const res = await fetch(isRegistering ? '/api/auth/register' : '/api/auth/login', {
@@ -30,17 +41,36 @@ export default function Login({ onLogin }) {
 	};
 
 	return (
-		<div className="login-container">
-			<h2>{isRegistering ? "Register" : "Login"}</h2>
-			<form onSubmit={handleSubmit}>
-				<input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
-				<input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-				<button type="submit">{isRegistering ? "Register" : "Login"}</button>
-			</form>
-			<p style={{ cursor: "pointer" }} onClick={() => { setIsRegistering((r) => !r); setError(""); }}>
-				{isRegistering ? "Already have an account? Login here." : "Don't have an account? Register here."}
-			</p>
-			{error && <p className="error">{error}</p>}
+		<div className="login-page">
+			<div className="login-container">
+				<h2>{isRegistering ? "Create Account" : "Welcome Back"}</h2>
+				<p className="login-copy">{isRegistering ? "Join and start creating groups." : "Sign in to create and manage your groups."}</p>
+				<form className="login-form" onSubmit={handleSubmit}>
+					<input
+						className="login-input"
+						type="text"
+						placeholder="Username"
+						value={username}
+						onChange={(e) => setUsername(e.target.value)}
+					/>
+					<input
+						className="login-input"
+						type="password"
+						placeholder="Password"
+						value={password}
+						onChange={(e) => setPassword(e.target.value)}
+					/>
+					<button className="login-submit" type="submit">{isRegistering ? "Register" : "Login"}</button>
+				</form>
+				<button
+					type="button"
+					className="login-toggle"
+					onClick={() => { setIsRegistering((r) => !r); setError(""); }}
+				>
+					{isRegistering ? "Already have an account? Login here." : "Don't have an account? Register here."}
+				</button>
+				{error && <p className="error login-error">{error}</p>}
+			</div>
 		</div>
 	);
 }

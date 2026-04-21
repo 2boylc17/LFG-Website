@@ -24,7 +24,10 @@ export default function Navbar({
                     <Link className="log-link" onClick={handleLogout}>Logout</Link>
                 </>
             ) : (
-                <Link className="log-link" to="/login">Login</Link>
+              <div className="auth-link-row">
+                <Link className="nav-auth-link" to="/login">Login</Link>
+                <Link className="nav-auth-link" to="/login?mode=register">Register</Link>
+              </div>
             )}
             <Link to="/settings" title="Settings" className="settings-link">
                 ⚙️

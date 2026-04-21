@@ -106,6 +106,7 @@ const removeUserFromGroup = async (groupId, userId) => {
         { $pull: { members: userId } },
         { new: true }
     )
+        .populate('owner', 'username')
         .populate('game', 'name')
         .populate('members', 'username');
 
@@ -123,6 +124,17 @@ const removeUserFromGroup = async (groupId, userId) => {
             message: 'Group is no longer available'
         });
         return null;
+    }
+
+    const ownerId = String(group.owner?._id || group.owner || '');
+    const removedUserId = String(userId || '');
+    if (!ownerId || ownerId === removedUserId) {
+        const nextOwner = group.members[0]?._id;
+        if (nextOwner) {
+            group.owner = nextOwner;
+            await group.save();
+            await group.populate('owner', 'username');
+        }
     }
 
     io.to(`group:${groupId}`).emit('group:members:updated', {
@@ -256,12 +268,19 @@ io.on('connection', (socket) => {
                 { $addToSet: { members: socket.userId } },
                 { new: true }
             )
+                .populate('owner', 'username')
                 .populate('game', 'name')
                 .populate('members', 'username');
 
             if (!updatedGroup) {
                 sendAck(ack, { ok: false, message: 'Group not found' });
                 return;
+            }
+
+            if (!updatedGroup.owner && Array.isArray(updatedGroup.members) && updatedGroup.members.length > 0) {
+                updatedGroup.owner = updatedGroup.members[0]._id;
+                await updatedGroup.save();
+                await updatedGroup.populate('owner', 'username');
             }
 
             socket.join(`group:${groupId}`);

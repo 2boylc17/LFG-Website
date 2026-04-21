@@ -96,7 +96,7 @@ export default function App() {
     return (
         <Router>
             <Navbar isLoggedIn={isLoggedIn} onLogout={handleLogout} username={username} />
-            <Sidebar />
+            <Sidebar isLoggedIn={isLoggedIn} />
             <main>
                 <Routes>
                     <Route path="/" element={<Games />} />

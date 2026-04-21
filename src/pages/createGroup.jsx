@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
 const TAG_SECTIONS = [
@@ -46,6 +47,7 @@ const getImageSrc = (image) => {
 
 export default function CreateGroup() {
 	const { gameSlug } = useParams();
+	const navigate = useNavigate();
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
 	const [platform, setPlatform] = useState("");
@@ -103,12 +105,6 @@ export default function CreateGroup() {
 		fetchGameDetails();
 	}, [selectedGameName]);
 
-	useEffect(() => {
-		if (!platform && availablePlatforms.length > 0) {
-			setPlatform(availablePlatforms[0]);
-		}
-	}, [availablePlatforms, platform]);
-
 	const setTag = (sectionKey, value) => {
 		setTags((prev) => ({ ...prev, [sectionKey]: value }));
 	};
@@ -151,8 +147,8 @@ export default function CreateGroup() {
 				throw new Error('Missing game context. Open this page from a game details page.');
 			}
 
-			if (!platform.trim()) {
-				throw new Error('Select a platform before creating a group.');
+			if (!body.name || !body.description || !body.platform || !body.experience || !body.microphone || !body.region) {
+				throw new Error('Name, description, platform, experience, microphone, and region are required.');
 			}
 
 			const response = await fetch(`/api/groups/add/${encodeURIComponent(selectedGameName)}`, {
@@ -167,13 +163,17 @@ export default function CreateGroup() {
 				throw new Error(data.error || data.message || 'Add group failed');
 			}
 
+			if (!data?.groupId) {
+				throw new Error('Group created but no group id was returned');
+			}
+
 			setName("");
 			setDescription("");
 			setPlatform("");
 			setTags({ experience: "", microphone: "", region: "" });
 			setExtraTags([]);
 			setExtraTagInput("");
-			setMessage('Group added successfully');
+			navigate(`/group/${data.groupId}`);
 		} catch (error) {
 			setMessage(`Error: ${error.message}`);
 		}
@@ -215,6 +215,7 @@ export default function CreateGroup() {
 						type="text"
 						value={description}
 						onChange={(e) => setDescription(e.target.value)}
+						required
 					/>
 				</div>
 				<div className="create-group-field">
@@ -227,7 +228,9 @@ export default function CreateGroup() {
 					>
 						{availablePlatforms.length === 0 ? (
 							<option value="">No platforms available</option>
-						) : null}
+						) : (
+							<option value="">Select platform</option>
+						)}
 						{availablePlatforms.map((platformName) => (
 							<option key={platformName} value={platformName}>{platformName}</option>
 						))}
@@ -240,6 +243,7 @@ export default function CreateGroup() {
 							<select
 								value={tags[section.key]}
 								onChange={(e) => setTag(section.key, e.target.value)}
+								required
 							>
 								<option value="">Select {section.label.toLowerCase()}...</option>
 								{section.options.map((opt) => (
