@@ -23,6 +23,8 @@ export default function GamesPage() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [pageSize, setPageSize] = useState(6);
+	const [selectedTag, setSelectedTag] = useState("");
+	const [sortOrder, setSortOrder] = useState("name-asc");
 	const {
 		searchTerm,
 		setSearchTerm,
@@ -30,6 +32,10 @@ export default function GamesPage() {
 		setCurrentPage,
 		paginate
 	} = useSearchPagination(games, pageSize);
+
+	useEffect(() => {
+		setCurrentPage(1);
+	}, [selectedTag, sortOrder, setCurrentPage]);
 
 	useEffect(() => {
 		const fetchGames = async () => {
@@ -53,8 +59,25 @@ export default function GamesPage() {
 	}, []);
 
 	const q = debouncedSearch.trim().toLowerCase();
-	const filteredGames = games.filter((game) => gameMatchesQuery(game, q));
-	const { totalPages, safePage, pagedItems: pagedGames } = paginate(filteredGames);
+	const availableTags = Array.from(new Set(games.flatMap((game) => [
+		...(game.genres || []).map((genre) => String(genre?.name || "").trim()),
+		...(game.platforms || []).map((platform) => String(platform?.name || "").trim())
+	]).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+
+	const filteredGames = games.filter((game) => {
+		if (!gameMatchesQuery(game, q)) return false;
+		if (!selectedTag) return true;
+		const genreTags = (game.genres || []).map((genre) => String(genre?.name || "").trim());
+		const platformTags = (game.platforms || []).map((platform) => String(platform?.name || "").trim());
+		return [...genreTags, ...platformTags].includes(selectedTag);
+	});
+
+	const sortedGames = [...filteredGames].sort((a, b) => {
+		const cmp = String(a.name || "").localeCompare(String(b.name || ""));
+		return sortOrder === "name-desc" ? -cmp : cmp;
+	});
+
+	const { totalPages, safePage, pagedItems: pagedGames } = paginate(sortedGames);
 
 	return (
 		<div className="page">
@@ -82,6 +105,34 @@ export default function GamesPage() {
 						<option value={9}>9</option>
 						<option value={12}>12</option>
 					</select>
+				</div>
+				<div className="games-filters">
+					<div className="games-page-size games-filter-block">
+						<label htmlFor="games-tag-filter">Filter tag</label>
+						<select
+							id="games-tag-filter"
+							value={selectedTag}
+							onChange={(e) => setSelectedTag(e.target.value)}
+							className="games-select"
+						>
+							<option value="">All tags</option>
+							{availableTags.map((tag) => (
+								<option key={tag} value={tag}>{tag}</option>
+							))}
+						</select>
+					</div>
+					<div className="games-page-size games-filter-block">
+						<label htmlFor="games-sort-order">Order</label>
+						<select
+							id="games-sort-order"
+							value={sortOrder}
+							onChange={(e) => setSortOrder(e.target.value)}
+							className="games-select"
+						>
+							<option value="name-asc">Name A-Z</option>
+							<option value="name-desc">Name Z-A</option>
+						</select>
+					</div>
 				</div>
 			</div>
 

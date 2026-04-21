@@ -10,6 +10,8 @@ export default function GameDetails() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const pageSize = 6;
+	const [selectedTag, setSelectedTag] = useState("");
+	const [sortOrder, setSortOrder] = useState("newest");
 	const {
 		searchTerm,
 		setSearchTerm,
@@ -17,6 +19,10 @@ export default function GameDetails() {
 		setCurrentPage,
 		paginate
 	} = useSearchPagination(groups, pageSize);
+
+	useEffect(() => {
+		setCurrentPage(1);
+	}, [selectedTag, sortOrder, setCurrentPage]);
 
 	useEffect(() => {
 		window.scrollTo({ top: 0, behavior: "auto" });
@@ -47,8 +53,36 @@ export default function GameDetails() {
 	}, [gameSlug]);
 
 	const q = debouncedSearch.trim().toLowerCase();
-	const filteredGroups = groups.filter((group) => groupMatchesQuery(group, q));
-	const { totalPages, safePage, pagedItems: pagedGroups } = paginate(filteredGroups);
+	const availableTags = Array.from(new Set(groups.flatMap((group) => [
+		...(group.tags || []).map((tag) => String(tag || "").trim()),
+		String(group.platform || "").trim(),
+		String(group.experience || "").trim(),
+		String(group.microphone || "").trim(),
+		String(group.region || "").trim()
+	]).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+
+	const filteredGroups = groups.filter((group) => {
+		if (!groupMatchesQuery(group, q)) return false;
+		if (!selectedTag) return true;
+		const groupTags = [
+			...(group.tags || []).map((tag) => String(tag || "").trim()),
+			String(group.platform || "").trim(),
+			String(group.experience || "").trim(),
+			String(group.microphone || "").trim(),
+			String(group.region || "").trim()
+		].filter(Boolean);
+		return groupTags.includes(selectedTag);
+	});
+
+	const sortedGroups = [...filteredGroups].sort((a, b) => {
+		if (sortOrder === "name-asc") return String(a.name || "").localeCompare(String(b.name || ""));
+		if (sortOrder === "name-desc") return String(b.name || "").localeCompare(String(a.name || ""));
+		const aTime = new Date(a.createdAt || 0).getTime();
+		const bTime = new Date(b.createdAt || 0).getTime();
+		return sortOrder === "oldest" ? aTime - bTime : bTime - aTime;
+	});
+
+	const { totalPages, safePage, pagedItems: pagedGroups } = paginate(sortedGroups);
 
 	return (
 		<div className="page">
@@ -73,6 +107,36 @@ export default function GameDetails() {
 							&times;
 						</button>
 					)}
+				</div>
+				<div className="games-filters">
+					<div className="games-page-size games-filter-block">
+						<label htmlFor="groups-tag-filter">Filter tag</label>
+						<select
+							id="groups-tag-filter"
+							value={selectedTag}
+							onChange={(e) => setSelectedTag(e.target.value)}
+							className="games-select"
+						>
+							<option value="">All tags</option>
+							{availableTags.map((tag) => (
+								<option key={tag} value={tag}>{tag}</option>
+							))}
+						</select>
+					</div>
+					<div className="games-page-size games-filter-block">
+						<label htmlFor="groups-sort-order">Order</label>
+						<select
+							id="groups-sort-order"
+							value={sortOrder}
+							onChange={(e) => setSortOrder(e.target.value)}
+							className="games-select"
+						>
+							<option value="newest">Newest first</option>
+							<option value="oldest">Oldest first</option>
+							<option value="name-asc">Name A-Z</option>
+							<option value="name-desc">Name Z-A</option>
+						</select>
+					</div>
 				</div>
 				<Link className="create-group-link" to={`/createGroup/${encodeURIComponent(gameSlug || "")}`}>
 					Create Group For This Game

@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Navbar from "./pages/components/navbar.jsx";
 import Sidebar from "./pages/components/sidebar.jsx";
-import Home from "./pages/home.jsx";
 import Login from "./pages/login.jsx";
 import Games from "./pages/games.jsx";
 import GameDetails from "./pages/gameDetails.jsx";
@@ -12,6 +11,7 @@ import CreateGame from "./pages/createGame.jsx";
 import CreateGroup from "./pages/createGroup.jsx";
 import SocketTest from "./pages/socketTest.jsx";
 import Settings from "./pages/settings.jsx";
+import Calendar from "./pages/calendar.jsx";
 import { connectSocket, disconnectSocket } from "./lib/socket.js";
 
 export default function App() {
@@ -99,7 +99,7 @@ export default function App() {
             <Sidebar />
             <main>
                 <Routes>
-                    <Route path="/" element={<Home />} />
+                    <Route path="/" element={<Games />} />
                     <Route path="/login" element={<Login onLogin={handleLogin} />} />
                     <Route path="/createGame" element={<CreateGame />} />
                     <Route path="/createGroup" element={<CreateGroup />} />
@@ -108,6 +108,7 @@ export default function App() {
                     <Route path="/games/:gameSlug" element={<GameDetails />} />
                     <Route path="/group/:groupId" element={<ViewGroup />} />
                     <Route path="/socket-test" element={<SocketTest />} />
+                    <Route path="/calendar" element={<Calendar />} />
                     <Route path="/settings" element={<Settings isLoggedIn={isLoggedIn} onLogin={handleLogin} />} />
                 </Routes>
             </main>
