@@ -5,7 +5,7 @@ import Navbar from "./pages/components/navbar.jsx";
 import Sidebar from "./pages/components/sidebar.jsx";
 import Login from "./pages/login.jsx";
 import Games from "./pages/games.jsx";
-import GameDetails from "./pages/gameDetails.jsx";
+import ViewGroups from "./pages/viewGroups.jsx";
 import ViewGroup from "./pages/viewGroup.jsx";
 import CreateGame from "./pages/createGame.jsx";
 import CreateGroup from "./pages/createGroup.jsx";
@@ -105,7 +105,7 @@ export default function App() {
                     <Route path="/createGroup" element={<CreateGroup />} />
                     <Route path="/createGroup/:gameSlug" element={<CreateGroup />} />
                     <Route path="/games" element={<Games />} />
-                    <Route path="/games/:gameSlug" element={<GameDetails />} />
+                    <Route path="/games/:gameSlug" element={<ViewGroups />} />
                     <Route path="/group/:groupId" element={<ViewGroup />} />
                     <Route path="/socket-test" element={<SocketTest />} />
                     <Route path="/calendar" element={<Calendar />} />

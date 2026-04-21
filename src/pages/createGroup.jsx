@@ -51,6 +51,8 @@ export default function CreateGroup() {
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
 	const [platform, setPlatform] = useState("");
+	const [joinRequirement, setJoinRequirement] = useState("auto");
+	const [joinPassword, setJoinPassword] = useState("");
 	const [tags, setTags] = useState({ experience: "", microphone: "", region: "" });
 	const [extraTags, setExtraTags] = useState([]);
 	const [extraTagInput, setExtraTagInput] = useState("");
@@ -139,6 +141,8 @@ export default function CreateGroup() {
 			experience: tags.experience.trim(),
 			microphone: tags.microphone.trim(),
 			region: tags.region.trim(),
+			joinRequirement,
+			joinPassword: joinRequirement === "password" ? joinPassword.trim() : "",
 			tags: extraTags
 		};
 
@@ -149,6 +153,10 @@ export default function CreateGroup() {
 
 			if (!body.name || !body.description || !body.platform || !body.experience || !body.microphone || !body.region) {
 				throw new Error('Name, description, platform, experience, microphone, and region are required.');
+			}
+
+			if (joinRequirement === "password" && !body.joinPassword) {
+				throw new Error('Set a group password for Password Protected join.');
 			}
 
 			const response = await fetch(`/api/groups/add/${encodeURIComponent(selectedGameName)}`, {
@@ -170,6 +178,8 @@ export default function CreateGroup() {
 			setName("");
 			setDescription("");
 			setPlatform("");
+			setJoinRequirement("auto");
+			setJoinPassword("");
 			setTags({ experience: "", microphone: "", region: "" });
 			setExtraTags([]);
 			setExtraTagInput("");
@@ -199,7 +209,7 @@ export default function CreateGroup() {
 						)}
 					</div>
 				) : null}
-				<form className="create-group-form" onSubmit={handleSubmit}>
+				<form className="create-group-form" onSubmit={handleSubmit} autoComplete="off">
 				<div className="create-group-field">
 					<label>Name:</label>
 					<input
@@ -218,6 +228,31 @@ export default function CreateGroup() {
 						required
 					/>
 				</div>
+				<div className="create-group-field">
+					<label>Join Requirements:</label>
+					<select
+						value={joinRequirement}
+						onChange={(e) => setJoinRequirement(e.target.value)}
+					>
+						<option value="auto">Auto Join</option>
+						<option value="password">Password Protected</option>
+						<option value="request">Request to Join</option>
+					</select>
+				</div>
+				{joinRequirement === "password" ? (
+					<div className="create-group-field">
+						<label>Group Password:</label>
+						<input
+							type="password"
+							name="group-create-password"
+							autoComplete="new-password"
+							value={joinPassword}
+							onChange={(e) => setJoinPassword(e.target.value)}
+							required
+							placeholder="Set join password"
+						/>
+					</div>
+				) : null}
 				<div className="create-group-field">
 					<label>Platform:</label>
 					<select

@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import useSearchPagination from "../lib/useSearchPagination.js";
 import { groupMatchesQuery } from "../lib/queryMatchers.js";
 
-export default function GameDetails() {
+export default function ViewGroups() {
 	const { gameSlug } = useParams();
 	const gameName = decodeURIComponent(gameSlug || "").replace(/-/g, " ");
 	const [groups, setGroups] = useState([]);
@@ -157,7 +157,7 @@ export default function GameDetails() {
 							<p>Platform: {group.platform || "Not specified"}</p>
 							<p>Members: {Array.isArray(group.members) ? group.members.length : 0}</p>
 							<Link className="view-group-link" to={`/group/${group._id}`}>
-								Open Group
+								Join Group
 							</Link>
 						</div>
 					</div>

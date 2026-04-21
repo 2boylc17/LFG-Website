@@ -741,12 +741,117 @@ li {
 .view-group-page {
   gap: 1rem;
   padding: 1.5rem;
+  position: relative;
 }
 
 .view-group-card {
   max-width: 900px;
   border-radius: 14px;
   padding: 1rem;
+}
+
+.view-group-header-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.view-group-header-row h1 {
+  margin: 0;
+}
+
+.view-group-created-inline {
+  font-size: 0.85rem;
+  color: #bfbfbf;
+}
+
+.view-group-id-inline {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: #9f9f9f;
+  letter-spacing: 0.03em;
+}
+
+.view-group-info-card {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: min(100%, 390px);
+  border: 1px solid #5a5a5a;
+  border-radius: 10px;
+  background-color: #242424;
+  padding: 0.8rem 0.85rem 0.6rem;
+  z-index: 3;
+}
+
+.view-group-info-text {
+  margin: 0;
+  color: #d5d5d5;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+@media (max-width: 1280px) {
+  .view-group-info-card {
+    position: static;
+    margin-left: auto;
+    margin-right: 0;
+    width: min(100%, 390px);
+  }
+}
+
+.view-group-game-row {
+  margin: 0.7rem 0 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.view-group-game-image {
+  width: 58px;
+  height: 58px;
+  border-radius: 10px;
+  border: 1px solid #7d7d7d;
+  object-fit: cover;
+}
+
+.view-group-game-image-fallback {
+  width: 58px;
+  height: 58px;
+  border-radius: 10px;
+  border: 1px solid #7d7d7d;
+  background-color: #2d2d2d;
+  color: #cfcfcf;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+}
+
+.view-group-game-name {
+  margin: 0;
+  font-size: 1rem;
+  color: #f2f2f2;
+}
+
+.view-group-required-tags {
+  margin-top: 0.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.view-group-required-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #8ea685;
+  border-radius: 999px;
+  background-color: #2f4030;
+  color: #fff;
+  padding: 0.42rem 0.86rem;
+  font-size: 0.95rem;
+  font-weight: 700;
 }
 
 .view-group-link {
@@ -763,18 +868,25 @@ li {
 
 .view-group-tags {
   display: grid;
-  gap: 0.8rem;
-  margin: 0.8rem 0;
+  gap: 0.45rem;
+  margin: 0.65rem 0;
 }
 
-.view-group-tag-section {
-  display: grid;
-  gap: 0.35rem;
+.view-group-join-panel {
+  margin: 0.5rem 0 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
-.view-group-tag-label {
-  margin: 0;
-  font-weight: 700;
+.view-group-join-password-input {
+  border: 1px solid #7d7d7d;
+  border-radius: 8px;
+  background-color: #2d2d2d;
+  color: #fff;
+  padding: 0.5rem 0.65rem;
+  min-width: 210px;
 }
 
 .view-group-tag-list {
@@ -791,6 +903,12 @@ li {
   background-color: #2d2d2d;
   color: #fff;
   padding: 0.32rem 0.7rem;
+}
+
+.view-group-tag-chip-optional {
+  font-size: 0.8rem;
+  opacity: 0.9;
+  padding: 0.26rem 0.62rem;
 }
 
 .view-group-tag-empty {
@@ -813,6 +931,12 @@ li {
   padding: 0.45rem 0.6rem;
 }
 
+.view-group-member-row.pending {
+  background-color: #2a2a2a;
+  border-color: #5a5a5a;
+  opacity: 0.68;
+}
+
 .view-group-member-row span {
   color: #fff;
 }
@@ -829,6 +953,24 @@ li {
   color: #fff;
   padding: 0.35rem 0.7rem;
   cursor: pointer;
+}
+
+.view-group-pending-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.view-group-approve-member-btn {
+  border: 1px solid #7d7d7d;
+  border-radius: 8px;
+  background-color: #2a4030;
+  color: #fff;
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
+}
+
+.view-group-approve-member-btn:hover:not(:disabled) {
+  background-color: #36513f;
 }
 
 .view-group-remove-member-btn:hover:not(:disabled) {

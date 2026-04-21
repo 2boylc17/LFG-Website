@@ -1,12 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { connectSocket, getSocket } from "../lib/socket.js";
-
-const TAG_SECTIONS = [
-    { key: "experience", label: "Experience" },
-    { key: "microphone", label: "Microphone" },
-    { key: "region", label: "Region" }
-];
 
 const getMessageFromResponse = async (response, fallbackMessage) => {
     let message = fallbackMessage;
@@ -21,8 +15,28 @@ const getMessageFromResponse = async (response, fallbackMessage) => {
 
 const isValidObjectId = (value) => /^[a-f\d]{24}$/i.test(String(value || ""));
 
+const getImageSrc = (image) => {
+    if (!image?.data || !image?.contentType) return null;
+
+    if (image.data.type === "Buffer" && Array.isArray(image.data.data)) {
+        const bytes = new Uint8Array(image.data.data);
+        let binary = "";
+        for (let i = 0; i < bytes.length; i += 8192) {
+            binary += String.fromCharCode(...bytes.slice(i, i + 8192));
+        }
+        return `data:${image.contentType};base64,${btoa(binary)}`;
+    }
+
+    if (typeof image.data === "string") {
+        return `data:${image.contentType};base64,${image.data}`;
+    }
+
+    return null;
+};
+
 export default function ViewGroup() {
     const { groupId } = useParams();
+    const navigate = useNavigate();
     const [group, setGroup] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -31,7 +45,9 @@ export default function ViewGroup() {
     const [sending, setSending] = useState(false);
     const [joining, setJoining] = useState(false);
     const [leaving, setLeaving] = useState(false);
+    const [joinPassword, setJoinPassword] = useState("");
     const [removingMemberId, setRemovingMemberId] = useState("");
+    const [reviewingMemberId, setReviewingMemberId] = useState("");
     const chatLogRef = useRef(null);
     const shouldAutoScrollRef = useRef(true);
     const currentUsername = localStorage.getItem("username") || "";
@@ -83,8 +99,12 @@ export default function ViewGroup() {
         shouldAutoScrollRef.current = distanceFromBottom <= 24;
     };
 
+    const isCurrentUserMember = Boolean(
+        Array.isArray(group?.members) && group.members.some((member) => member?.username === currentUsername)
+    );
+
     useEffect(() => {
-        if (!groupId) return undefined;
+        if (!groupId || !isCurrentUserMember) return undefined;
 
         const groupIdStr = String(groupId);
 
@@ -135,6 +155,26 @@ export default function ViewGroup() {
             socket.off("group:members:updated", onMembersUpdated);
             socket.off("group:deleted", onGroupDeleted);
         };
+    }, [groupId, isCurrentUserMember]);
+
+    useEffect(() => {
+        if (!groupId) return undefined;
+
+        const socket = connectSocket();
+        const groupIdStr = String(groupId);
+
+        const onJoinRequestReviewed = (payload) => {
+            if (!payload || String(payload.groupId) !== groupIdStr) return;
+            if (payload.group) {
+                setGroup(payload.group);
+            }
+        };
+
+        socket.on("group:request:reviewed", onJoinRequestReviewed);
+
+        return () => {
+            socket.off("group:request:reviewed", onJoinRequestReviewed);
+        };
     }, [groupId]);
 
     const handleJoinGroup = async () => {
@@ -144,7 +184,17 @@ export default function ViewGroup() {
         }
 
         if (isCurrentUserMember) {
-            setError("You are already in this group");
+            setError("You are already a member of this group");
+            return;
+        }
+
+        if (group?.joinRequirement === "request" && isCurrentUserPending) {
+            setError("Join request already sent");
+            return;
+        }
+
+        if (group?.joinRequirement === "password" && !joinPassword.trim()) {
+            setError("Enter the group password to join");
             return;
         }
 
@@ -154,13 +204,19 @@ export default function ViewGroup() {
 
             const response = await fetch(`/api/groups/join/${encodeURIComponent(groupId || "")}`, {
                 method: "POST",
-                credentials: "include"
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password: joinPassword.trim() })
             });
 
             const data = await response.json();
             if (!response.ok) throw new Error(data?.message || data?.error || "Failed to join group");
 
-            if (data?.group) setGroup(data.group);
+            if (data?.group) {
+                setGroup(data.group);
+            }
+
+            setJoinPassword("");
         } catch (err) {
             setError(err.message || "Failed to join group");
         } finally {
@@ -235,8 +291,8 @@ export default function ViewGroup() {
             return;
         }
 
-        if (!isCurrentUserMember) {
-            setError("You are not a member of this group");
+        if (!isCurrentUserMember && !isCurrentUserPending) {
+            setError("You are not in this group");
             return;
         }
 
@@ -262,8 +318,9 @@ export default function ViewGroup() {
             } else {
                 setGroup(null);
                 setMessages([]);
-                setError("You left the group.");
             }
+
+            navigate("/games");
         } catch (err) {
             setError(err.message || "Failed to leave group");
         } finally {
@@ -271,9 +328,42 @@ export default function ViewGroup() {
         }
     };
 
+    const handleReviewRequest = async (memberId, action) => {
+        if (!groupId || !memberId) return;
+        if (!isCurrentUserOwner) {
+            setError("Only the group owner can review requests");
+            return;
+        }
+
+        try {
+            setReviewingMemberId(memberId);
+            setError("");
+
+            const response = await fetch(`/api/groups/review-request/${encodeURIComponent(groupId)}/${encodeURIComponent(memberId)}`, {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action })
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data?.message || data?.error || "Failed to review request");
+
+            if (data?.group) setGroup(data.group);
+        } catch (err) {
+            setError(err.message || "Failed to review request");
+        } finally {
+            setReviewingMemberId("");
+        }
+    };
+
     const ownerId = String(group?.owner?._id || "");
-    const isCurrentUserMember = Boolean(
-        Array.isArray(group?.members) && group.members.some((member) => member?.username === currentUsername)
+    const requiredTags = [group?.platform, group?.experience, group?.microphone, group?.region].filter(Boolean);
+    const optionalTags = Array.isArray(group?.tags) ? group.tags.filter(Boolean) : [];
+    const pendingMembers = Array.isArray(group?.pendingMembers) ? group.pendingMembers : [];
+    const gameImageSrc = getImageSrc(group?.game?.image);
+    const isCurrentUserPending = Boolean(
+        pendingMembers.some((member) => member?.username === currentUsername)
     );
     const isCurrentUserOwner = Boolean(
         group?.owner?.username && currentUsername && group.owner.username === currentUsername
@@ -287,39 +377,68 @@ export default function ViewGroup() {
             {!loading && !error && group ? (
                 <>
                     <section className="view-group-card">
-                        <h1>{groupTitle}</h1>
-                        <p>{group.description || "No description provided"}</p>
-                        <p>You stay in the group for 20 seconds after leaving this page. Reopen it before the timer ends to remain a member.</p>
-                        <p>Group ID: {group._id}</p>
-                        <p>Created: {group.createdAt ? new Date(group.createdAt).toLocaleString() : "Unknown"}</p>
-                        <p>Game: {group.game?.name || "Unknown"}</p>
-                        <p>Platform: {group.platform || "Not specified"}</p>
-                        <div className="view-group-tags">
-                            {TAG_SECTIONS.map((section) => {
-                                const value = group[section.key];
-
-                                return (
-                                    <div className="view-group-tag-section" key={section.key}>
-                                        <p className="view-group-tag-label">{section.label}:</p>
-                                        {value ? (
-                                            <span className="view-group-tag-chip">{value}</span>
-                                        ) : (
-                                            <p className="view-group-tag-empty">No {section.label.toLowerCase()} set</p>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                            {Array.isArray(group.tags) && group.tags.length > 0 ? (
-                                <div className="view-group-tag-section">
-                                    <p className="view-group-tag-label">Tags:</p>
-                                    <div className="view-group-tag-list">
-                                        {group.tags.map((value) => (
-                                            <span key={value} className="view-group-tag-chip">{value}</span>
-                                        ))}
-                                    </div>
-                                </div>
-                            ) : null}
+                        <div className="view-group-header-row">
+                            <h1>{groupTitle}</h1>
+                            <span className="view-group-created-inline">
+                                {group.createdAt ? new Date(group.createdAt).toLocaleString() : "Unknown"}
+                            </span>
+                            <span className="view-group-id-inline">{group._id}</span>
                         </div>
+                        <p>{group.description || "No description provided"}</p>
+                        <div className="view-group-game-row">
+                            {gameImageSrc ? (
+                                <img src={gameImageSrc} alt={`${group.game?.name || "Game"} cover`} className="view-group-game-image" />
+                            ) : (
+                                <div className="view-group-game-image-fallback">No image</div>
+                            )}
+                            <p className="view-group-game-name">{group.game?.name || "Unknown"}</p>
+                        </div>
+                        <div className="view-group-required-tags">
+                            {requiredTags.map((value) => (
+                                <span key={value} className="view-group-required-tag-chip">{value}</span>
+                            ))}
+                        </div>
+                        <div className="view-group-tags">
+                            {optionalTags.length > 0 ? (
+                                <div className="view-group-tag-list">
+                                    {optionalTags.map((value) => (
+                                        <span key={value} className="view-group-tag-chip view-group-tag-chip-optional">{value}</span>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="view-group-tag-empty">No optional tags.</p>
+                            )}
+                        </div>
+                        {!isCurrentUserMember ? (
+                            <div className="view-group-join-panel">
+                                {group?.joinRequirement === "password" ? (
+                                    <>
+                                        <input
+                                            type="password"
+                                            name="group-join-password"
+                                            autoComplete="new-password"
+                                            value={joinPassword}
+                                            onChange={(e) => setJoinPassword(e.target.value)}
+                                            placeholder="Enter group password"
+                                            className="view-group-join-password-input"
+                                        />
+                                        <button className="group-join-button" onClick={handleJoinGroup} disabled={joining}>
+                                            {joining ? "Joining..." : "Join Group"}
+                                        </button>
+                                    </>
+                                ) : null}
+                                {group?.joinRequirement === "auto" ? (
+                                    <button className="group-join-button" onClick={handleJoinGroup} disabled={joining}>
+                                        {joining ? "Joining..." : "Join Group"}
+                                    </button>
+                                ) : null}
+                                {group?.joinRequirement === "request" ? (
+                                    <button className="group-join-button" onClick={handleJoinGroup} disabled={joining || isCurrentUserPending}>
+                                        {isCurrentUserPending ? "Request Sent" : (joining ? "Submitting..." : "Request to Join")}
+                                    </button>
+                                ) : null}
+                            </div>
+                        ) : null}
                         <p>Members: {Array.isArray(group.members) ? group.members.length : 0}</p>
                         {Array.isArray(group.members) && group.members.length > 0 ? (
                             <div className="view-group-members-list">
@@ -350,44 +469,85 @@ export default function ViewGroup() {
                                 })}
                             </div>
                         ) : null}
-                        <button className="group-join-button" onClick={handleJoinGroup} disabled={joining}>
-                            {joining ? "Joining..." : "Join Group"}
-                        </button>
-                        {isCurrentUserMember ? (
+                        {pendingMembers.length > 0 ? (
+                            <div className="view-group-members-list">
+                                {pendingMembers.map((member) => {
+                                    const memberId = String(member?._id || "");
+
+                                    return (
+                                        <div className="view-group-member-row pending" key={`pending-${memberId || member?.username}`}>
+                                            <span>
+                                                {member?.username || "Unknown"}
+                                                <span className="view-group-owner-badge"> (Pending)</span>
+                                            </span>
+                                            {isCurrentUserOwner ? (
+                                                <div className="view-group-pending-actions">
+                                                    <button
+                                                        type="button"
+                                                        className="view-group-approve-member-btn"
+                                                        onClick={() => handleReviewRequest(memberId, "approve")}
+                                                        disabled={reviewingMemberId === memberId}
+                                                    >
+                                                        {reviewingMemberId === memberId ? "Working..." : "Approve"}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="view-group-remove-member-btn"
+                                                        onClick={() => handleReviewRequest(memberId, "reject")}
+                                                        disabled={reviewingMemberId === memberId}
+                                                    >
+                                                        {reviewingMemberId === memberId ? "Working..." : "Kick"}
+                                                    </button>
+                                                </div>
+                                            ) : null}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : null}
+                        {(isCurrentUserMember || isCurrentUserPending) ? (
                             <button className="group-leave-button" onClick={handleLeaveGroup} disabled={leaving}>
-                                {leaving ? "Leaving..." : "Leave Group"}
+                                {leaving ? "Leaving..." : (isCurrentUserPending ? "Cancel Request" : "Leave Group")}
                             </button>
                         ) : null}
                     </section>
 
-                    <section className="view-group-card">
-                        <h2>Group Chat</h2>
-
-                        <div className="group-chat-log" ref={chatLogRef} onScroll={handleChatScroll}>
-                            {messages.length === 0 ? <p>No messages yet.</p> : null}
-                            {messages.map((msg) => (
-                                <div key={msg.id} className="group-chat-message">
-                                    <p className="group-chat-meta">
-                                        {msg.senderUsername || "Unknown"} - {new Date(msg.createdAt).toLocaleTimeString()}
-                                    </p>
-                                    <p>{msg.text}</p>
-                                </div>
-                            ))}
-                        </div>
-
-                        <form className="group-chat-form" onSubmit={handleSendMessage}>
-                            <input
-                                type="text"
-                                value={messageInput}
-                                onChange={(e) => setMessageInput(e.target.value)}
-                                placeholder="Send a message"
-                                maxLength={500}
-                            />
-                            <button type="submit" disabled={sending}>
-                                {sending ? "Sending..." : "Send"}
-                            </button>
-                        </form>
+                    <section className="view-group-info-card">
+                        <p className="view-group-info-text">
+                            You stay in the group for 20 seconds after leaving this page. Reopen it before the timer ends to remain a member.
+                        </p>
                     </section>
+
+                    {isCurrentUserMember ? (
+                        <section className="view-group-card">
+                            <h2>Group Chat</h2>
+
+                            <div className="group-chat-log" ref={chatLogRef} onScroll={handleChatScroll}>
+                                {messages.length === 0 ? <p>No messages yet.</p> : null}
+                                {messages.map((msg) => (
+                                    <div key={msg.id} className="group-chat-message">
+                                        <p className="group-chat-meta">
+                                            {msg.senderUsername || "Unknown"} - {new Date(msg.createdAt).toLocaleTimeString()}
+                                        </p>
+                                        <p>{msg.text}</p>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <form className="group-chat-form" onSubmit={handleSendMessage}>
+                                <input
+                                    type="text"
+                                    value={messageInput}
+                                    onChange={(e) => setMessageInput(e.target.value)}
+                                    placeholder="Send a message"
+                                    maxLength={500}
+                                />
+                                <button type="submit" disabled={sending}>
+                                    {sending ? "Sending..." : "Send"}
+                                </button>
+                            </form>
+                        </section>
+                    ) : null}
                 </>
             ) : null}
         </div>

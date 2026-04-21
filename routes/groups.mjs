@@ -1,11 +1,13 @@
 import express from 'express';
 import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
 import Group from '../models/Group.mjs';
 import Game from '../models/Game.mjs';
 import { validateToken } from '../utils/validateToken.mjs';
 
 const router = express.Router();
 const GROUP_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const JOIN_REQUIREMENTS = new Set(['auto', 'password', 'request']);
 const isValidId = (value) => mongoose.Types.ObjectId.isValid(value);
 const getAuthUserId = (req) => validateToken(req.cookies?.jwt)?.userId;
 
@@ -79,6 +81,8 @@ router.post('/add/:gameName', async (req, res) => {
 			experience,
 			microphone,
 			region,
+			joinRequirement,
+			joinPassword,
 			tags
 		} = req.body;
 		const gameNameFromPath = req.params.gameName ? decodeURIComponent(req.params.gameName).trim() : '';
@@ -90,6 +94,10 @@ router.post('/add/:gameName', async (req, res) => {
 		const normalizedExperience = String(experience || '').trim();
 		const normalizedMicrophone = String(microphone || '').trim();
 		const normalizedRegion = String(region || '').trim();
+		const normalizedJoinRequirement = JOIN_REQUIREMENTS.has(String(joinRequirement || '').trim())
+			? String(joinRequirement).trim()
+			: 'auto';
+		const normalizedJoinPassword = String(joinPassword || '').trim();
 
 		if (!creatorId || !isValidId(creatorId)) {
 			return res.status(401).json({ message: 'Authentication required' });
@@ -101,6 +109,15 @@ router.post('/add/:gameName', async (req, res) => {
 
 		if (!normalizedDescription || !normalizedPlatform || !normalizedExperience || !normalizedMicrophone || !normalizedRegion) {
 			return res.status(400).json({ message: 'Description, platform, experience, microphone, and region are required' });
+		}
+
+		if (normalizedJoinRequirement === 'password' && !normalizedJoinPassword) {
+			return res.status(400).json({ message: 'A group password is required when using Password Protected join' });
+		}
+
+		let joinPasswordHash = '';
+		if (normalizedJoinRequirement === 'password') {
+			joinPasswordHash = await bcrypt.hash(normalizedJoinPassword, 10);
 		}
 
 		let gameId = null;
@@ -124,9 +141,12 @@ router.post('/add/:gameName', async (req, res) => {
 			experience: normalizedExperience,
 			microphone: normalizedMicrophone,
 			region: normalizedRegion,
+			joinRequirement: normalizedJoinRequirement,
+			joinPasswordHash,
 			tags: normalizeTagArray(tags),
 			owner: creatorId,
-			members: [creatorId]
+			members: [creatorId],
+			pendingMembers: []
 		});
 
 		return res.status(201).json({ message: 'Group added successfully', groupId: newGroup._id });
@@ -141,6 +161,7 @@ router.post('/join/:groupId', async (req, res) => {
 	try {
 		const { groupId } = req.params;
 		const userId = getAuthUserId(req);
+		const providedPassword = String(req.body?.password || '').trim();
 
 		if (!userId || !isValidId(userId)) {
 			return res.status(401).json({ message: 'Authentication required' });
@@ -160,14 +181,63 @@ router.post('/join/:groupId', async (req, res) => {
 			return res.status(404).json({ message: 'Group is no longer available' });
 		}
 
+		if (Array.isArray(existingGroup.members) && existingGroup.members.some((memberId) => String(memberId) === String(userId))) {
+			const alreadyInGroup = await Group.findById(groupId)
+				.populate('owner', 'username')
+				.populate('game', 'name image')
+				.populate('members', 'username')
+				.populate('pendingMembers', 'username');
+			return res.status(200).json({ message: 'Already a member', status: 'member', group: alreadyInGroup });
+		}
+
+		if (existingGroup.joinRequirement === 'request') {
+			const requestedGroup = await Group.findByIdAndUpdate(
+				groupId,
+				{
+					$addToSet: { pendingMembers: userId },
+					$pull: { members: userId }
+				},
+				{ new: true }
+			)
+				.populate('owner', 'username')
+				.populate('game', 'name image')
+				.populate('members', 'username')
+				.populate('pendingMembers', 'username');
+
+			const io = req.app.get('io');
+			io?.to(`group:${groupId}`).emit('group:members:updated', {
+				groupId: String(groupId),
+				group: requestedGroup
+			});
+
+			return res.status(200).json({ message: 'Join request sent', status: 'pending', group: requestedGroup });
+		}
+
+		if (existingGroup.joinRequirement === 'password') {
+			if (!providedPassword) {
+				return res.status(400).json({ message: 'Password is required to join this group' });
+			}
+
+			const passwordValid = existingGroup.joinPasswordHash
+				? await bcrypt.compare(providedPassword, existingGroup.joinPasswordHash)
+				: false;
+			if (!passwordValid) {
+				return res.status(403).json({ message: 'Incorrect group password' });
+			}
+		}
+
 		const updatedGroup = await Group.findByIdAndUpdate(
 			groupId,
-			{ $addToSet: { members: userId } },
+			{
+				$addToSet: { members: userId },
+				$pull: { pendingMembers: userId }
+			},
 			{ new: true }
 		)
 			.populate('owner', 'username')
-			.populate('game', 'name')
-			.populate('members', 'username');
+			.populate('game', 'name image')
+			.populate('members', 'username')
+			.populate('pendingMembers', 'username');
 
 		if (!updatedGroup) {
 			return res.status(404).json({ message: 'Group not found' });
@@ -179,7 +249,13 @@ router.post('/join/:groupId', async (req, res) => {
 			await updatedGroup.populate('owner', 'username');
 		}
 
-		return res.status(200).json({ message: 'Joined group successfully', group: updatedGroup });
+		const io = req.app.get('io');
+		io?.to(`group:${groupId}`).emit('group:members:updated', {
+			groupId: String(groupId),
+			group: updatedGroup
+		});
+
+		return res.status(200).json({ message: 'Joined group successfully', status: 'member', group: updatedGroup });
 	} catch (err) {
 		console.error('Join group error:', err);
 		return res.status(500).json({ error: 'Internal server error' });
@@ -209,8 +285,9 @@ router.get('/list/:gameName', async (req, res) => {
 
 		const groups = await Group.find(getActiveGroupFilter(game._id))
 			.populate('owner', 'username')
-			.populate('game', 'name')
+			.populate('game', 'name image')
 			.populate('members', 'username')
+			.populate('pendingMembers', 'username')
 			.sort({ createdAt: -1 });
 
 		return res.status(200).json(groups);
@@ -233,8 +310,9 @@ router.get('/id/:groupId', async (req, res) => {
 
 		const group = await Group.findById(groupId)
 			.populate('owner', 'username')
-			.populate('game', 'name')
-			.populate('members', 'username');
+			.populate('game', 'name image')
+			.populate('members', 'username')
+			.populate('pendingMembers', 'username');
 
 		if (!group) {
 			return res.status(404).json({ message: 'Group not found' });
@@ -294,8 +372,9 @@ router.post('/remove-member/:groupId/:memberId', async (req, res) => {
 			{ new: true }
 		)
 			.populate('owner', 'username')
-			.populate('game', 'name')
-			.populate('members', 'username');
+			.populate('game', 'name image')
+			.populate('members', 'username')
+			.populate('pendingMembers', 'username');
 
 		if (!updatedGroup) {
 			return res.status(404).json({ message: 'Group not found' });
@@ -333,18 +412,20 @@ router.post('/leave/:groupId', async (req, res) => {
 		}
 
 		const isMember = Array.isArray(group.members) && group.members.some((memberId) => String(memberId) === String(userId));
-		if (!isMember) {
-			return res.status(400).json({ message: 'You are not a member of this group' });
+		const isPending = Array.isArray(group.pendingMembers) && group.pendingMembers.some((memberId) => String(memberId) === String(userId));
+		if (!isMember && !isPending) {
+			return res.status(400).json({ message: 'You are not in this group' });
 		}
 
 		const updatedGroup = await Group.findByIdAndUpdate(
 			groupId,
-			{ $pull: { members: userId } },
+			{ $pull: { members: userId, pendingMembers: userId } },
 			{ new: true }
 		)
 			.populate('owner', 'username')
-			.populate('game', 'name')
-			.populate('members', 'username');
+			.populate('game', 'name image')
+			.populate('members', 'username')
+			.populate('pendingMembers', 'username');
 
 		if (!updatedGroup || !Array.isArray(updatedGroup.members) || updatedGroup.members.length === 0) {
 			await Group.deleteOne({ _id: groupId });
@@ -372,6 +453,71 @@ router.post('/leave/:groupId', async (req, res) => {
 		return res.status(200).json({ message: 'Left group successfully', group: updatedGroup });
 	} catch (err) {
 		console.error('Leave group error:', err);
+		return res.status(500).json({ error: 'Internal server error' });
+	}
+});
+
+router.post('/review-request/:groupId/:memberId', async (req, res) => {
+	try {
+		const { groupId, memberId } = req.params;
+		const action = String(req.body?.action || '').trim().toLowerCase();
+		const requesterId = getAuthUserId(req);
+
+		if (!requesterId || !isValidId(requesterId)) {
+			return res.status(401).json({ message: 'Authentication required' });
+		}
+
+		if (!groupId || !isValidId(groupId) || !memberId || !isValidId(memberId)) {
+			return res.status(400).json({ message: 'Valid group id and member id are required' });
+		}
+
+		if (action !== 'approve' && action !== 'reject') {
+			return res.status(400).json({ message: 'Action must be approve or reject' });
+		}
+
+		const group = await Group.findById(groupId);
+		if (!group) {
+			return res.status(404).json({ message: 'Group not found' });
+		}
+
+		if (!group.owner || String(group.owner) !== String(requesterId)) {
+			return res.status(403).json({ message: 'Only the group owner can review requests' });
+		}
+
+		const pendingExists = Array.isArray(group.pendingMembers)
+			&& group.pendingMembers.some((pendingMemberId) => String(pendingMemberId) === String(memberId));
+		if (!pendingExists) {
+			return res.status(404).json({ message: 'Pending request not found' });
+		}
+
+		const update = action === 'approve'
+			? { $pull: { pendingMembers: memberId }, $addToSet: { members: memberId } }
+			: { $pull: { pendingMembers: memberId } };
+
+		const updatedGroup = await Group.findByIdAndUpdate(groupId, update, { new: true })
+			.populate('owner', 'username')
+			.populate('game', 'name image')
+			.populate('members', 'username')
+			.populate('pendingMembers', 'username');
+
+		const io = req.app.get('io');
+		io?.to(`group:${groupId}`).emit('group:members:updated', {
+			groupId: String(groupId),
+			group: updatedGroup
+		});
+
+		io?.to(`user:${String(memberId)}`).emit('group:request:reviewed', {
+			groupId: String(groupId),
+			action,
+			group: updatedGroup
+		});
+
+		return res.status(200).json({
+			message: action === 'approve' ? 'Member approved' : 'Member rejected',
+			group: updatedGroup
+		});
+	} catch (err) {
+		console.error('Review request error:', err);
 		return res.status(500).json({ error: 'Internal server error' });
 	}
 });

@@ -103,12 +103,13 @@ const sendAck = (ack, payload) => {
 const removeUserFromGroup = async (groupId, userId) => {
     const group = await Group.findByIdAndUpdate(
         groupId,
-        { $pull: { members: userId } },
+        { $pull: { members: userId, pendingMembers: userId } },
         { new: true }
     )
         .populate('owner', 'username')
-        .populate('game', 'name')
-        .populate('members', 'username');
+        .populate('game', 'name image')
+        .populate('members', 'username')
+        .populate('pendingMembers', 'username');
 
     if (!group) {
         groupChatHistory.delete(String(groupId));
@@ -263,24 +264,22 @@ io.on('connection', (socket) => {
                 return;
             }
 
-            const updatedGroup = await Group.findByIdAndUpdate(
-                groupId,
-                { $addToSet: { members: socket.userId } },
-                { new: true }
-            )
+            const userIsMember = Array.isArray(existingGroup.members)
+                && existingGroup.members.some((memberId) => String(memberId) === String(socket.userId));
+            if (!userIsMember) {
+                sendAck(ack, { ok: false, message: 'Join the group before entering chat' });
+                return;
+            }
+
+            const updatedGroup = await Group.findById(groupId)
                 .populate('owner', 'username')
-                .populate('game', 'name')
-                .populate('members', 'username');
+                .populate('game', 'name image')
+                .populate('members', 'username')
+                .populate('pendingMembers', 'username');
 
             if (!updatedGroup) {
                 sendAck(ack, { ok: false, message: 'Group not found' });
                 return;
-            }
-
-            if (!updatedGroup.owner && Array.isArray(updatedGroup.members) && updatedGroup.members.length > 0) {
-                updatedGroup.owner = updatedGroup.members[0]._id;
-                await updatedGroup.save();
-                await updatedGroup.populate('owner', 'username');
             }
 
             socket.join(`group:${groupId}`);
