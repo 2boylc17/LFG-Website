@@ -1,136 +1,47 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export default function Login({ onLogin, onLogout, isLoggedIn }) {
+export default function Login({ onLogin }) {
+	const [isRegistering, setIsRegistering] = useState(false);
+	const [username, setUsername] = useState("");
+	const [password, setPassword] = useState("");
+	const [error, setError] = useState("");
+	const navigate = useNavigate();
 
-    const [formData, setFormData] = useState({ username: "", password: "" });
-    const [message, setMessage] = useState("");
-    const [errorMessage, setErrorMessage] = useState("");
-    const navigate = useNavigate();
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		const u = username.trim(), p = password.trim();
+		if (!u || !p) { setError("Enter a username and password"); return; }
+		setError("");
+		try {
+			const res = await fetch(isRegistering ? '/api/auth/register' : '/api/auth/login', {
+				method: 'POST',
+				credentials: 'include',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ username: u, password: p })
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.message || (isRegistering ? 'Registration failed' : 'Login failed'));
+			onLogin(data.username || u);
+			navigate('/');
+		} catch (err) {
+			setError(err.message);
+		}
+	};
 
-    useEffect(() => {
-        if (isLoggedIn && onLogout) {
-            onLogout();
-        }
-    }, [isLoggedIn, onLogout]);
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        formData.username = document.getElementById("username").value;
-        formData.password = document.getElementById("password").value;
-
-        const trimmed = {
-            username: formData.username.trim(),
-            password: formData.password.trim()
-        }
-
-        alert(trimmed + "gap" + JSON.stringify(trimmed));
-
-        if (trimmed.username === "" || trimmed.password === "") {
-            setErrorMessage("Enter a Username and Password");
-            return;
-        } else {
-            fetch('/api/auth/login', {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(trimmed)
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('Login failed');
-                return response.json();
-            })
-            .then((data) => {
-                onLogin(trimmed.username);
-                navigate('/');
-            })
-            .catch(error => {
-                setErrorMessage("Invalid username or password");
-                console.error("Login error:", error);
-            });
-        };
-    };
-
-    const handleRegister = (e) => {
-        e.preventDefault();
-
-        formData.username = document.getElementById("username").value;
-        formData.username = formData.username.trim();
-        formData.password = document.getElementById("password").value;
-        formData.password = formData.password.trim();
-        
-        if (formData.username === "" || formData.password === "") {
-            setErrorMessage("Enter a Username and Password");
-            return;
-        } else {
-            alert(JSON.stringify(formData));
-            fetch('/api/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('Registration failed');
-                return response.json();
-            })
-            .then((data) => {
-                onLogin(data.username);
-                navigate('/home');
-            })
-            .catch(error => {
-                setErrorMessage("Username already exists or password is empty");
-                console.error("Registration error:", error);
-            });
-        };
-    };
-
-    const [newButton, setNewButton] = useState(
-        <button onClick={handleSubmit}>Login</button>
-    );
-
-    function buttonChangeRegister() {
-        setMessage("")
-        changeMessageLogin();
-        setNewButton(
-            <button onClick={handleRegister}>Register</button>
-        );
-    }
-
-    function buttonChangeLogin() {
-        setMessage("")
-        changeMessageRegister();
-        setNewButton(
-            <button onClick={handleSubmit}>Login</button>
-        );
-    }
-
-    const [changeMessage, setChangeMessage] = useState(
-        <p onClick={buttonChangeRegister}>Don't have an account? Register here.</p>
-    );
-
-    function changeMessageRegister() {
-        setChangeMessage(
-            <p onClick={buttonChangeRegister}>Don't have an account? Register here.</p>
-        );
-    }
-
-    function changeMessageLogin() {
-        setChangeMessage(
-            <p onClick={buttonChangeLogin}>Already have an account? Login here.</p>
-        );
-    }
-
-    return (
-        <div className="login-container">
-            <h2>Login</h2>
-            <form onSubmit={handleSubmit}>
-                <input type="text" id="username" placeholder="Username" value={formData.username.value} />
-                <input type="password" id="password" placeholder="Password" value={formData.password.value} />
-                {newButton}
-            </form>
-            {changeMessage}
-            {errorMessage && <p className="error">{errorMessage}</p>}
-        </div>
-    );
+	return (
+		<div className="login-container">
+			<h2>{isRegistering ? "Register" : "Login"}</h2>
+			<form onSubmit={handleSubmit}>
+				<input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
+				<input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+				<button type="submit">{isRegistering ? "Register" : "Login"}</button>
+			</form>
+			<p style={{ cursor: "pointer" }} onClick={() => { setIsRegistering((r) => !r); setError(""); }}>
+				{isRegistering ? "Already have an account? Login here." : "Don't have an account? Register here."}
+			</p>
+			{error && <p className="error">{error}</p>}
+		</div>
+	);
 }
+

@@ -9,6 +9,7 @@ import jwt from 'jsonwebtoken';
 import authRoutes from './routes/auth.mjs';
 import gameRoutes from './routes/games.mjs';
 import groupRoutes from './routes/groups.mjs';
+import settingsRoutes from './routes/settings.mjs';
 import Group from './models/Group.mjs';
 
 dotenv.config();
@@ -33,6 +34,7 @@ mongoose.connect(DB_URI).then(() =>
 app.use('/api/auth', authRoutes);
 app.use('/api/games', gameRoutes);
 app.use('/api/groups', groupRoutes);
+app.use('/api/settings', settingsRoutes);
 
 const server = ViteExpress.listen(app, PORT, () => {
     console.log(`Server running on port ${PORT}`);
@@ -49,6 +51,10 @@ app.set('io', io);
 
 const groupChatHistory = new Map();
 const MAX_GROUP_CHAT_MESSAGES = 100;
+const GROUP_LEAVE_GRACE_MS = 20 * 1000;
+const GROUP_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const activeGroupSessions = new Map();
+const pendingGroupRemovals = new Map();
 
 const parseCookieHeader = (rawCookieHeader) => {
     if (!rawCookieHeader) return {};
@@ -72,6 +78,94 @@ const rejectSocket = (next, message, code, details) => {
         details
     };
     return next(error);
+};
+
+const getMembershipKey = (groupId, userId) => `${groupId}:${userId}`;
+
+const isExpiredGroup = (group) => {
+    if (!group?.createdAt) return true;
+    return (Date.now() - new Date(group.createdAt).getTime()) >= GROUP_MAX_AGE_MS;
+};
+
+const clearPendingRemoval = (groupId, userId) => {
+    const membershipKey = getMembershipKey(groupId, userId);
+    const pendingTimeout = pendingGroupRemovals.get(membershipKey);
+    if (pendingTimeout) {
+        clearTimeout(pendingTimeout);
+        pendingGroupRemovals.delete(membershipKey);
+    }
+};
+
+const removeUserFromGroup = async (groupId, userId) => {
+    const group = await Group.findByIdAndUpdate(
+        groupId,
+        { $pull: { members: userId } },
+        { new: true }
+    )
+        .populate('game', 'name')
+        .populate('members', 'username');
+
+    if (!group) {
+        groupChatHistory.delete(String(groupId));
+        return null;
+    }
+
+    const shouldDelete = isExpiredGroup(group) || !Array.isArray(group.members) || group.members.length === 0;
+    if (shouldDelete) {
+        await Group.deleteOne({ _id: groupId });
+        groupChatHistory.delete(String(groupId));
+        io.to(`group:${groupId}`).emit('group:deleted', {
+            groupId: String(groupId),
+            message: 'Group is no longer available'
+        });
+        return null;
+    }
+
+    io.to(`group:${groupId}`).emit('group:members:updated', {
+        groupId: String(groupId),
+        group
+    });
+
+    return group;
+};
+
+const scheduleGroupRemoval = (groupId, userId) => {
+    clearPendingRemoval(groupId, userId);
+
+    const membershipKey = getMembershipKey(groupId, userId);
+    const timeoutId = setTimeout(async () => {
+        pendingGroupRemovals.delete(membershipKey);
+        try {
+            await removeUserFromGroup(groupId, userId);
+        } catch (error) {
+            console.error('Delayed group removal error:', error);
+        }
+    }, GROUP_LEAVE_GRACE_MS);
+
+    pendingGroupRemovals.set(membershipKey, timeoutId);
+};
+
+const trackActiveGroupSession = (groupId, userId, socketId) => {
+    const membershipKey = getMembershipKey(groupId, userId);
+    const existingSessions = activeGroupSessions.get(membershipKey) || new Set();
+    existingSessions.add(socketId);
+    activeGroupSessions.set(membershipKey, existingSessions);
+    clearPendingRemoval(groupId, userId);
+};
+
+const untrackActiveGroupSession = (groupId, userId, socketId) => {
+    const membershipKey = getMembershipKey(groupId, userId);
+    const existingSessions = activeGroupSessions.get(membershipKey);
+    if (!existingSessions) return;
+
+    existingSessions.delete(socketId);
+    if (existingSessions.size === 0) {
+        activeGroupSessions.delete(membershipKey);
+        scheduleGroupRemoval(groupId, userId);
+        return;
+    }
+
+    activeGroupSessions.set(membershipKey, existingSessions);
 };
 
 io.use((socket, next) => {
@@ -116,6 +210,7 @@ io.engine.on('connection_error', (error) => {
 
 io.on('connection', (socket) => {
     const userRoom = `user:${socket.userId}`;
+    socket.joinedGroupIds = new Set();
     socket.join(userRoom);
 
     socket.emit('socket:ready', {
@@ -139,6 +234,19 @@ io.on('connection', (socket) => {
                 return;
             }
 
+            const existingGroup = await Group.findById(groupId);
+            if (!existingGroup) {
+                if (typeof ack === 'function') ack({ ok: false, message: 'Group not found' });
+                return;
+            }
+
+            if (isExpiredGroup(existingGroup)) {
+                await Group.deleteOne({ _id: groupId });
+                groupChatHistory.delete(String(groupId));
+                if (typeof ack === 'function') ack({ ok: false, message: 'Group is no longer available' });
+                return;
+            }
+
             const updatedGroup = await Group.findByIdAndUpdate(
                 groupId,
                 { $addToSet: { members: socket.userId } },
@@ -153,6 +261,8 @@ io.on('connection', (socket) => {
             }
 
             socket.join(`group:${groupId}`);
+            socket.joinedGroupIds.add(String(groupId));
+            trackActiveGroupSession(String(groupId), String(socket.userId), socket.id);
             const history = groupChatHistory.get(groupId) || [];
 
             io.to(`group:${groupId}`).emit('group:members:updated', {
@@ -174,7 +284,10 @@ io.on('connection', (socket) => {
 
     socket.on('group:leave', ({ groupId }) => {
         if (!groupId) return;
+        const normalizedGroupId = String(groupId);
+        socket.joinedGroupIds?.delete(normalizedGroupId);
         socket.leave(`group:${groupId}`);
+        untrackActiveGroupSession(normalizedGroupId, String(socket.userId), socket.id);
     });
 
     socket.on('group:message:send', ({ groupId, text }, ack) => {
@@ -216,5 +329,12 @@ io.on('connection', (socket) => {
         } catch (error) {
             if (typeof ack === 'function') ack({ ok: false, message: 'Failed to send message' });
         }
+    });
+
+    socket.on('disconnect', () => {
+        for (const groupId of socket.joinedGroupIds || []) {
+            untrackActiveGroupSession(String(groupId), String(socket.userId), socket.id);
+        }
+        socket.joinedGroupIds?.clear();
     });
 });

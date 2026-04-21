@@ -5,7 +5,10 @@ const saltRounds = 10;
 
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    bio: { type: String, default: '' },
+    platforms: { type: [String], default: [] },
+    playStyle: { type: String, enum: ['Casual', 'Competitive', 'Mixed', ''], default: '' }
 });
 
 userSchema.pre('save', async function (next) {

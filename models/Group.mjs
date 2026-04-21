@@ -10,7 +10,7 @@ const groupSchema = new mongoose.Schema({
     region: { type: String, trim: true },
     tags: [{ type: String, trim: true }],
     members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Users' }],
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now, expires: 60 * 60 * 24 }
 });
 
 const Group = mongoose.model('Groups', groupSchema, 'Groups');

@@ -5,6 +5,7 @@ import Game from '../models/Game.mjs';
 import { validateToken } from '../utils/validateToken.mjs';
 
 const router = express.Router();
+const GROUP_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 const normalizeTagArray = (value) => {
 	if (!Array.isArray(value)) {
@@ -16,6 +17,42 @@ const normalizeTagArray = (value) => {
 			.map((entry) => String(entry || '').trim())
 			.filter((entry) => entry.length > 0)
 	)];
+};
+
+const getActiveGroupFilter = (gameId) => {
+	const filter = {
+		createdAt: { $gt: new Date(Date.now() - GROUP_MAX_AGE_MS) },
+		'members.0': { $exists: true }
+	};
+
+	if (gameId) {
+		filter.game = gameId;
+	}
+
+	return filter;
+};
+
+const deleteInactiveGroups = async (gameId) => {
+	const staleFilter = {
+		$or: [
+			{ createdAt: { $lte: new Date(Date.now() - GROUP_MAX_AGE_MS) } },
+			{ members: { $size: 0 } }
+		]
+	};
+
+	if (gameId) {
+		staleFilter.game = gameId;
+	}
+
+	await Group.deleteMany(staleFilter);
+};
+
+const isInactiveGroup = (group) => {
+	if (!group) return true;
+	const createdAt = group.createdAt ? new Date(group.createdAt).getTime() : 0;
+	const isExpired = !createdAt || (Date.now() - createdAt) >= GROUP_MAX_AGE_MS;
+	const hasNoMembers = !Array.isArray(group.members) || group.members.length === 0;
+	return isExpired || hasNoMembers;
 };
 
 // Route to add a new group
@@ -92,6 +129,16 @@ router.post('/join/:groupId', async (req, res) => {
 			return res.status(400).json({ message: 'Valid group id is required' });
 		}
 
+		const existingGroup = await Group.findById(groupId);
+		if (!existingGroup) {
+			return res.status(404).json({ message: 'Group not found' });
+		}
+
+		if (isInactiveGroup(existingGroup)) {
+			await Group.deleteOne({ _id: groupId });
+			return res.status(404).json({ message: 'Group is no longer available' });
+		}
+
 		const updatedGroup = await Group.findByIdAndUpdate(
 			groupId,
 			{ $addToSet: { members: userId } },
@@ -125,7 +172,9 @@ router.get('/list/:gameName', async (req, res) => {
 			return res.status(404).json({ message: 'Game not found' });
 		}
 
-		const groups = await Group.find({ game: game._id })
+		await deleteInactiveGroups(game._id);
+
+		const groups = await Group.find(getActiveGroupFilter(game._id))
 			.populate('game', 'name')
 			.populate('members', 'username')
 			.sort({ createdAt: -1 });
@@ -152,6 +201,11 @@ router.get('/id/:groupId', async (req, res) => {
 
 		if (!group) {
 			return res.status(404).json({ message: 'Group not found' });
+		}
+
+		if (isInactiveGroup(group)) {
+			await Group.deleteOne({ _id: groupId });
+			return res.status(404).json({ message: 'Group is no longer available' });
 		}
 
 		return res.status(200).json(group);

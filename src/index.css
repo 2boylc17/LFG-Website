@@ -196,6 +196,91 @@ li {
   font-size: 3.5rem;
 }
 
+.games-search-wrap {
+  position: relative;
+  width: min(640px, 100%);
+}
+
+.games-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #7d7d7d;
+  border-radius: 10px;
+  background-color: #2d2d2d;
+  color: #fff;
+  font-size: 1rem;
+  padding: 0.65rem 2.2rem 0.65rem 0.8rem;
+}
+
+/* suppress the browser-native × on type=search */
+.games-search-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.games-search-input::placeholder {
+  color: #bcbcbc;
+}
+
+.games-search-input:focus {
+  outline: 2px solid #7d7d7d;
+  outline-offset: 2px;
+}
+
+.games-search-clear {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #bcbcbc;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.2rem;
+}
+
+.games-search-clear:hover {
+  color: #fff;
+}
+
+/* ================= PAGINATION ================= */
+.games-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem 0 2rem;
+}
+
+.games-pagination-btn {
+  background-color: #2d2d2d;
+  color: #fff;
+  border: 1px solid #7d7d7d;
+  border-radius: 8px;
+  padding: 0.45rem 1.1rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.games-pagination-btn:hover:not(:disabled) {
+  background-color: #3c3c3c;
+}
+
+.games-pagination-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.games-pagination-info {
+  color: #d6d6d6;
+  font-size: 0.95rem;
+  min-width: 100px;
+  text-align: center;
+}
+/* =============== END PAGINATION =============== */
+
 .create-group-link {
   margin-top: 0.25rem;
   display: inline-block;
@@ -710,5 +795,203 @@ li {
 
 
 /* =============== END GAMES PAGE RELATED CLASSES =============== */
+
+
+/* ================= SETTINGS PAGE RELATED CLASSES ================= */
+.settings-page {
+  padding: 1.5rem 2rem;
+  max-width: 720px;
+}
+
+.settings-title {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.settings-section {
+  background-color: #1D1D1D;
+  border: 1px solid #7d7d7d;
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+}
+
+.settings-section h2 {
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  font-size: 1.5rem;
+  border-bottom: 1px solid #7d7d7d;
+  padding-bottom: 0.5rem;
+}
+
+.settings-section h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+  color: #d6d6d6;
+}
+
+.settings-copy {
+  margin: 0 0 1rem;
+  color: #d6d6d6;
+}
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.settings-field label {
+  font-size: 0.9rem;
+  color: #b0b0b0;
+}
+
+.settings-field input,
+.settings-field textarea,
+.settings-field select {
+  background-color: #2d2d2d;
+  border: 1px solid #7d7d7d;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1rem;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
+}
+
+.settings-field input:focus,
+.settings-field textarea:focus,
+.settings-field select:focus {
+  outline: 2px solid #9a9a9a;
+  outline-offset: 2px;
+}
+
+.settings-field textarea {
+  resize: vertical;
+}
+
+.settings-field select option {
+  background-color: #2d2d2d;
+}
+
+.char-count {
+  font-size: 0.8rem;
+  color: #888;
+  text-align: right;
+}
+
+.platform-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.platform-btn {
+  background-color: #2d2d2d;
+  border: 1px solid #7d7d7d;
+  border-radius: 20px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.4rem 1rem;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.platform-btn:hover {
+  background-color: #3c3c3c;
+}
+
+.platform-btn.active {
+  background-color: #4a7c59;
+  border-color: #6dbf85;
+  color: #fff;
+}
+
+.settings-save-btn {
+  align-self: flex-start;
+  background-color: #2d2d2d;
+  border: 1px solid #7d7d7d;
+  border-radius: 10px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 0.5rem 1.4rem;
+  transition: background-color 0.15s;
+}
+
+.settings-save-btn:hover {
+  background-color: #3c3c3c;
+}
+
+.settings-success {
+  color: #6dbf85;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.settings-error {
+  color: #e07070;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.settings-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 20;
+  padding: 1rem;
+}
+
+.settings-modal {
+  width: min(100%, 560px);
+  max-height: 85vh;
+  overflow-y: auto;
+  background-color: #1D1D1D;
+  border: 1px solid #7d7d7d;
+  border-radius: 18px;
+  padding: 1.5rem 2rem 2rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+.settings-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.settings-modal-header h2 {
+  margin: 0;
+}
+
+.settings-modal-close {
+  background: transparent;
+  border: 1px solid #7d7d7d;
+  border-radius: 999px;
+  color: #fff;
+  cursor: pointer;
+  width: 2rem;
+  height: 2rem;
+  font-size: 1rem;
+}
+
+.settings-modal-close:hover {
+  background-color: #2d2d2d;
+}
+/* =============== END SETTINGS PAGE RELATED CLASSES =============== */
+
 
 

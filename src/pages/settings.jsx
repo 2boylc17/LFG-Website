@@ -1,0 +1,285 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const PLATFORMS = ['PC', 'PlayStation', 'Xbox', 'Nintendo Switch', 'Mobile'];
+const PLAY_STYLES = ['', 'Casual', 'Competitive', 'Mixed'];
+
+export default function Settings({ isLoggedIn, onLogin }) {
+    const navigate = useNavigate();
+
+    const [profile, setProfile] = useState({ bio: '', platforms: [], playStyle: '' });
+    const [usernameForm, setUsernameForm] = useState({ newUsername: '', password: '' });
+    const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+
+    const [profileMsg, setProfileMsg] = useState({ text: '', error: false });
+    const [usernameMsg, setUsernameMsg] = useState({ text: '', error: false });
+    const [passwordMsg, setPasswordMsg] = useState({ text: '', error: false });
+
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!isLoggedIn) {
+            navigate('/login');
+            return;
+        }
+        fetch('/api/settings', { credentials: 'include' })
+            .then(r => r.json())
+            .then(data => {
+                setProfile({
+                    bio: data.bio || '',
+                    platforms: data.platforms || [],
+                    playStyle: data.playStyle || ''
+                });
+                setLoading(false);
+            })
+            .catch(() => setLoading(false));
+    }, [isLoggedIn, navigate]);
+
+    useEffect(() => {
+        if (!isAccountModalOpen) {
+            setUsernameMsg({ text: '', error: false });
+            setPasswordMsg({ text: '', error: false });
+            setUsernameForm({ newUsername: '', password: '' });
+            setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        }
+    }, [isAccountModalOpen]);
+
+    // ── Profile ──────────────────────────────────────────────
+    const togglePlatform = (platform) => {
+        setProfile(prev => ({
+            ...prev,
+            platforms: prev.platforms.includes(platform)
+                ? prev.platforms.filter(p => p !== platform)
+                : [...prev.platforms, platform]
+        }));
+    };
+
+    const handleProfileSave = async (e) => {
+        e.preventDefault();
+        setProfileMsg({ text: '', error: false });
+        try {
+            const res = await fetch('/api/settings/profile', {
+                method: 'PUT',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ bio: profile.bio, platforms: profile.platforms, playStyle: profile.playStyle })
+            });
+            const data = await res.json();
+            setProfileMsg({ text: res.ok ? 'Profile saved.' : data.message, error: !res.ok });
+        } catch {
+            setProfileMsg({ text: 'Something went wrong.', error: true });
+        }
+    };
+
+    // ── Username ─────────────────────────────────────────────
+    const handleUsernameChange = async (e) => {
+        e.preventDefault();
+        setUsernameMsg({ text: '', error: false });
+        try {
+            const res = await fetch('/api/settings/username', {
+                method: 'PUT',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(usernameForm)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setUsernameMsg({ text: 'Username updated. Please log in again.', error: false });
+                setUsernameForm({ newUsername: '', password: '' });
+                if (onLogin) onLogin(data.username);
+                localStorage.setItem('username', data.username);
+            } else {
+                setUsernameMsg({ text: data.message, error: true });
+            }
+        } catch {
+            setUsernameMsg({ text: 'Something went wrong.', error: true });
+        }
+    };
+
+    // ── Password ─────────────────────────────────────────────
+    const handlePasswordChange = async (e) => {
+        e.preventDefault();
+        setPasswordMsg({ text: '', error: false });
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            setPasswordMsg({ text: 'New passwords do not match.', error: true });
+            return;
+        }
+        try {
+            const res = await fetch('/api/settings/password', {
+                method: 'PUT',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ currentPassword: passwordForm.currentPassword, newPassword: passwordForm.newPassword })
+            });
+            const data = await res.json();
+            setPasswordMsg({ text: res.ok ? 'Password updated.' : data.message, error: !res.ok });
+            if (res.ok) setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        } catch {
+            setPasswordMsg({ text: 'Something went wrong.', error: true });
+        }
+    };
+
+    if (loading) return <div className="page"><p>Loading settings...</p></div>;
+
+    return (
+        <div className="page settings-page">
+            <h1 className="settings-title">Settings</h1>
+
+            {/* ── Profile Section ── */}
+            <section className="settings-section">
+                <h2>Profile</h2>
+                <form onSubmit={handleProfileSave} className="settings-form">
+                    <div className="settings-field">
+                        <label htmlFor="bio">Bio</label>
+                        <textarea
+                            id="bio"
+                            maxLength={300}
+                            rows={3}
+                            placeholder="Tell other players about yourself..."
+                            value={profile.bio}
+                            onChange={e => setProfile(prev => ({ ...prev, bio: e.target.value }))}
+                        />
+                        <span className="char-count">{profile.bio.length} / 300</span>
+                    </div>
+
+                    <div className="settings-field">
+                        <label>Gaming Platforms</label>
+                        <div className="platform-grid">
+                            {PLATFORMS.map(p => (
+                                <button
+                                    type="button"
+                                    key={p}
+                                    className={`platform-btn ${profile.platforms.includes(p) ? 'active' : ''}`}
+                                    onClick={() => togglePlatform(p)}
+                                >
+                                    {p}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="settings-field">
+                        <label htmlFor="playStyle">Play Style</label>
+                        <select
+                            id="playStyle"
+                            value={profile.playStyle}
+                            onChange={e => setProfile(prev => ({ ...prev, playStyle: e.target.value }))}
+                        >
+                            <option value="">Select a play style</option>
+                            {PLAY_STYLES.filter(s => s !== '').map(s => (
+                                <option key={s} value={s}>{s}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {profileMsg.text && (
+                        <p className={profileMsg.error ? 'settings-error' : 'settings-success'}>{profileMsg.text}</p>
+                    )}
+                    <button type="submit" className="settings-save-btn">Save Profile</button>
+                </form>
+            </section>
+
+            <section className="settings-section">
+                <h2>Account</h2>
+                <p className="settings-copy">Manage username and password from a separate account panel.</p>
+                <button
+                    type="button"
+                    className="settings-save-btn"
+                    onClick={() => setIsAccountModalOpen(true)}
+                >
+                    Open Account Settings
+                </button>
+            </section>
+
+            {isAccountModalOpen && (
+                <div className="settings-modal-backdrop" onClick={() => setIsAccountModalOpen(false)}>
+                    <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="settings-modal-header">
+                            <h2>Account Settings</h2>
+                            <button
+                                type="button"
+                                className="settings-modal-close"
+                                onClick={() => setIsAccountModalOpen(false)}
+                                aria-label="Close account settings"
+                            >
+                                x
+                            </button>
+                        </div>
+
+                        <h3>Change Username</h3>
+                        <form onSubmit={handleUsernameChange} className="settings-form">
+                            <div className="settings-field">
+                                <label htmlFor="newUsername">New Username</label>
+                                <input
+                                    id="newUsername"
+                                    type="text"
+                                    value={usernameForm.newUsername}
+                                    onChange={e => setUsernameForm(prev => ({ ...prev, newUsername: e.target.value }))}
+                                    placeholder="New username"
+                                    autoComplete="username"
+                                />
+                            </div>
+                            <div className="settings-field">
+                                <label htmlFor="usernamePassword">Current Password</label>
+                                <input
+                                    id="usernamePassword"
+                                    type="password"
+                                    value={usernameForm.password}
+                                    onChange={e => setUsernameForm(prev => ({ ...prev, password: e.target.value }))}
+                                    placeholder="Confirm with your password"
+                                    autoComplete="current-password"
+                                />
+                            </div>
+                            {usernameMsg.text && (
+                                <p className={usernameMsg.error ? 'settings-error' : 'settings-success'}>{usernameMsg.text}</p>
+                            )}
+                            <button type="submit" className="settings-save-btn">Update Username</button>
+                        </form>
+
+                        <h3>Change Password</h3>
+                        <form onSubmit={handlePasswordChange} className="settings-form">
+                            <div className="settings-field">
+                                <label htmlFor="currentPassword">Current Password</label>
+                                <input
+                                    id="currentPassword"
+                                    type="password"
+                                    value={passwordForm.currentPassword}
+                                    onChange={e => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                                    placeholder="Current password"
+                                    autoComplete="current-password"
+                                />
+                            </div>
+                            <div className="settings-field">
+                                <label htmlFor="newPassword">New Password</label>
+                                <input
+                                    id="newPassword"
+                                    type="password"
+                                    value={passwordForm.newPassword}
+                                    onChange={e => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                                    placeholder="New password (min 6 characters)"
+                                    autoComplete="new-password"
+                                />
+                            </div>
+                            <div className="settings-field">
+                                <label htmlFor="confirmPassword">Confirm New Password</label>
+                                <input
+                                    id="confirmPassword"
+                                    type="password"
+                                    value={passwordForm.confirmPassword}
+                                    onChange={e => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                                    placeholder="Repeat new password"
+                                    autoComplete="new-password"
+                                />
+                            </div>
+                            {passwordMsg.text && (
+                                <p className={passwordMsg.error ? 'settings-error' : 'settings-success'}>{passwordMsg.text}</p>
+                            )}
+                            <button type="submit" className="settings-save-btn">Update Password</button>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

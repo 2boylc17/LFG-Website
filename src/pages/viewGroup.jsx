@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { connectSocket, getSocket } from "../lib/socket.js";
 
@@ -20,10 +20,7 @@ export default function ViewGroup() {
     const chatLogRef = useRef(null);
     const shouldAutoScrollRef = useRef(true);
 
-    const groupTitle = useMemo(() => {
-        if (!group) return "Group";
-        return group.name || "Group";
-    }, [group]);
+    const groupTitle = group?.name || "Group";
 
     useEffect(() => {
         const fetchGroup = async () => {
@@ -104,6 +101,16 @@ export default function ViewGroup() {
             setGroup(payload.group);
         };
 
+        const onGroupDeleted = (payload) => {
+            if (!payload || String(payload.groupId) !== String(groupId)) {
+                return;
+            }
+
+            setGroup(null);
+            setMessages([]);
+            setError(payload.message || "Group is no longer available");
+        };
+
         socket.emit("group:join", { groupId }, (ack) => {
             if (!ack?.ok) {
                 setError(ack?.message || "Failed to join group chat");
@@ -119,11 +126,13 @@ export default function ViewGroup() {
 
         socket.on("group:message:new", onIncomingMessage);
         socket.on("group:members:updated", onMembersUpdated);
+        socket.on("group:deleted", onGroupDeleted);
 
         return () => {
             socket.emit("group:leave", { groupId });
             socket.off("group:message:new", onIncomingMessage);
             socket.off("group:members:updated", onMembersUpdated);
+            socket.off("group:deleted", onGroupDeleted);
         };
     }, [groupId]);
 
@@ -188,6 +197,7 @@ export default function ViewGroup() {
                     <section className="view-group-card">
                         <h1>{groupTitle}</h1>
                         <p>{group.description || "No description provided"}</p>
+                        <p>You stay in the group for 20 seconds after leaving this page. Reopen it before the timer ends to remain a member.</p>
                         <p>Group ID: {group._id}</p>
                         <p>Created: {group.createdAt ? new Date(group.createdAt).toLocaleString() : "Unknown"}</p>
                         <p>Game: {group.game?.name || "Unknown"}</p>

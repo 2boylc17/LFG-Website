@@ -11,6 +11,7 @@ import ViewGroup from "./pages/viewGroup.jsx";
 import CreateGame from "./pages/createGame.jsx";
 import CreateGroup from "./pages/createGroup.jsx";
 import SocketTest from "./pages/socketTest.jsx";
+import Settings from "./pages/settings.jsx";
 import { connectSocket, disconnectSocket } from "./lib/socket.js";
 import { set } from "mongoose";
 
@@ -128,6 +129,7 @@ export default function App() {
                     <Route path="/games/:gameSlug" element={<GameDetails />} />
                     <Route path="/group/:groupId" element={<ViewGroup />} />
                     <Route path="/socket-test" element={<SocketTest />} />
+                    <Route path="/settings" element={<Settings isLoggedIn={isLoggedIn} onLogin={handleLogin} />} />
                 </Routes>
             </main>
         </Router>
