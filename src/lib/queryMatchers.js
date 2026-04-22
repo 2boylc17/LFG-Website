@@ -1,5 +1,8 @@
+// Safely converts a value to a lowercase string, defaulting to "" if null/undefined.
 const toLower = (value) => String(value || "").toLowerCase();
 
+// Returns true if the game's name, genres, or platforms contain the query string.
+// If no query is provided, all games match.
 export const gameMatchesQuery = (game, query) => {
 	if (!query) return true;
 	const name = toLower(game.name);
@@ -8,6 +11,8 @@ export const gameMatchesQuery = (game, query) => {
 	return name.includes(query) || genres.includes(query) || platforms.includes(query);
 };
 
+// Returns true if the group's name, description, platform, or tags contain the query string.
+// If no query is provided, all groups match.
 export const groupMatchesQuery = (group, query) => {
 	if (!query) return true;
 	const name = toLower(group.name);
