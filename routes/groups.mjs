@@ -6,11 +6,14 @@ import Game from '../models/Game.mjs';
 import { validateToken } from '../utils/validateToken.mjs';
 
 const router = express.Router();
-const GROUP_MAX_AGE_MS = 24 * 60 * 60 * 1000;
-const JOIN_REQUIREMENTS = new Set(['auto', 'password', 'request']);
+
+// 24-hour group TTL
+const groupMaxAgeMs = 24 * 60 * 60 * 1000;
+const joinRequirements = new Set(['auto', 'password', 'request']);
 const isValidId = (value) => mongoose.Types.ObjectId.isValid(value);
 const getAuthUserId = (req) => validateToken(req.cookies?.jwt)?.userId;
 
+// Assign first member as owner if none set
 const ensureOwnerAssigned = async (groupId) => {
 	const group = await Group.findById(groupId);
 	if (!group) return null;
@@ -21,6 +24,7 @@ const ensureOwnerAssigned = async (groupId) => {
 	return group;
 };
 
+// Sanitize tag array
 const normalizeTagArray = (value) => {
 	if (!Array.isArray(value)) {
 		return [];
@@ -33,9 +37,10 @@ const normalizeTagArray = (value) => {
 	)];
 };
 
+// Filter: active, non-empty groups
 const getActiveGroupFilter = (gameId) => {
 	const filter = {
-		createdAt: { $gt: new Date(Date.now() - GROUP_MAX_AGE_MS) },
+		createdAt: { $gt: new Date(Date.now() - groupMaxAgeMs) },
 		'members.0': { $exists: true }
 	};
 
@@ -46,10 +51,11 @@ const getActiveGroupFilter = (gameId) => {
 	return filter;
 };
 
+// Delete expired/empty groups
 const deleteInactiveGroups = async (gameId) => {
 	const staleFilter = {
 		$or: [
-			{ createdAt: { $lte: new Date(Date.now() - GROUP_MAX_AGE_MS) } },
+			{ createdAt: { $lte: new Date(Date.now() - groupMaxAgeMs) } },
 			{ members: { $size: 0 } }
 		]
 	};
@@ -61,10 +67,11 @@ const deleteInactiveGroups = async (gameId) => {
 	await Group.deleteMany(staleFilter);
 };
 
+// True if group is expired or has no members
 const isInactiveGroup = (group) => {
 	if (!group) return true;
 	const createdAt = group.createdAt ? new Date(group.createdAt).getTime() : 0;
-	const isExpired = !createdAt || (Date.now() - createdAt) >= GROUP_MAX_AGE_MS;
+	const isExpired = !createdAt || (Date.now() - createdAt) >= groupMaxAgeMs;
 	const hasNoMembers = !Array.isArray(group.members) || group.members.length === 0;
 	return isExpired || hasNoMembers;
 };
@@ -94,7 +101,7 @@ router.post('/add/:gameName', async (req, res) => {
 		const normalizedExperience = String(experience || '').trim();
 		const normalizedMicrophone = String(microphone || '').trim();
 		const normalizedRegion = String(region || '').trim();
-		const normalizedJoinRequirement = JOIN_REQUIREMENTS.has(String(joinRequirement || '').trim())
+		const normalizedJoinRequirement = joinRequirements.has(String(joinRequirement || '').trim())
 			? String(joinRequirement).trim()
 			: 'auto';
 		const normalizedJoinPassword = String(joinPassword || '').trim();
@@ -262,7 +269,7 @@ router.post('/join/:groupId', async (req, res) => {
 	}
 });
 
-// Route to fetch all groups by game name
+// Route to list groups by game
 router.get('/list/:gameName', async (req, res) => {
 	try {
 		const gameName = req.params.gameName?.trim();
@@ -297,7 +304,7 @@ router.get('/list/:gameName', async (req, res) => {
 	}
 });
 
-// Route to fetch a single group by id
+// Route to fetch a group by id
 router.get('/id/:groupId', async (req, res) => {
 	try {
 		const { groupId } = req.params;
@@ -330,6 +337,7 @@ router.get('/id/:groupId', async (req, res) => {
 	}
 });
 
+// Route to remove a member (owner only)
 router.post('/remove-member/:groupId/:memberId', async (req, res) => {
 	try {
 		const { groupId, memberId } = req.params;
@@ -393,6 +401,7 @@ router.post('/remove-member/:groupId/:memberId', async (req, res) => {
 	}
 });
 
+// Route to leave a group
 router.post('/leave/:groupId', async (req, res) => {
 	try {
 		const { groupId } = req.params;
@@ -457,6 +466,7 @@ router.post('/leave/:groupId', async (req, res) => {
 	}
 });
 
+// Route to approve or reject a join request (owner only)
 router.post('/review-request/:groupId/:memberId', async (req, res) => {
 	try {
 		const { groupId, memberId } = req.params;

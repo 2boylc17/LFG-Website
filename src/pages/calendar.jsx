@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const STORAGE_KEY = "lfg-calendar-events";
+const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const storageKey = "lfg-calendar-events";
 
 const toDateKey = (date) => {
   const year = date.getFullYear();
@@ -12,7 +12,7 @@ const toDateKey = (date) => {
 
 const readStoredEvents = () => {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey);
     if (!raw) return {};
     const parsed = JSON.parse(raw);
     return typeof parsed === "object" && parsed ? parsed : {};
@@ -75,7 +75,7 @@ export default function CalendarPage() {
 
   const saveEvents = (nextEventsByDate) => {
     setEventsByDate(nextEventsByDate);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextEventsByDate));
+    localStorage.setItem(storageKey, JSON.stringify(nextEventsByDate));
   };
 
   const clearForm = () => {
@@ -191,7 +191,7 @@ export default function CalendarPage() {
 
       <div className="calendar-grid-wrapper">
         <div className="calendar-grid" role="grid" aria-label="Monthly calendar">
-          {WEEKDAYS.map((weekday) => (
+          {weekdays.map((weekday) => (
             <div key={weekday} className="calendar-weekday" role="columnheader">
               {weekday}
             </div>

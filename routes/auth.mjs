@@ -5,8 +5,8 @@ import User from '../models/User.mjs';
 import { validateToken } from '../utils/validateToken.mjs';
 
 const router = express.Router();
-const INVALID_AUTH_MESSAGE = 'Invalid username or password';
 
+// Route to register a new user
 router.post('/register', async (req, res) => {
     try {
         const username = String(req.body.username || '').trim();
@@ -30,15 +30,16 @@ router.post('/register', async (req, res) => {
     }
 });
 
+// Route to log in
 router.post('/login', async (req, res) => {
     try {
         const username = String(req.body.username || '').trim();
         const password = String(req.body.password || '');
         const userFound = await User.findOne({ username });
-        if (!userFound) return res.status(400).json({ message: INVALID_AUTH_MESSAGE });
+        if (!userFound) return res.status(400).json({ message: 'Invalid username or password' });
 
         const passwordCorrect = await bcrypt.compare(password, userFound.password);
-        if (!passwordCorrect) return res.status(400).json({ message: INVALID_AUTH_MESSAGE });
+        if (!passwordCorrect) return res.status(400).json({ message: 'Invalid username or password' });
 
         generateTokenAndSetCookie(userFound._id, userFound.username, res);
         return res.status(200).json({ message: 'Login successful', username: userFound.username });
@@ -48,6 +49,7 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// Route to log out (clears JWT cookie)
 router.post('/logout', async (req, res) => {
     try {
         res.cookie('jwt', '', { maxAge: 0 });
@@ -59,6 +61,7 @@ router.post('/logout', async (req, res) => {
 });
 
 
+// Route to validate the current JWT
 router.head('/validate', async (req, res) => {
     const token = req.cookies.jwt;
     try {

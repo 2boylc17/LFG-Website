@@ -8,7 +8,10 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     bio: { type: String, default: '' },
     platforms: { type: [String], default: [] },
-    playStyle: { type: String, enum: ['Casual', 'Competitive', 'Mixed', ''], default: '' }
+    playStyle: { type: String, enum: ['Casual', 'Competitive', 'Mixed', ''], default: '' },
+    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Users' }],
+    friendRequestsIncoming: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Users' }],
+    friendRequestsOutgoing: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Users' }]
 });
 
 userSchema.pre('save', async function (next) {

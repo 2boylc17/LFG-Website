@@ -12,6 +12,8 @@ import CreateGroup from "./pages/createGroup.jsx";
 import SocketTest from "./pages/socketTest.jsx";
 import Settings from "./pages/settings.jsx";
 import Calendar from "./pages/calendar.jsx";
+import Profile from "./pages/profile.jsx";
+import Friends from "./pages/friends.jsx";
 import { connectSocket, disconnectSocket } from "./lib/socket.js";
 
 export default function App() {
@@ -109,7 +111,9 @@ export default function App() {
                     <Route path="/group/:groupId" element={<ViewGroup />} />
                     <Route path="/socket-test" element={<SocketTest />} />
                     <Route path="/calendar" element={<Calendar />} />
+                    <Route path="/friends" element={<Friends isLoggedIn={isLoggedIn} />} />
                     <Route path="/settings" element={<Settings isLoggedIn={isLoggedIn} onLogin={handleLogin} />} />
+                    <Route path="/profile/:username" element={<Profile />} />
                 </Routes>
             </main>
         </Router>

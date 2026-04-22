@@ -15,18 +15,18 @@ import Group from './models/Group.mjs';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
-const db_user = encodeURIComponent(process.env.db_user);
-const db_password = encodeURIComponent(process.env.db_password);
-const db_cluster = process.env.db_cluster;
-const DB_URI = `mongodb+srv://${db_user}:${db_password}@${db_cluster}`;
+const port = process.env.PORT || 3001;
+const dbUser = encodeURIComponent(process.env.db_user);
+const dbPassword = encodeURIComponent(process.env.db_password);
+const dbCluster = process.env.db_cluster;
+const dbUri = `mongodb+srv://${dbUser}:${dbPassword}@${dbCluster}`;
 
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('dev'));
 
-mongoose.connect(DB_URI).then(() => 
+mongoose.connect(dbUri).then(() => 
     console.log('Connected to MongoDB')
 ).catch((err) => 
     console.log(err));
@@ -36,8 +36,8 @@ app.use('/api/games', gameRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/settings', settingsRoutes);
 
-const server = ViteExpress.listen(app, PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+const server = ViteExpress.listen(app, port, () => {
+    console.log(`Server running on port ${port}`);
 });
 
 const io = new Server(server, {
@@ -50,9 +50,9 @@ const io = new Server(server, {
 app.set('io', io);
 
 const groupChatHistory = new Map();
-const MAX_GROUP_CHAT_MESSAGES = 100;
-const GROUP_LEAVE_GRACE_MS = 20 * 1000;
-const GROUP_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const maxGroupChatMessages = 100;
+const groupLeaveGraceMs = 20 * 1000;
+const groupMaxAgeMs = 24 * 60 * 60 * 1000;
 const activeGroupSessions = new Map();
 const pendingGroupRemovals = new Map();
 
@@ -84,7 +84,7 @@ const getMembershipKey = (groupId, userId) => `${groupId}:${userId}`;
 
 const isExpiredGroup = (group) => {
     if (!group?.createdAt) return true;
-    return (Date.now() - new Date(group.createdAt).getTime()) >= GROUP_MAX_AGE_MS;
+    return (Date.now() - new Date(group.createdAt).getTime()) >= groupMaxAgeMs;
 };
 
 const clearPendingRemoval = (groupId, userId) => {
@@ -157,7 +157,7 @@ const scheduleGroupRemoval = (groupId, userId) => {
         } catch (error) {
             console.error('Delayed group removal error:', error);
         }
-    }, GROUP_LEAVE_GRACE_MS);
+    }, groupLeaveGraceMs);
 
     pendingGroupRemovals.set(membershipKey, timeoutId);
 };
@@ -336,8 +336,8 @@ io.on('connection', (socket) => {
 
             const history = groupChatHistory.get(normalizedGroupId) || [];
             history.push(messagePayload);
-            if (history.length > MAX_GROUP_CHAT_MESSAGES) {
-                history.splice(0, history.length - MAX_GROUP_CHAT_MESSAGES);
+            if (history.length > maxGroupChatMessages) {
+                history.splice(0, history.length - maxGroupChatMessages);
             }
             groupChatHistory.set(normalizedGroupId, history);
 

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
-const TAG_SECTIONS = [
+const tagSections = [
 	{
 		key: "experience",
 		label: "Experience",
@@ -271,7 +271,7 @@ export default function CreateGroup() {
 						))}
 					</select>
 				</div>
-				{TAG_SECTIONS.map((section) => (
+				{tagSections.map((section) => (
 					<div className="create-group-field" key={section.key}>
 						<label>{section.label}:</label>
 						<div className="create-group-tag-input-row">

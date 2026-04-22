@@ -2,11 +2,12 @@ import express from 'express';
 import Game from '../models/Game.mjs';
 
 const router = express.Router();
-const DATA_URL_REGEX = /^data:([A-Za-z-+/]+);base64,(.+)$/;
+const dataUrlRegex = /^data:([A-Za-z-+/]+);base64,(.+)$/;
 
+// Parse a base64 data URL into a buffer and content type
 const parseImageDataUrl = (imageDataUrl) => {
 	if (!imageDataUrl) return null;
-	const matches = imageDataUrl.match(DATA_URL_REGEX);
+	const matches = imageDataUrl.match(dataUrlRegex);
 	if (!matches) return null;
 	return { data: Buffer.from(matches[2], 'base64'), contentType: matches[1] };
 };

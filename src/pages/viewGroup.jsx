@@ -357,6 +357,16 @@ export default function ViewGroup() {
         }
     };
 
+    const handleOpenProfile = (username) => {
+        const trimmedUsername = String(username || "").trim();
+        if (!trimmedUsername) {
+            setError("Invalid username");
+            return;
+        }
+        const returnTo = `/group/${encodeURIComponent(groupId || "")}`;
+        navigate(`/profile/${encodeURIComponent(trimmedUsername)}?returnTo=${encodeURIComponent(returnTo)}`);
+    };
+
     const ownerId = String(group?.owner?._id || "");
     const requiredTags = [group?.platform, group?.experience, group?.microphone, group?.region].filter(Boolean);
     const optionalTags = Array.isArray(group?.tags) ? group.tags.filter(Boolean) : [];
@@ -454,16 +464,26 @@ export default function ViewGroup() {
                                                     <span className="view-group-owner-badge"> (Group Owner)</span>
                                                 ) : null}
                                             </span>
-                                            {canRemove ? (
+                                            <div className="view-group-member-actions">
                                                 <button
                                                     type="button"
-                                                    className="view-group-remove-member-btn"
-                                                    onClick={() => handleRemoveMember(memberId)}
-                                                    disabled={removingMemberId === memberId}
+                                                    className="view-group-profile-btn"
+                                                    onClick={() => handleOpenProfile(member?.username)}
+                                                    disabled={!member?.username}
                                                 >
-                                                    {removingMemberId === memberId ? "Removing..." : "Remove"}
+                                                    View Profile
                                                 </button>
-                                            ) : null}
+                                                {canRemove ? (
+                                                    <button
+                                                        type="button"
+                                                        className="view-group-remove-member-btn"
+                                                        onClick={() => handleRemoveMember(memberId)}
+                                                        disabled={removingMemberId === memberId}
+                                                    >
+                                                        {removingMemberId === memberId ? "Removing..." : "Remove"}
+                                                    </button>
+                                                ) : null}
+                                            </div>
                                         </div>
                                     );
                                 })}
@@ -480,8 +500,17 @@ export default function ViewGroup() {
                                                 {member?.username || "Unknown"}
                                                 <span className="view-group-owner-badge"> (Pending)</span>
                                             </span>
-                                            {isCurrentUserOwner ? (
-                                                <div className="view-group-pending-actions">
+                                            <div className="view-group-member-actions">
+                                                <button
+                                                    type="button"
+                                                    className="view-group-profile-btn"
+                                                    onClick={() => handleOpenProfile(member?.username)}
+                                                    disabled={!member?.username}
+                                                >
+                                                    View Profile
+                                                </button>
+                                                {isCurrentUserOwner ? (
+                                                    <div className="view-group-pending-actions">
                                                     <button
                                                         type="button"
                                                         className="view-group-approve-member-btn"
@@ -499,7 +528,8 @@ export default function ViewGroup() {
                                                         {reviewingMemberId === memberId ? "Working..." : "Kick"}
                                                     </button>
                                                 </div>
-                                            ) : null}
+                                                ) : null}
+                                            </div>
                                         </div>
                                     );
                                 })}
@@ -548,6 +578,7 @@ export default function ViewGroup() {
                             </form>
                         </section>
                     ) : null}
+
                 </>
             ) : null}
         </div>

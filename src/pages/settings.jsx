@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const PLATFORMS = ['PC', 'PlayStation', 'Xbox', 'Nintendo Switch', 'Mobile'];
-const PLAY_STYLES = ['Casual', 'Competitive', 'Mixed'];
-const EMPTY_MSG = { text: '', error: false };
+const platforms = ['PC', 'PlayStation', 'Xbox', 'Nintendo Switch', 'Mobile'];
+const playStyles = ['Casual', 'Competitive', 'Mixed'];
+const emptyMsg = { text: '', error: false };
 
 const requestJson = async (url, options = {}) => {
     const res = await fetch(url, options);
@@ -20,11 +20,9 @@ export default function Settings({ isLoggedIn, onLogin }) {
     const [usernameForm, setUsernameForm] = useState({ newUsername: '', password: '' });
     const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
     const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
-
-    const [profileMsg, setProfileMsg] = useState(EMPTY_MSG);
-    const [usernameMsg, setUsernameMsg] = useState(EMPTY_MSG);
-    const [passwordMsg, setPasswordMsg] = useState(EMPTY_MSG);
-
+    const [profileMsg, setProfileMsg] = useState(emptyMsg);
+    const [usernameMsg, setUsernameMsg] = useState(emptyMsg);
+    const [passwordMsg, setPasswordMsg] = useState(emptyMsg);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -32,48 +30,47 @@ export default function Settings({ isLoggedIn, onLogin }) {
             navigate('/login');
             return;
         }
+
         const loadSettings = async () => {
             try {
                 const { data } = await requestJson('/api/settings', { credentials: 'include' });
-                setProfile({
+                const nextProfile = {
                     bio: data.bio || '',
                     platforms: data.platforms || [],
                     playStyle: data.playStyle || ''
-                });
-                setInitialProfile({
-                    bio: data.bio || '',
-                    platforms: data.platforms || [],
-                    playStyle: data.playStyle || ''
-                });
+                };
+
+                setProfile(nextProfile);
+                setInitialProfile(nextProfile);
             } finally {
                 setLoading(false);
             }
         };
+
         loadSettings();
     }, [isLoggedIn, navigate]);
 
     useEffect(() => {
         if (!isAccountModalOpen) {
-            setUsernameMsg(EMPTY_MSG);
-            setPasswordMsg(EMPTY_MSG);
+            setUsernameMsg(emptyMsg);
+            setPasswordMsg(emptyMsg);
             setUsernameForm({ newUsername: '', password: '' });
             setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
         }
     }, [isAccountModalOpen]);
 
-    // ── Profile ──────────────────────────────────────────────
     const togglePlatform = (platform) => {
-        setProfile(prev => ({
+        setProfile((prev) => ({
             ...prev,
             platforms: prev.platforms.includes(platform)
-                ? prev.platforms.filter(p => p !== platform)
+                ? prev.platforms.filter((entry) => entry !== platform)
                 : [...prev.platforms, platform]
         }));
     };
 
     const handleProfileSave = async (e) => {
         e.preventDefault();
-        setProfileMsg(EMPTY_MSG);
+        setProfileMsg(emptyMsg);
 
         const normalizedProfile = {
             bio: String(profile.bio || '').trim(),
@@ -96,8 +93,13 @@ export default function Settings({ isLoggedIn, onLogin }) {
                 method: 'PUT',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ bio: profile.bio, platforms: profile.platforms, playStyle: profile.playStyle })
+                body: JSON.stringify({
+                    bio: profile.bio,
+                    platforms: profile.platforms,
+                    playStyle: profile.playStyle
+                })
             });
+
             setProfileMsg({ text: ok ? 'Profile saved.' : data.message, error: !ok });
             if (ok) {
                 setInitialProfile({
@@ -111,10 +113,9 @@ export default function Settings({ isLoggedIn, onLogin }) {
         }
     };
 
-    // ── Username ─────────────────────────────────────────────
     const handleUsernameChange = async (e) => {
         e.preventDefault();
-        setUsernameMsg(EMPTY_MSG);
+        setUsernameMsg(emptyMsg);
 
         const newUsername = String(usernameForm.newUsername || '').trim();
         const password = String(usernameForm.password || '').trim();
@@ -136,6 +137,7 @@ export default function Settings({ isLoggedIn, onLogin }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ newUsername, password })
             });
+
             if (ok) {
                 setUsernameMsg({ text: 'Username updated. Please log in again.', error: false });
                 setUsernameForm({ newUsername: '', password: '' });
@@ -149,10 +151,10 @@ export default function Settings({ isLoggedIn, onLogin }) {
         }
     };
 
-    // ── Password ─────────────────────────────────────────────
     const handlePasswordChange = async (e) => {
         e.preventDefault();
-        setPasswordMsg(EMPTY_MSG);
+        setPasswordMsg(emptyMsg);
+
         if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
             setPasswordMsg({ text: 'All password fields are required.', error: true });
             return;
@@ -169,15 +171,22 @@ export default function Settings({ isLoggedIn, onLogin }) {
             setPasswordMsg({ text: 'New password must be different from current password.', error: true });
             return;
         }
+
         try {
             const { ok, data } = await requestJson('/api/settings/password', {
                 method: 'PUT',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ currentPassword: passwordForm.currentPassword, newPassword: passwordForm.newPassword })
+                body: JSON.stringify({
+                    currentPassword: passwordForm.currentPassword,
+                    newPassword: passwordForm.newPassword
+                })
             });
+
             setPasswordMsg({ text: ok ? 'Password updated.' : data.message, error: !ok });
-            if (ok) setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+            if (ok) {
+                setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+            }
         } catch {
             setPasswordMsg({ text: 'Something went wrong.', error: true });
         }
@@ -189,7 +198,6 @@ export default function Settings({ isLoggedIn, onLogin }) {
         <div className="page settings-page">
             <h1 className="settings-title">Settings</h1>
 
-            {/* ── Profile Section ── */}
             <section className="settings-section">
                 <h2>Profile</h2>
                 <form onSubmit={handleProfileSave} className="settings-form">
@@ -201,7 +209,7 @@ export default function Settings({ isLoggedIn, onLogin }) {
                             rows={3}
                             placeholder="Tell other players about yourself..."
                             value={profile.bio}
-                            onChange={e => setProfile(prev => ({ ...prev, bio: e.target.value }))}
+                            onChange={(e) => setProfile((prev) => ({ ...prev, bio: e.target.value }))}
                         />
                         <span className="char-count">{profile.bio.length} / 300</span>
                     </div>
@@ -209,14 +217,14 @@ export default function Settings({ isLoggedIn, onLogin }) {
                     <div className="settings-field">
                         <label>Gaming Platforms</label>
                         <div className="platform-grid">
-                            {PLATFORMS.map(p => (
+                            {platforms.map((platform) => (
                                 <button
                                     type="button"
-                                    key={p}
-                                    className={`platform-btn ${profile.platforms.includes(p) ? 'active' : ''}`}
-                                    onClick={() => togglePlatform(p)}
+                                    key={platform}
+                                    className={`platform-btn ${profile.platforms.includes(platform) ? 'active' : ''}`}
+                                    onClick={() => togglePlatform(platform)}
                                 >
-                                    {p}
+                                    {platform}
                                 </button>
                             ))}
                         </div>
@@ -227,11 +235,11 @@ export default function Settings({ isLoggedIn, onLogin }) {
                         <select
                             id="playStyle"
                             value={profile.playStyle}
-                            onChange={e => setProfile(prev => ({ ...prev, playStyle: e.target.value }))}
+                            onChange={(e) => setProfile((prev) => ({ ...prev, playStyle: e.target.value }))}
                         >
                             <option value="">Select a play style</option>
-                            {PLAY_STYLES.map(s => (
-                                <option key={s} value={s}>{s}</option>
+                            {playStyles.map((playStyle) => (
+                                <option key={playStyle} value={playStyle}>{playStyle}</option>
                             ))}
                         </select>
                     </div>
@@ -278,7 +286,7 @@ export default function Settings({ isLoggedIn, onLogin }) {
                                     id="newUsername"
                                     type="text"
                                     value={usernameForm.newUsername}
-                                    onChange={e => setUsernameForm(prev => ({ ...prev, newUsername: e.target.value }))}
+                                    onChange={(e) => setUsernameForm((prev) => ({ ...prev, newUsername: e.target.value }))}
                                     placeholder="New username"
                                     autoComplete="username"
                                 />
@@ -289,7 +297,7 @@ export default function Settings({ isLoggedIn, onLogin }) {
                                     id="usernamePassword"
                                     type="password"
                                     value={usernameForm.password}
-                                    onChange={e => setUsernameForm(prev => ({ ...prev, password: e.target.value }))}
+                                    onChange={(e) => setUsernameForm((prev) => ({ ...prev, password: e.target.value }))}
                                     placeholder="Confirm with your password"
                                     autoComplete="current-password"
                                 />
@@ -308,7 +316,7 @@ export default function Settings({ isLoggedIn, onLogin }) {
                                     id="currentPassword"
                                     type="password"
                                     value={passwordForm.currentPassword}
-                                    onChange={e => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                                    onChange={(e) => setPasswordForm((prev) => ({ ...prev, currentPassword: e.target.value }))}
                                     placeholder="Current password"
                                     autoComplete="current-password"
                                 />
@@ -319,7 +327,7 @@ export default function Settings({ isLoggedIn, onLogin }) {
                                     id="newPassword"
                                     type="password"
                                     value={passwordForm.newPassword}
-                                    onChange={e => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                                    onChange={(e) => setPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))}
                                     placeholder="New password (min 6 characters)"
                                     autoComplete="new-password"
                                 />
@@ -330,7 +338,7 @@ export default function Settings({ isLoggedIn, onLogin }) {
                                     id="confirmPassword"
                                     type="password"
                                     value={passwordForm.confirmPassword}
-                                    onChange={e => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                                    onChange={(e) => setPasswordForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
                                     placeholder="Repeat new password"
                                     autoComplete="new-password"
                                 />
