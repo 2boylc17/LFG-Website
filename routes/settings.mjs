@@ -217,6 +217,59 @@ router.post('/friends/request/:username/reject', authenticate, async (req, res) 
     }
 });
 
+// POST remove friend by username
+router.post('/friends/remove/:username', authenticate, async (req, res) => {
+    try {
+        const targetUsername = String(req.params.username || '').trim();
+        if (!targetUsername) {
+            return res.status(400).json({ message: 'Username is required' });
+        }
+
+        const currentUser = await User.findById(req.userId).select('_id username friends');
+        if (!currentUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (currentUser.username === targetUsername) {
+            return res.status(400).json({ message: 'You cannot remove yourself' });
+        }
+
+        const targetUser = await User.findOne({ username: targetUsername }).select('_id username');
+        if (!targetUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const isFriend = Array.isArray(currentUser.friends)
+            && currentUser.friends.some((friendId) => String(friendId) === String(targetUser._id));
+
+        if (!isFriend) {
+            return res.status(404).json({ message: 'Friend not found' });
+        }
+
+        await Promise.all([
+            User.findByIdAndUpdate(req.userId, {
+                $pull: {
+                    friends: targetUser._id,
+                    friendRequestsIncoming: targetUser._id,
+                    friendRequestsOutgoing: targetUser._id
+                }
+            }),
+            User.findByIdAndUpdate(targetUser._id, {
+                $pull: {
+                    friends: req.userId,
+                    friendRequestsIncoming: req.userId,
+                    friendRequestsOutgoing: req.userId
+                }
+            })
+        ]);
+
+        return res.status(200).json({ message: `Removed ${targetUser.username} from friends` });
+    } catch (err) {
+        console.error('Remove friend error:', err);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 // PUT update profile
 router.put('/profile', authenticate, async (req, res) => {
     try {

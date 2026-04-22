@@ -67,8 +67,6 @@ export default function Sidebar({ isLoggedIn }) {
                 Friends
                 {pendingRequestCount > 0 ? <span className="sideBox-request-badge">{pendingRequestCount}</span> : null}
             </div>
-            <div className="sideBox" id="recommendedBox" onClick={() => handleProtectedTabClick()}>Recommended</div>
-            <div className="sideBox" id="messagesBox" onClick={() => handleProtectedTabClick()}>Messages</div>
             <div className="sideBox" id="calendarBox" onClick={() => handleProtectedTabClick('/calendar')}>Calendar</div>
         </aside>
     );

@@ -11,22 +11,23 @@ import gameRoutes from './routes/games.mjs';
 import groupRoutes from './routes/groups.mjs';
 import settingsRoutes from './routes/settings.mjs';
 import Group from './models/Group.mjs';
+import User from './models/User.mjs';
 
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3001;
-const dbUser = encodeURIComponent(process.env.db_user);
-const dbPassword = encodeURIComponent(process.env.db_password);
-const dbCluster = process.env.db_cluster;
-const dbUri = `mongodb+srv://${dbUser}:${dbPassword}@${dbCluster}`;
+const PORT = process.env.PORT || 3001;
+const db_user = encodeURIComponent(process.env.db_user);
+const db_password = encodeURIComponent(process.env.db_password);
+const db_cluster = process.env.db_cluster;
+const DB_URI = `mongodb+srv://${db_user}:${db_password}@${db_cluster}`;
 
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('dev'));
 
-mongoose.connect(dbUri).then(() => 
+mongoose.connect(DB_URI).then(() => 
     console.log('Connected to MongoDB')
 ).catch((err) => 
     console.log(err));
@@ -36,8 +37,8 @@ app.use('/api/games', gameRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/settings', settingsRoutes);
 
-const server = ViteExpress.listen(app, port, () => {
-    console.log(`Server running on port ${port}`);
+const server = ViteExpress.listen(app, PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
 
 const io = new Server(server, {
@@ -51,10 +52,21 @@ app.set('io', io);
 
 const groupChatHistory = new Map();
 const maxGroupChatMessages = 100;
+const directMessageHistory = new Map();
+const maxDirectMessagePerThread = 200;
 const groupLeaveGraceMs = 20 * 1000;
 const groupMaxAgeMs = 24 * 60 * 60 * 1000;
 const activeGroupSessions = new Map();
 const pendingGroupRemovals = new Map();
+
+const getDirectMessageThreadKey = (userAId, userBId) => {
+    return [String(userAId || ''), String(userBId || '')].sort().join(':');
+};
+
+const isFriend = (userDoc, friendId) => {
+    return Array.isArray(userDoc?.friends)
+        && userDoc.friends.some((existingFriendId) => String(existingFriendId) === String(friendId));
+};
 
 const parseCookieHeader = (rawCookieHeader) => {
     if (!rawCookieHeader) return {};
@@ -242,6 +254,104 @@ io.on('connection', (socket) => {
             fromUserId: socket.userId,
             isTyping: Boolean(isTyping)
         });
+    });
+
+    socket.on('dm:thread:get', async ({ withUsername }, ack) => {
+        try {
+            const targetUsername = String(withUsername || '').trim();
+            if (!targetUsername) {
+                sendAck(ack, { ok: false, message: 'Friend username is required' });
+                return;
+            }
+
+            const currentUser = await User.findById(socket.userId).select('_id username friends');
+            if (!currentUser) {
+                sendAck(ack, { ok: false, message: 'User not found' });
+                return;
+            }
+
+            const targetUser = await User.findOne({ username: targetUsername }).select('_id username');
+            if (!targetUser) {
+                sendAck(ack, { ok: false, message: 'Friend not found' });
+                return;
+            }
+
+            if (!isFriend(currentUser, targetUser._id)) {
+                sendAck(ack, { ok: false, message: 'You can only message friends' });
+                return;
+            }
+
+            const threadKey = getDirectMessageThreadKey(currentUser._id, targetUser._id);
+            const history = directMessageHistory.get(threadKey) || [];
+
+            sendAck(ack, { ok: true, messages: history });
+        } catch (error) {
+            sendAck(ack, { ok: false, message: 'Failed to load conversation' });
+        }
+    });
+
+    socket.on('dm:message:send', async ({ toUsername, text }, ack) => {
+        try {
+            const targetUsername = String(toUsername || '').trim();
+            const normalizedText = String(text || '').trim();
+
+            if (!targetUsername) {
+                sendAck(ack, { ok: false, message: 'Friend username is required' });
+                return;
+            }
+
+            if (!normalizedText) {
+                sendAck(ack, { ok: false, message: 'Message cannot be empty' });
+                return;
+            }
+
+            if (normalizedText.length > 500) {
+                sendAck(ack, { ok: false, message: 'Message must be 500 characters or fewer' });
+                return;
+            }
+
+            const currentUser = await User.findById(socket.userId).select('_id username friends');
+            if (!currentUser) {
+                sendAck(ack, { ok: false, message: 'User not found' });
+                return;
+            }
+
+            const targetUser = await User.findOne({ username: targetUsername }).select('_id username');
+            if (!targetUser) {
+                sendAck(ack, { ok: false, message: 'Friend not found' });
+                return;
+            }
+
+            if (!isFriend(currentUser, targetUser._id)) {
+                sendAck(ack, { ok: false, message: 'You can only message friends' });
+                return;
+            }
+
+            const messagePayload = {
+                _id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+                text: normalizedText,
+                createdAt: new Date().toISOString(),
+                senderId: String(currentUser._id),
+                senderUsername: currentUser.username,
+                recipientId: String(targetUser._id),
+                recipientUsername: targetUser.username
+            };
+
+            const threadKey = getDirectMessageThreadKey(currentUser._id, targetUser._id);
+            const history = directMessageHistory.get(threadKey) || [];
+            history.push(messagePayload);
+            if (history.length > maxDirectMessagePerThread) {
+                history.splice(0, history.length - maxDirectMessagePerThread);
+            }
+            directMessageHistory.set(threadKey, history);
+
+            io.to(`user:${String(currentUser._id)}`).emit('dm:message:new', messagePayload);
+            io.to(`user:${String(targetUser._id)}`).emit('dm:message:new', messagePayload);
+
+            sendAck(ack, { ok: true });
+        } catch (error) {
+            sendAck(ack, { ok: false, message: 'Failed to send message' });
+        }
     });
 
     socket.on('group:join', async ({ groupId }, ack) => {
