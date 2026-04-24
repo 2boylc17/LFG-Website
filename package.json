@@ -4,6 +4,7 @@
         "bcrypt": "^6.0.0",
         "bootstrap": "^5.3.8",
         "cookie-parser": "^1.4.7",
+        "cors": "^2.8.6",
         "dotenv": "^17.4.0",
         "express": "^5.1.0",
         "jsonwebtoken": "^9.0.2",
@@ -27,7 +28,7 @@
     "devDependencies": {
         "@tailwindcss/postcss": "^4.2.2",
         "autoprefixer": "^10.4.27",
-        "cypress": "^15.5.0",
+        "cypress": "^15.14.1",
         "postcss": "^8.5.8",
         "tailwindcss": "^4.2.2"
     }

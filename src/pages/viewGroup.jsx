@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { apiFetch } from "../lib/api.js";
 import { connectSocket, getSocket } from "../lib/socket.js";
 
 const getMessageFromResponse = async (response, fallbackMessage) => {
@@ -58,7 +59,7 @@ export default function ViewGroup() {
         const fetchGroup = async () => {
             try {
                 setLoading(true);
-                const response = await fetch(`/api/groups/id/${encodeURIComponent(groupId || "")}`);
+                const response = await apiFetch(`/api/groups/id/${encodeURIComponent(groupId || "")}`);
                 if (!response.ok) {
                     throw new Error(await getMessageFromResponse(response, "Failed to load group"));
                 }
@@ -202,7 +203,7 @@ export default function ViewGroup() {
             setJoining(true);
             setError("");
 
-            const response = await fetch(`/api/groups/join/${encodeURIComponent(groupId || "")}`, {
+            const response = await apiFetch(`/api/groups/join/${encodeURIComponent(groupId || "")}`, {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
@@ -267,7 +268,7 @@ export default function ViewGroup() {
             setRemovingMemberId(memberId);
             setError("");
 
-            const response = await fetch(`/api/groups/remove-member/${encodeURIComponent(groupId)}/${encodeURIComponent(memberId)}`, {
+            const response = await apiFetch(`/api/groups/remove-member/${encodeURIComponent(groupId)}/${encodeURIComponent(memberId)}`, {
                 method: "POST",
                 credentials: "include"
             });
@@ -300,7 +301,7 @@ export default function ViewGroup() {
             setLeaving(true);
             setError("");
 
-            const response = await fetch(`/api/groups/leave/${encodeURIComponent(groupId)}`, {
+            const response = await apiFetch(`/api/groups/leave/${encodeURIComponent(groupId)}`, {
                 method: "POST",
                 credentials: "include"
             });
@@ -339,7 +340,7 @@ export default function ViewGroup() {
             setReviewingMemberId(memberId);
             setError("");
 
-            const response = await fetch(`/api/groups/review-request/${encodeURIComponent(groupId)}/${encodeURIComponent(memberId)}`, {
+            const response = await apiFetch(`/api/groups/review-request/${encodeURIComponent(groupId)}/${encodeURIComponent(memberId)}`, {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { apiFetch } from '../lib/api.js';
 
 export default function Login({ onLogin }) {
 	const [isRegistering, setIsRegistering] = useState(false);
@@ -25,7 +26,7 @@ export default function Login({ onLogin }) {
 		}
 		setError("");
 		try {
-			const res = await fetch(isRegistering ? '/api/auth/register' : '/api/auth/login', {
+			const res = await apiFetch(isRegistering ? '/api/auth/register' : '/api/auth/login', {
 				method: 'POST',
 				credentials: 'include',
 				headers: { 'Content-Type': 'application/json' },

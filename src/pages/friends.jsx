@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { apiFetch } from "../lib/api.js";
 import { connectSocket, getSocket } from "../lib/socket.js";
 
 const emptyNotice = { text: "", error: false };
@@ -34,7 +35,7 @@ export default function Friends({ isLoggedIn }) {
     };
 
     const loadFriendsData = async () => {
-        const response = await fetch('/api/settings/friends', { credentials: 'include' });
+        const response = await apiFetch('/api/settings/friends', { credentials: 'include' });
         const data = await response.json();
 
         if (!response.ok) {
@@ -177,7 +178,7 @@ export default function Friends({ isLoggedIn }) {
                 ? `/api/settings/friends/request/${encodeURIComponent(requestUsername)}/accept`
                 : `/api/settings/friends/request/${encodeURIComponent(requestUsername)}/reject`;
 
-            const response = await fetch(endpoint, {
+            const response = await apiFetch(endpoint, {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -203,7 +204,7 @@ export default function Friends({ isLoggedIn }) {
             setRemovingFriendUsername(friendUsername);
             setRequestActionMessage({ text: "", error: false });
 
-            const response = await fetch(`/api/settings/friends/remove/${encodeURIComponent(friendUsername)}`, {
+            const response = await apiFetch(`/api/settings/friends/remove/${encodeURIComponent(friendUsername)}`, {
                 method: 'POST',
                 credentials: 'include'
             });

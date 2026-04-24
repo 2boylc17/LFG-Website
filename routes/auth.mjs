@@ -52,7 +52,13 @@ router.post('/login', async (req, res) => {
 // Route to log out (clears JWT cookie)
 router.post('/logout', async (req, res) => {
     try {
-        res.cookie('jwt', '', { maxAge: 0 });
+        const isProduction = process.env.NODE_ENV === 'production';
+        res.cookie('jwt', '', {
+            maxAge: 0,
+            httpOnly: true,
+            sameSite: isProduction ? 'none' : 'lax',
+            secure: isProduction
+        });
         res.status(200).json({ message: 'Logout successful' });
     } catch (err) {
         console.error("Logout error:", err);
@@ -68,7 +74,13 @@ router.head('/validate', async (req, res) => {
         if (validateToken(token)) {
             return res.status(200).json({ message: 'Token is valid' });
         } else {
-            res.cookie('jwt', '', { maxAge: 0 });
+            const isProduction = process.env.NODE_ENV === 'production';
+            res.cookie('jwt', '', {
+                maxAge: 0,
+                httpOnly: true,
+                sameSite: isProduction ? 'none' : 'lax',
+                secure: isProduction
+            });
             return res.status(401).json({ message: 'Token is invalid' });
         }
     } catch (err) {

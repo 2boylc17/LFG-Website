@@ -3,9 +3,11 @@ import { io } from 'socket.io-client';
 // Singleton socket instance shared across the app.
 let socketInstance = null;
 
+const API_URL = import.meta.env.VITE_API_URL || '';
+
 // Creates a new Socket.IO client with credentials and reconnection settings.
 // autoConnect is false so the connection is established explicitly via connectSocket().
-const createSocketInstance = () => io({
+const createSocketInstance = () => io(API_URL, {
     withCredentials: true,
     autoConnect: false,
     reconnection: true,

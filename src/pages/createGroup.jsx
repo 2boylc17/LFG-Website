@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import { apiFetch } from "../lib/api.js";
 
 const tagSections = [
 	{
@@ -80,7 +81,7 @@ export default function CreateGroup() {
 
 			try {
 				setLoadingGame(true);
-				const response = await fetch('/api/games/list');
+				const response = await apiFetch('/api/games/list');
 				if (!response.ok) {
 					throw new Error('Failed to load games');
 				}
@@ -159,7 +160,7 @@ export default function CreateGroup() {
 				throw new Error('Set a group password for Password Protected join.');
 			}
 
-			const response = await fetch(`/api/groups/add/${encodeURIComponent(selectedGameName)}`, {
+			const response = await apiFetch(`/api/groups/add/${encodeURIComponent(selectedGameName)}`, {
 				method: 'POST',
 				credentials: 'include',
 				headers: { 'Content-Type': 'application/json' },

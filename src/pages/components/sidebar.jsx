@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { apiFetch } from '../../lib/api.js';
 
 export default function Sidebar({ isLoggedIn }) {
     const navigate = useNavigate();
@@ -27,7 +28,7 @@ export default function Sidebar({ isLoggedIn }) {
 
         const loadRequestCount = async () => {
             try {
-                const response = await fetch('/api/settings/friends/request-count', { credentials: 'include' });
+                const response = await apiFetch('/api/settings/friends/request-count', { credentials: 'include' });
                 if (!response.ok) {
                     return;
                 }

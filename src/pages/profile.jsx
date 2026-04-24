@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
+import { apiFetch } from "../lib/api.js";
 
 export default function Profile() {
     const { username } = useParams();
@@ -24,7 +25,7 @@ export default function Profile() {
                 setLoading(true);
                 setError("");
 
-                const response = await fetch(`/api/settings/public/${encodeURIComponent(trimmedUsername)}`);
+                const response = await apiFetch(`/api/settings/public/${encodeURIComponent(trimmedUsername)}`);
                 const data = await response.json();
 
                 if (!response.ok) {
@@ -64,7 +65,7 @@ export default function Profile() {
 
         const loadFriends = async () => {
             try {
-                const response = await fetch('/api/settings/friends', { credentials: 'include' });
+                const response = await apiFetch('/api/settings/friends', { credentials: 'include' });
                 if (!response.ok) {
                     return;
                 }
@@ -112,7 +113,7 @@ export default function Profile() {
             setIsSendingRequest(true);
             setFriendMessage({ text: "", error: false });
 
-            const response = await fetch(`/api/settings/friends/request/${encodeURIComponent(profile.username)}`, {
+            const response = await apiFetch(`/api/settings/friends/request/${encodeURIComponent(profile.username)}`, {
                 method: 'POST',
                 credentials: 'include'
             });

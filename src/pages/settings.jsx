@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { apiFetch } from '../lib/api.js';
 
 const platforms = ['PC', 'PlayStation', 'Xbox', 'Nintendo Switch', 'Mobile'];
 const playStyles = ['Casual', 'Competitive', 'Mixed'];
 const emptyMsg = { text: '', error: false };
 
 const requestJson = async (url, options = {}) => {
-    const res = await fetch(url, options);
+    const res = await apiFetch(url, options);
     const data = await res.json();
     return { ok: res.ok, data };
 };

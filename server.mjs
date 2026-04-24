@@ -1,4 +1,5 @@
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import express from 'express';
 import morgan from 'morgan';
 import mongoose from 'mongoose';
@@ -21,8 +22,13 @@ const db_user = encodeURIComponent(process.env.db_user);
 const db_password = encodeURIComponent(process.env.db_password);
 const db_cluster = process.env.db_cluster;
 const DB_URI = `mongodb+srv://${db_user}:${db_password}@${db_cluster}`;
+const CLIENT_ORIGIN = String(process.env.CLIENT_ORIGIN || 'http://localhost:5173').replace(/\/+$/, '');
 
 // Middleware
+app.use(cors({
+    origin: CLIENT_ORIGIN,
+    credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('dev'));
@@ -43,7 +49,7 @@ const server = ViteExpress.listen(app, PORT, () => {
 
 const io = new Server(server, {
     cors: {
-        origin: true,
+        origin: CLIENT_ORIGIN,
         credentials: true
     }
 });

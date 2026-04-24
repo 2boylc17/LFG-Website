@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { apiFetch } from "../lib/api.js";
 import useSearchPagination from "../lib/useSearchPagination.js";
 import { groupMatchesQuery } from "../lib/queryMatchers.js";
 
@@ -34,7 +35,7 @@ export default function ViewGroups() {
 		const fetchGroups = async () => {
 			try {
 				setLoading(true);
-				const res = await fetch(`/api/groups/list/${encodeURIComponent(gameName)}`);
+				const res = await apiFetch(`/api/groups/list/${encodeURIComponent(gameName)}`);
 				if (!res.ok) {
 					let message = "Failed to load groups";
 					try { const d = await res.json(); message = d.error || d.message || message; } catch {}

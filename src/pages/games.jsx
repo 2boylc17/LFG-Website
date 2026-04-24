@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../lib/api.js";
 import useSearchPagination from "../lib/useSearchPagination.js";
 import { gameMatchesQuery } from "../lib/queryMatchers.js";
 
@@ -41,7 +42,7 @@ export default function GamesPage() {
 		const fetchGames = async () => {
 			try {
 				setLoading(true);
-				const res = await fetch('/api/games/list');
+				const res = await apiFetch('/api/games/list');
 				if (!res.ok) {
 					let message = "Failed to load games";
 					try { const d = await res.json(); message = d.error || d.message || message; } catch {}

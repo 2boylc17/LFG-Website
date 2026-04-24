@@ -14,6 +14,7 @@ import Settings from "./pages/settings.jsx";
 import Calendar from "./pages/calendar.jsx";
 import Profile from "./pages/profile.jsx";
 import Friends from "./pages/friends.jsx";
+import { apiFetch } from "./lib/api.js";
 import { connectSocket, disconnectSocket } from "./lib/socket.js";
 
 export default function App() {
@@ -29,7 +30,7 @@ export default function App() {
     useEffect(() => {
         const initAuth = async () => {
             try {
-                const response = await fetch('/api/auth/validate', {
+                const response = await apiFetch('/api/auth/validate', {
                     method: 'HEAD',
                     credentials: 'include'
                 });
@@ -76,7 +77,7 @@ export default function App() {
 
     const handleLogout = async () => {
         try {
-            await fetch('/api/auth/logout', {
+            await apiFetch('/api/auth/logout', {
                 method: 'POST',
                 credentials: 'include'
             });

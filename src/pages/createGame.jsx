@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { apiFetch } from "../lib/api.js";
 
 export default function CreateGame() {
     const [name, setName] = useState("");
@@ -47,7 +48,7 @@ export default function CreateGame() {
                 image: imageData
             };
 
-            const response = await fetch('/api/games/add', {
+            const response = await apiFetch('/api/games/add', {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
