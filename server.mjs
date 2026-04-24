@@ -7,6 +7,8 @@ import { Server } from 'socket.io';
 import ViteExpress from 'vite-express';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import authRoutes from './routes/auth.mjs';
 import gameRoutes from './routes/games.mjs';
 import groupRoutes from './routes/groups.mjs';
@@ -30,6 +32,9 @@ process.on('exit', (code) => {
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const isProduction = process.env.NODE_ENV === 'production';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const db_user = encodeURIComponent(process.env.db_user);
 const db_password = encodeURIComponent(process.env.db_password);
 const db_cluster = process.env.db_cluster;
@@ -55,9 +60,24 @@ app.use('/api/games', gameRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/settings', settingsRoutes);
 
-const server = ViteExpress.listen(app, PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+let server;
+
+if (isProduction) {
+    const distPath = path.join(__dirname, 'dist');
+    app.use(express.static(distPath));
+
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(distPath, 'index.html'));
+    });
+
+    server = app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+} else {
+    server = ViteExpress.listen(app, PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
 
 const io = new Server(server, {
     cors: {
