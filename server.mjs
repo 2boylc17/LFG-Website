@@ -32,6 +32,7 @@ process.on('exit', (code) => {
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const HOST = process.env.HOST || '0.0.0.0';
 const isProduction = process.env.NODE_ENV === 'production';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -95,12 +96,12 @@ if (isProduction) {
         res.sendFile(path.join(distPath, 'index.html'));
     });
 
-    server = app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
+    server = app.listen(PORT, HOST, () => {
+        console.log(`Server running on ${HOST}:${PORT}`);
     });
 } else {
     server = ViteExpress.listen(app, PORT, () => {
-        console.log(`Server running on port ${PORT}`);
+        console.log(`Server running on ${HOST}:${PORT}`);
     });
 }
 
