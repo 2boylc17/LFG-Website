@@ -40,12 +40,36 @@ const db_password = encodeURIComponent(process.env.db_password);
 const db_cluster = process.env.db_cluster;
 const DB_URI = `mongodb+srv://${db_user}:${db_password}@${db_cluster}`;
 const CLIENT_ORIGIN = String(process.env.CLIENT_ORIGIN || 'http://localhost:5173').replace(/\/+$/, '');
+const ADDITIONAL_CLIENT_ORIGINS = String(process.env.ADDITIONAL_CLIENT_ORIGINS || '')
+    .split(',')
+    .map((origin) => origin.trim().replace(/\/+$/, ''))
+    .filter(Boolean);
+const ALLOWED_ORIGINS = [CLIENT_ORIGIN, ...ADDITIONAL_CLIENT_ORIGINS, 'http://localhost:5173'];
+
+const isAllowedOrigin = (origin) => {
+    if (!origin) return true;
+    const normalizedOrigin = String(origin).replace(/\/+$/, '');
+    if (ALLOWED_ORIGINS.includes(normalizedOrigin)) return true;
+
+    // Allow Vercel preview deployments when credentials are required.
+    return /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/.test(normalizedOrigin);
+};
+
+const corsOptionsDelegate = (req, callback) => {
+    const requestOrigin = req.header('Origin');
+    const allowed = isAllowedOrigin(requestOrigin);
+
+    callback(null, {
+        origin: allowed ? requestOrigin || true : false,
+        credentials: true,
+        methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization']
+    });
+};
 
 // Middleware
-app.use(cors({
-    origin: CLIENT_ORIGIN,
-    credentials: true
-}));
+app.use(cors(corsOptionsDelegate));
+app.options(/.*/, cors(corsOptionsDelegate));
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('dev'));
@@ -82,7 +106,7 @@ if (isProduction) {
 
 const io = new Server(server, {
     cors: {
-        origin: CLIENT_ORIGIN,
+        origin: (origin, callback) => callback(null, isAllowedOrigin(origin)),
         credentials: true
     }
 });
