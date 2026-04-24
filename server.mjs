@@ -16,6 +16,18 @@ import User from './models/User.mjs';
 
 dotenv.config();
 
+process.on('unhandledRejection', (reason) => {
+    console.error('Unhandled Promise Rejection:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+});
+
+process.on('exit', (code) => {
+    console.error(`Process exiting with code ${code}`);
+});
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 const db_user = encodeURIComponent(process.env.db_user);
