@@ -75,6 +75,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('dev'));
 
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ ok: true, uptime: process.uptime() });
+});
+
 mongoose.connect(DB_URI).then(() => 
     console.log('Connected to MongoDB')
 ).catch((err) => 
