@@ -168,7 +168,7 @@ export default function ViewGroups() {
 			{!loading && !error && filteredGroups.length > 0 && (
 				<div className="games-pagination">
 					<button
-						className="games-pagination-btn"
+						className="pg-prev"
 						onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
 						disabled={safePage === 1}
 					>
@@ -176,7 +176,7 @@ export default function ViewGroups() {
 					</button>
 					<span className="games-pagination-info">Page {safePage} of {totalPages}</span>
 					<button
-						className="games-pagination-btn"
+						className="pg-next"
 						onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
 						disabled={safePage === totalPages}
 					>

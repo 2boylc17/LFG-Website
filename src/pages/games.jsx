@@ -24,6 +24,7 @@ export default function GamesPage() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [pageSize, setPageSize] = useState(6);
+	const [tagSearch, setTagSearch] = useState("");
 	const [selectedTag, setSelectedTag] = useState("");
 	const [sortOrder, setSortOrder] = useState("name-asc");
 	const {
@@ -64,6 +65,12 @@ export default function GamesPage() {
 		...(game.genres || []).map((genre) => String(genre?.name || "").trim()),
 		...(game.platforms || []).map((platform) => String(platform?.name || "").trim())
 	]).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+
+	const tagQuery = tagSearch.trim().toLowerCase();
+	const visibleTags = availableTags.filter((tag) => {
+		if (!tagQuery) return true;
+		return tag === selectedTag || tag.toLowerCase().includes(tagQuery);
+	});
 
 	const filteredGames = games.filter((game) => {
 		if (!gameMatchesQuery(game, q)) return false;
@@ -110,6 +117,14 @@ export default function GamesPage() {
 				<div className="games-filters">
 					<div className="games-page-size games-filter-block">
 						<label htmlFor="games-tag-filter">Filter tag</label>
+						<input
+							type="search"
+							id="games-tag-search"
+							className="tag-search"
+							value={tagSearch}
+							onChange={(e) => setTagSearch(e.target.value)}
+							placeholder="Search tags"
+						/>
 						<select
 							id="games-tag-filter"
 							value={selectedTag}
@@ -117,7 +132,7 @@ export default function GamesPage() {
 							className="games-select"
 						>
 							<option value="">All tags</option>
-							{availableTags.map((tag) => (
+							{visibleTags.map((tag) => (
 								<option key={tag} value={tag}>{tag}</option>
 							))}
 						</select>
@@ -165,7 +180,7 @@ export default function GamesPage() {
 			{!loading && !error && filteredGames.length > 0 && (
 				<div className="games-pagination">
 					<button
-						className="games-pagination-btn"
+						className="pg-prev"
 						onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
 						disabled={safePage === 1}
 					>
@@ -173,7 +188,7 @@ export default function GamesPage() {
 					</button>
 					<span className="games-pagination-info">Page {safePage} of {totalPages}</span>
 					<button
-						className="games-pagination-btn"
+						className="pg-next"
 						onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
 						disabled={safePage === totalPages}
 					>

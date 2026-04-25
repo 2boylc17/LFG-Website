@@ -29,6 +29,16 @@ export default function App() {
 
     useEffect(() => {
         const initAuth = async () => {
+            const storedUsername = localStorage.getItem('username') || "";
+
+            // Avoid a network round trip for obvious anonymous sessions.
+            if (!storedUsername) {
+                setIsLoggedIn(false);
+                setUsername("");
+                setCheckingAuth(false);
+                return;
+            }
+
             try {
                 const response = await apiFetch('/api/auth/validate', {
                     method: 'HEAD',
@@ -36,7 +46,7 @@ export default function App() {
                 });
                 const ok = response.ok;
                 setIsLoggedIn(ok);
-                setUsername(ok ? (localStorage.getItem('username') || "") : "");
+                setUsername(ok ? storedUsername : "");
                 if (!ok) syncStoredUsername("");
             } catch (error) {
                 console.error("Validation error:", error);
