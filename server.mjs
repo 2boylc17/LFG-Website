@@ -80,14 +80,6 @@ app.use('/api/settings', settingsRoutes);
 let server;
 
 if (isProduction) {
-    const distPath = path.join(__dirname, 'dist');
-    app.use(express.static(distPath));
-
-    app.use((req, res, next) => {
-        if (req.method !== 'GET') return next();
-        res.sendFile(path.join(distPath, 'index.html'));
-    });
-
     server = app.listen(PORT, HOST, () => {
         console.log(`Server running on ${HOST}:${PORT}`);
     });
