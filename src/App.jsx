@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import Navbar from "./pages/components/navbar.jsx";
 import Sidebar from "./pages/components/sidebar.jsx";
@@ -114,7 +114,10 @@ export default function App() {
                 <Routes>
                     <Route path="/" element={<Games />} />
                     <Route path="/login" element={<Login onLogin={handleLogin} />} />
-                    <Route path="/createGame" element={<CreateGame />} />
+                    <Route
+                        path="/createGame"
+                        element={import.meta.env.PROD ? <Navigate to="/games" replace /> : <CreateGame />}
+                    />
                     <Route path="/createGroup" element={<CreateGroup />} />
                     <Route path="/createGroup/:gameSlug" element={<CreateGroup />} />
                     <Route path="/games" element={<Games />} />

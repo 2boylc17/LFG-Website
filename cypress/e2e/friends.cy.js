@@ -6,7 +6,7 @@ describe('friends_page', () => {
       statusCode: 200,
       body: {
         friends: [
-          { _id: '507f1f77bcf86cd799439011', username: 'alice', bio: 'Hey there' },
+          { _id: '507f1f77bcf86cd799439011', username: 'user1', bio: 'Simple bio' },
         ],
         incomingRequests: [],
         outgoingRequests: [],
@@ -15,7 +15,7 @@ describe('friends_page', () => {
 
     cy.visit('http://localhost:3000/friends', {
       onBeforeLoad(win) {
-        win.localStorage.setItem('username', 'testuser');
+        win.localStorage.setItem('username', 'user1');
       },
     });
     cy.clearCookies();

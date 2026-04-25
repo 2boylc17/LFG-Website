@@ -12,6 +12,12 @@ const requestJson = async (url, options = {}) => {
     return { ok: res.ok, data };
 };
 
+const normalizeProfile = (profile) => ({
+    bio: String(profile?.bio || '').trim(),
+    platforms: [...(profile?.platforms || [])].sort(),
+    playStyle: String(profile?.playStyle || '').trim()
+});
+
 export default function Settings({ isLoggedIn, onLogin }) {
     const navigate = useNavigate();
     const currentUsername = localStorage.getItem('username') || '';
@@ -73,16 +79,8 @@ export default function Settings({ isLoggedIn, onLogin }) {
         e.preventDefault();
         setProfileMsg(emptyMsg);
 
-        const normalizedProfile = {
-            bio: String(profile.bio || '').trim(),
-            platforms: [...(profile.platforms || [])].sort(),
-            playStyle: String(profile.playStyle || '').trim()
-        };
-        const normalizedInitial = {
-            bio: String(initialProfile.bio || '').trim(),
-            platforms: [...(initialProfile.platforms || [])].sort(),
-            playStyle: String(initialProfile.playStyle || '').trim()
-        };
+        const normalizedProfile = normalizeProfile(profile);
+        const normalizedInitial = normalizeProfile(initialProfile);
 
         if (JSON.stringify(normalizedProfile) === JSON.stringify(normalizedInitial)) {
             setProfileMsg({ text: 'No profile changes to save.', error: false });

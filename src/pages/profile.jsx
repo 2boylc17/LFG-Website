@@ -52,6 +52,9 @@ export default function Profile() {
     const signedInUsername = localStorage.getItem("username") || "";
     const isOwnProfile = Boolean(signedInUsername && displayUsername && signedInUsername === displayUsername);
     const canSendRequest = Boolean(signedInUsername) && !isOwnProfile && Boolean(profile?.username);
+    const toUsernameList = (list) => Array.isArray(list)
+        ? list.map((entry) => entry?.username).filter(Boolean)
+        : [];
 
     useEffect(() => {
         setFriendStatus("none");
@@ -71,15 +74,9 @@ export default function Profile() {
                 }
 
                 const data = await response.json();
-                const friendUsernames = Array.isArray(data?.friends)
-                    ? data.friends.map((friend) => friend?.username).filter(Boolean)
-                    : [];
-                const incomingUsernames = Array.isArray(data?.incomingRequests)
-                    ? data.incomingRequests.map((entry) => entry?.username).filter(Boolean)
-                    : [];
-                const outgoingUsernames = Array.isArray(data?.outgoingRequests)
-                    ? data.outgoingRequests.map((entry) => entry?.username).filter(Boolean)
-                    : [];
+                const friendUsernames = toUsernameList(data?.friends);
+                const incomingUsernames = toUsernameList(data?.incomingRequests);
+                const outgoingUsernames = toUsernameList(data?.outgoingRequests);
 
                 if (!isDisposed && profile?.username) {
                     if (friendUsernames.includes(profile.username)) {

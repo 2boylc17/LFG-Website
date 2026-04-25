@@ -18,7 +18,7 @@ export default function CreateGame() {
         .split(',')
         .map((value) => value.trim())
         .filter(Boolean)
-        .map((nameValue) => ({ name: nameValue }));
+        .map((name) => ({ name }));
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -70,7 +70,7 @@ export default function CreateGame() {
         }
     };
 
-    const handleImageUpload = async (e) => {
+    const handleImageUpload = (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -83,8 +83,6 @@ export default function CreateGame() {
 
         setSelectedImage(file);
     };
-
-
 
     return (
         <div className="page">

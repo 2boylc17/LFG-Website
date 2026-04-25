@@ -2,12 +2,12 @@ describe('login_page', () => {
   beforeEach(() => {
     cy.intercept('POST', '**/api/auth/login', {
       statusCode: 200,
-      body: { message: 'Login successful', username: 'testuser' },
+      body: { message: 'Login successful', username: 'user1' },
     }).as('loginRequest');
 
     cy.intercept('POST', '**/api/auth/register', {
       statusCode: 201,
-      body: { message: 'User registered successfully', username: 'testuser' },
+      body: { message: 'User registered successfully', username: 'user1' },
     }).as('registerRequest');
 
     cy.visit('http://localhost:3000/login');
@@ -44,7 +44,7 @@ describe('login_page', () => {
     cy.wait(500);
 
     cy.get('button.login-toggle').click();
-    cy.get('input.login-input[type="text"]').type('testuser');
+    cy.get('input.login-input[type="text"]').type('user1');
     cy.get('input.login-input[type="password"]').type('123');
     cy.get('button.login-submit').click();
     cy.contains('.login-error', 'Password must be at least 6 characters').should('be.visible');
@@ -53,7 +53,7 @@ describe('login_page', () => {
   it('Successful login navigates to home', () => {
     cy.wait(500);
 
-    cy.get('input.login-input[type="text"]').type('testuser');
+    cy.get('input.login-input[type="text"]').type('user1');
     cy.get('input.login-input[type="password"]').type('password123');
     cy.get('button.login-submit').click();
     cy.wait('@loginRequest').its('response.statusCode').should('eq', 200);
@@ -67,7 +67,7 @@ describe('login_page', () => {
     }).as('loginRequest');
     cy.wait(500);
 
-    cy.get('input.login-input[type="text"]').type('testuser');
+    cy.get('input.login-input[type="text"]').type('user1');
     cy.get('input.login-input[type="password"]').type('wrongpassword');
     cy.get('button.login-submit').click();
     cy.wait('@loginRequest');
@@ -78,7 +78,7 @@ describe('login_page', () => {
     cy.wait(500);
 
     cy.get('button.login-toggle').click();
-    cy.get('input.login-input[type="text"]').type('newuser');
+    cy.get('input.login-input[type="text"]').type('user2');
     cy.get('input.login-input[type="password"]').type('password123');
     cy.get('button.login-submit').click();
     cy.wait('@registerRequest').its('response.statusCode').should('eq', 201);
@@ -93,7 +93,7 @@ describe('login_page', () => {
     cy.wait(500);
 
     cy.get('button.login-toggle').click();
-    cy.get('input.login-input[type="text"]').type('existinguser');
+    cy.get('input.login-input[type="text"]').type('user3');
     cy.get('input.login-input[type="password"]').type('password123');
     cy.get('button.login-submit').click();
     cy.wait('@registerRequest');

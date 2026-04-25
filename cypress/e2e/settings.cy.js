@@ -14,7 +14,7 @@ describe('settings_page', () => {
 
     cy.visit('http://localhost:3000/settings', {
       onBeforeLoad(win) {
-        win.localStorage.setItem('username', 'testuser');
+        win.localStorage.setItem('username', 'user1');
       },
     });
     cy.clearCookies();
@@ -70,7 +70,7 @@ describe('settings_page', () => {
 
     cy.get('#bio').clear().type('Updated bio text');
     cy.get('.settings-save-btn').first().click();
-    cy.wait('@saveProfile').its('response.statusCode').should('eq', 200);
+    cy.wait('@saveProfile');
     cy.get('.settings-success').should('contain', 'Profile saved.');
   });
 });

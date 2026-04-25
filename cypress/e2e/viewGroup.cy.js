@@ -6,19 +6,19 @@ describe('view_group_page', () => {
       statusCode: 200,
       body: {
         _id: groupId,
-        name: 'Test Group',
+        name: 'group1',
         description: 'A group for testing',
         platform: 'PC',
         experience: 'No Experience Required',
         microphone: 'No Mic',
         region: 'North America',
         joinRequirement: 'auto',
-        members: [{ _id: '507f1f77bcf86cd799439021', username: 'alice' }],
+        members: [{ _id: '507f1f77bcf86cd799439021', username: 'user1' }],
         pendingMembers: [],
-        owner: { _id: '507f1f77bcf86cd799439021', username: 'alice' },
+        owner: { _id: '507f1f77bcf86cd799439021', username: 'user1' },
         tags: [],
         createdAt: new Date().toISOString(),
-        game: { name: 'Test Game', image: null },
+        game: { name: 'game1', image: null },
       },
     }).as('getGroup');
 
@@ -32,14 +32,14 @@ describe('view_group_page', () => {
 
     cy.get('.view-group-page').should('be.visible');
     cy.get('.view-group-card').should('be.visible');
-    cy.get('h1').should('contain', 'Test Group');
+    cy.get('h1').should('contain', 'group1');
   });
 
   it('Group details display correctly', () => {
     cy.wait('@getGroup');
     cy.wait(500);
 
-    cy.get('h1').should('contain', 'Test Group');
+    cy.get('h1').should('contain', 'group1');
     cy.contains('p', 'A group for testing').should('be.visible');
   });
 

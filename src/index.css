@@ -2144,6 +2144,7 @@ li {
 
 .calendar-event-item strong {
   display: block;
+  color: #fff;
 }
 
 .calendar-event-item p {

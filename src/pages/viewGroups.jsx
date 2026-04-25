@@ -25,6 +25,14 @@ export default function ViewGroups() {
 		setCurrentPage(1);
 	}, [selectedTag, sortOrder, setCurrentPage]);
 
+	const getGroupTags = (group) => [
+		...(group.tags || []).map((tag) => String(tag || "").trim()),
+		String(group.platform || "").trim(),
+		String(group.experience || "").trim(),
+		String(group.microphone || "").trim(),
+		String(group.region || "").trim()
+	].filter(Boolean);
+
 	useEffect(() => {
 		window.scrollTo({ top: 0, behavior: "auto" });
 		if (!gameName) {
@@ -55,24 +63,13 @@ export default function ViewGroups() {
 
 	const q = debouncedSearch.trim().toLowerCase();
 	const availableTags = Array.from(new Set(groups.flatMap((group) => [
-		...(group.tags || []).map((tag) => String(tag || "").trim()),
-		String(group.platform || "").trim(),
-		String(group.experience || "").trim(),
-		String(group.microphone || "").trim(),
-		String(group.region || "").trim()
+		...getGroupTags(group)
 	]).filter(Boolean))).sort((a, b) => a.localeCompare(b));
 
 	const filteredGroups = groups.filter((group) => {
 		if (!groupMatchesQuery(group, q)) return false;
 		if (!selectedTag) return true;
-		const groupTags = [
-			...(group.tags || []).map((tag) => String(tag || "").trim()),
-			String(group.platform || "").trim(),
-			String(group.experience || "").trim(),
-			String(group.microphone || "").trim(),
-			String(group.region || "").trim()
-		].filter(Boolean);
-		return groupTags.includes(selectedTag);
+		return getGroupTags(group).includes(selectedTag);
 	});
 
 	const sortedGroups = [...filteredGroups].sort((a, b) => {

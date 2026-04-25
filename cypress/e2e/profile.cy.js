@@ -1,16 +1,16 @@
 describe('profile_page', () => {
   beforeEach(() => {
-    cy.intercept('GET', '**/api/settings/public/testuser', {
+    cy.intercept('GET', '**/api/settings/public/user1', {
       statusCode: 200,
       body: {
-        username: 'testuser',
+        username: 'user1',
         bio: 'Love gaming!',
         playStyle: 'Casual',
         platforms: ['PC', 'PlayStation'],
       },
     }).as('getProfile');
 
-    cy.visit('http://localhost:3000/profile/testuser');
+    cy.visit('http://localhost:3000/profile/user1');
     cy.clearCookies();
   });
 
@@ -28,19 +28,19 @@ describe('profile_page', () => {
     cy.wait('@getProfile');
     cy.wait(500);
 
-    cy.get('.profile-username').should('contain', 'testuser');
+    cy.get('.profile-username').should('contain', 'user1');
     cy.get('.profile-value').should('contain', 'Love gaming!');
     cy.get('.profile-value').should('contain', 'Casual');
     cy.get('.profile-platform-chip').should('have.length', 2);
   });
 
   it('Shows error for unknown user', () => {
-    cy.intercept('GET', '**/api/settings/public/unknownuser', {
+    cy.intercept('GET', '**/api/settings/public/user2', {
       statusCode: 404,
       body: { message: 'User not found' },
     }).as('getProfile');
 
-    cy.visit('http://localhost:3000/profile/unknownuser');
+    cy.visit('http://localhost:3000/profile/user2');
     cy.wait('@getProfile');
     cy.wait(500);
 
@@ -53,9 +53,9 @@ describe('profile_page', () => {
       body: { friends: [], incomingRequests: [], outgoingRequests: [] },
     }).as('getFriends');
 
-    cy.visit('http://localhost:3000/profile/testuser', {
+    cy.visit('http://localhost:3000/profile/user1', {
       onBeforeLoad(win) {
-        win.localStorage.setItem('username', 'anotheruser');
+        win.localStorage.setItem('username', 'user3');
       },
     });
 
