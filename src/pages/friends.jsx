@@ -5,6 +5,20 @@ import { connectSocket, getSocket } from "../lib/socket.js";
 
 const emptyNotice = { text: "", error: false };
 
+const getThreadSocket = () => {
+    if (typeof window !== 'undefined' && window.__friendsTestSocket) {
+        return window.__friendsTestSocket;
+    }
+    return getSocket() || connectSocket();
+};
+
+const getLiveSocket = () => {
+    if (typeof window !== 'undefined' && window.__friendsLiveSocket) {
+        return window.__friendsLiveSocket;
+    }
+    return connectSocket();
+};
+
 export default function Friends({ isLoggedIn }) {
     const navigate = useNavigate();
     const [friends, setFriends] = useState([]);
@@ -59,7 +73,7 @@ export default function Friends({ isLoggedIn }) {
             setLoadingThread(true);
             setMessagesNotice(emptyNotice);
 
-            const socket = getSocket() || connectSocket();
+            const socket = getThreadSocket();
             const data = await new Promise((resolve) => {
                 socket.emit('dm:thread:get', { withUsername: friendUsername }, (payload) => {
                     resolve(payload || { ok: false, message: 'No response from server' });
@@ -102,7 +116,7 @@ export default function Friends({ isLoggedIn }) {
     }, [isLoggedIn, navigate]);
 
     useEffect(() => {
-        const socket = connectSocket();
+        const socket = getLiveSocket();
 
         const onReady = () => setSocketReady(true);
         const onConnect = () => setSocketReady(true);

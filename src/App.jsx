@@ -21,6 +21,7 @@ export default function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [username, setUsername] = useState("");
     const [checkingAuth, setCheckingAuth] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(true);
 
     const syncStoredUsername = (value = "") => {
         if (value) localStorage.setItem('username', value);
@@ -108,9 +109,9 @@ export default function App() {
 
     return (
         <Router>
-            <Navbar isLoggedIn={isLoggedIn} onLogout={handleLogout} username={username} />
-            <Sidebar isLoggedIn={isLoggedIn} />
-            <main>
+            <Navbar isLoggedIn={isLoggedIn} onLogout={handleLogout} username={username} sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+            <Sidebar isLoggedIn={isLoggedIn} sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+            <main className={sidebarOpen ? '' : 'sidebar-collapsed'}>
                 <Routes>
                     <Route path="/" element={<Games />} />
                     <Route path="/login" element={<Login onLogin={handleLogin} />} />
@@ -122,6 +123,7 @@ export default function App() {
                     <Route path="/createGroup/:gameSlug" element={<CreateGroup />} />
                     <Route path="/games" element={<Games />} />
                     <Route path="/games/:gameSlug" element={<ViewGroups />} />
+                    <Route path="/group" element={<ViewGroup />} />
                     <Route path="/group/:groupId" element={<ViewGroup />} />
                     <Route path="/socket-test" element={<SocketTest />} />
                     <Route path="/calendar" element={<Calendar />} />

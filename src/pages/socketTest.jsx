@@ -77,7 +77,7 @@ export default function SocketTest() {
 
         setIsConnected(Boolean(socket.connected));
         setSocketId(socket.id || '');
-        appendLog('Socket test listeners initialized. Click Connect to begin.');
+        appendLog('Socket listeners ready. Click Connect.');
 
         return () => {
             socket.off('connect', onConnect);

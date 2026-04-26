@@ -3,15 +3,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { apiFetch } from "../lib/api.js";
 import { connectSocket, getSocket } from "../lib/socket.js";
 
-const getMessageFromResponse = async (response, fallbackMessage) => {
-    let message = fallbackMessage;
-    try {
-        const data = await response.json();
-        message = data?.message || data?.error || message;
-    } catch {
-        // Keep fallback message when response body is not JSON.
+const getGroupSocket = () => {
+    if (typeof window !== 'undefined' && window.__groupTestSocket) {
+        return window.__groupTestSocket;
     }
-    return message;
+    return connectSocket();
 };
 
 const isValidObjectId = (value) => /^[a-f\d]{24}$/i.test(String(value || ""));
@@ -53,15 +49,20 @@ export default function ViewGroup() {
     const shouldAutoScrollRef = useRef(true);
     const currentUsername = localStorage.getItem("username") || "";
 
-    const groupTitle = group?.name || "Group";
-
     useEffect(() => {
         const fetchGroup = async () => {
             try {
                 setLoading(true);
                 const response = await apiFetch(`/api/groups/id/${encodeURIComponent(groupId || "")}`);
                 if (!response.ok) {
-                    throw new Error(await getMessageFromResponse(response, "Failed to load group"));
+                    let message = "Failed to load group";
+                    try {
+                        const data = await response.json();
+                        message = data?.message || data?.error || message;
+                    } catch {
+                        // Keep fallback message when response body is not JSON.
+                    }
+                    throw new Error(message);
                 }
 
                 const data = await response.json();
@@ -109,7 +110,7 @@ export default function ViewGroup() {
 
         const groupIdStr = String(groupId);
 
-        const socket = connectSocket();
+        const socket = getGroupSocket();
 
         const onIncomingMessage = (payload) => {
             if (!payload || String(payload.groupId) !== groupIdStr) return;
@@ -161,7 +162,7 @@ export default function ViewGroup() {
     useEffect(() => {
         if (!groupId) return undefined;
 
-        const socket = connectSocket();
+        const socket = getGroupSocket();
         const groupIdStr = String(groupId);
 
         const onJoinRequestReviewed = (payload) => {
@@ -225,7 +226,7 @@ export default function ViewGroup() {
         }
     };
 
-    const handleSendMessage = async (e) => {
+    const handleSendMessage = (e) => {
         e.preventDefault();
 
         const text = messageInput.trim();
@@ -389,7 +390,7 @@ export default function ViewGroup() {
                 <>
                     <section className="view-group-card">
                         <div className="view-group-header-row">
-                            <h1>{groupTitle}</h1>
+                            <h1>{group?.name || "Group"}</h1>
                             <span className="view-group-created-inline">
                                 {group.createdAt ? new Date(group.createdAt).toLocaleString() : "Unknown"}
                             </span>
@@ -526,7 +527,7 @@ export default function ViewGroup() {
                                                         onClick={() => handleReviewRequest(memberId, "reject")}
                                                         disabled={reviewingMemberId === memberId}
                                                     >
-                                                        {reviewingMemberId === memberId ? "Working..." : "Kick"}
+                                                        {reviewingMemberId === memberId ? "Working..." : "Remove"}
                                                     </button>
                                                 </div>
                                                 ) : null}

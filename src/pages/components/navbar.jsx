@@ -4,7 +4,9 @@ import { Link, useNavigate } from 'react-router-dom';
 export default function Navbar({
   isLoggedIn,
   onLogout,
-  username
+  username,
+  sidebarOpen,
+  onToggleSidebar
 }) {
   const navigate = useNavigate();
   
@@ -16,20 +18,25 @@ export default function Navbar({
 
   return (
     <nav className="navbar">
+        <div className="navbar-left">
+            <button className="navbar-toggle-btn" onClick={onToggleSidebar} title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}>
+                ☰
+            </button>
+        </div>
         <h1 className="navbar-title">LFG Website</h1>
         <div className="navbar-right">
             {isLoggedIn ? (
                 <>
                     <span className="username-label">{username}</span>
-                    <Link className="log-link" onClick={handleLogout}>Logout</Link>
+                    <button className="navbar-btn navbar-logout-btn" onClick={handleLogout}>Logout</button>
                 </>
             ) : (
-              <div className="auth-link-row">
-                <Link className="nav-auth-link" to="/login">Login</Link>
-                <Link className="nav-auth-link" to="/login?mode=register">Register</Link>
+              <div className="auth-btn-row">
+                <button className="navbar-btn navbar-auth-btn" onClick={() => navigate('/login')}>Login</button>
+                <button className="navbar-btn navbar-auth-btn" onClick={() => navigate('/login?mode=register')}>Register</button>
               </div>
             )}
-            <Link to="/settings" title="Settings" className="settings-link">
+            <Link to="/settings" title="Settings" className="navbar-btn navbar-settings-btn">
                 ⚙️
             </Link>
         </div>

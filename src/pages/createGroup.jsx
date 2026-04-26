@@ -74,7 +74,7 @@ export default function CreateGroup() {
 		const fetchGameDetails = async () => {
 			if (!selectedGameName) {
 				setLoadingGame(false);
-				setGameError("Missing game context. Open this page from a game details page.");
+				setGameError("Missing game context.");
 				return;
 			}
 
@@ -148,7 +148,7 @@ export default function CreateGroup() {
 
 		try {
 			if (!selectedGameName) {
-				throw new Error('Missing game context. Open this page from a game details page.');
+				throw new Error('Missing game context.');
 			}
 
 			if (!body.name || !body.description || !body.platform || !body.experience || !body.microphone || !body.region) {

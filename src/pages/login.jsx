@@ -45,7 +45,7 @@ export default function Login({ onLogin }) {
 		<div className="login-page">
 			<div className="login-container">
 				<h2>{isRegistering ? "Create Account" : "Welcome Back"}</h2>
-				<p className="login-copy">{isRegistering ? "Join and start creating groups." : "Sign in to create and manage your groups."}</p>
+				<p className="login-copy">{isRegistering ? "Create an account." : "Sign in."}</p>
 				<form className="login-form" onSubmit={handleSubmit}>
 					<input
 						className="login-input"

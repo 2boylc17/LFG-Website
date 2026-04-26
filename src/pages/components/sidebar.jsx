@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../lib/api.js';
 
-export default function Sidebar({ isLoggedIn }) {
+export default function Sidebar({ isLoggedIn, sidebarOpen, onToggleSidebar }) {
     const navigate = useNavigate();
     const location = useLocation();
     const [pendingRequestCount, setPendingRequestCount] = useState(0);
@@ -62,13 +62,20 @@ export default function Sidebar({ isLoggedIn }) {
     }, []);
 
     return (
-        <aside className="sidebar">
-            <div className="sideBox" id="gamesBox" onClick={() => navigate('/games')}>Games</div>
-            <div className="sideBox sideBox-with-badge" id="friendsBox" onClick={() => handleProtectedTabClick('/friends')}>
-                Friends
-                {pendingRequestCount > 0 ? <span className="sideBox-request-badge">{pendingRequestCount}</span> : null}
-            </div>
-            <div className="sideBox" id="calendarBox" onClick={() => handleProtectedTabClick('/calendar')}>Calendar</div>
+        <aside className={`sidebar ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+            <button className="sidebar-toggle-btn" onClick={onToggleSidebar} title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}>
+                {sidebarOpen ? '◀' : '▶'}
+            </button>
+            {sidebarOpen && (
+                <div className="sidebar-items-container">
+                    <div className="sideBox" id="gamesBox" onClick={() => navigate('/games')}>Games</div>
+                    <div className="sideBox sideBox-with-badge" id="friendsBox" onClick={() => handleProtectedTabClick('/friends')}>
+                        Friends
+                        {pendingRequestCount > 0 ? <span className="sideBox-request-badge">{pendingRequestCount}</span> : null}
+                    </div>
+                    <div className="sideBox" id="calendarBox" onClick={() => handleProtectedTabClick('/calendar')}>Calendar</div>
+                </div>
+            )}
         </aside>
     );
 }
