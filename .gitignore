@@ -3,3 +3,4 @@ node_modules
 .env
 .nyc_output
 coverage
+LOCAL_TERMINAL_COMMANDS.md

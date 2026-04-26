@@ -1,48 +1,42 @@
 # LFG-Website
 
-## Cypress Coverage
 
-Run your Cypress E2E tests with frontend code coverage instrumentation:
+# LFG-Website
 
-```bash
-npm run coverage:run
-```
+## Table of Contents
+- [Overview](#overview)
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Testing](#testing)
+- [Coverage](#coverage)
+- [Project Structure](#project-structure)
+- [Contributing](#contributing)
+- [License](#license)
 
-This runs app-focused specs in `cypress/e2e/*.cy.js` (for example, `games.cy.js`) and excludes Cypress demo/example specs.
+## Overview
+<!-- Project overview goes here -->
 
-Run everything in one command (starts app server, waits for health check, runs Cypress, then stops server):
+## Features
+<!-- List of features -->
 
-```bash
-npm run coverage:run:with-server
-```
+## Installation
+<!-- Installation instructions -->
 
-Run coverage for page specs under `cypress/e2e/pages/*.cy.js`:
+## Usage
+<!-- Usage instructions -->
 
-```bash
-npm run coverage:pages:with-server
-```
+## Testing
+<!-- Testing instructions -->
 
-Plain Cypress runs now collect coverage for app specs by default.
+## Coverage
+<!-- Coverage instructions -->
 
-1. Start the app server:
+## Project Structure
+<!-- Project structure description -->
 
-```bash
-npm run dev
-```
+## Contributing
+<!-- Contribution guidelines -->
 
-2. In another terminal, run Cypress:
-
-```bash
-npx cypress run
-```
-
-3. Generate the HTML report:
-
-```bash
-npm run coverage:report
-```
-
-This generates:
-
-- Terminal summary output from `nyc`
-- HTML coverage report at `coverage/index.html`
+## License
+<!-- License information -->
