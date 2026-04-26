@@ -1,8 +1,5 @@
 # LFG-Website
 
-
-# LFG-Website
-
 ## Table of Contents
 - [Overview](#overview)
 - [Features](#features)
