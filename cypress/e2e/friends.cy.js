@@ -51,14 +51,14 @@ describe('friends_page', () => {
     cy.intercept('HEAD', '**/api/auth/validate', { statusCode: 200 }).as('validateRequest');
   });
 
-  it('Redirects to login when not logged in', () => {
+  it('redirects to login when not logged in', () => {
     cy.clearLocalStorage();
     cy.clearCookies();
     cy.visit('http://localhost:3000/friends');
     cy.url().should('include', '/login');
   });
 
-  it('Renders page, toggles requests panel, and shows API error', () => {
+  it('shows page, toggles requests panel, and shows api error', () => {
     loadFriends();
     cy.get('.friends-page').should('be.visible');
     cy.get('.friend-requests-shell').should('be.visible');
@@ -71,7 +71,7 @@ describe('friends_page', () => {
     cy.get('.error').should('be.visible');
   });
 
-  it('Request panel shows requests and handles accept and reject', () => {
+  it('shows requests and handles accept and reject', () => {
     loadFriends(
       friendsBody({ friends: [], incomingRequests: [{ _id: 'id3', username: 'user2', bio: 'text2' }], outgoingRequests: [{ _id: 'id4', username: 'user3' }] }),
       'getFriendsRequests'
@@ -91,7 +91,7 @@ describe('friends_page', () => {
     cy.contains('.friends-action-message', 'Failed to process request').should('be.visible');
   });
 
-  it('Friends list interactions and chat view', () => {
+  it('shows friends list interactions and chat view', () => {
     loadFriends(friendsBody({ friends: [] }), 'getFriendsEmpty');
     cy.contains('.friends-empty', 'No friends available to message yet.').should('be.visible');
     loadFriends(friendsBody({ friends: [friend1, friend2] }), 'getFriendsList');
@@ -112,7 +112,7 @@ describe('friends_page', () => {
     cy.contains('.friends-action-message', 'Friend removed').should('be.visible');
   });
 
-  it('Shows loading state and loads thread messages from socket', () => {
+  it('shows loading state and loads thread messages', () => {
     loadFriends(friendsBody({ friends: [friend1] }), 'getFriendsList');
     selectFriend('user1');
     cy.contains('Loading messages...').should('be.visible');
@@ -128,7 +128,7 @@ describe('friends_page', () => {
     cy.contains('Loading messages...').should('not.exist');
   });
 
-  it('Live socket messages are added, filtered, and deduplicated', () => {
+  it('adds, filters, and deduplicates live socket messages', () => {
     const socket = createFakeSocket({ ok: true, messages: [] });
     loadFriends(friendsBody({ friends: [friend1, friend2] }), 'getFriendsSocket', (win) => {
       win.__friendsLiveSocket = socket;

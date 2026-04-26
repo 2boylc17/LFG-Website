@@ -7,5 +7,5 @@ const gameSchema = new mongoose.Schema({
     image: { data: Buffer, contentType: String }
 });
 
-const Game = mongoose.model('Games', gameSchema, 'Games');
-export default Game;
+const GameModel = mongoose.model('Games', gameSchema, 'Games');
+export default GameModel;

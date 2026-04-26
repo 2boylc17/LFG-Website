@@ -26,14 +26,10 @@
         "preview": "vite preview",
         "cypress:open": "cypress open",
         "cypress:run": "cypress run",
-        "cypress:run:pages": "cypress run --spec \"cypress/e2e/pages/*.cy.js\"",
         "coverage:e2e": "cross-env CYPRESS_COVERAGE=true cypress run --spec \"cypress/e2e/*.cy.js\"",
-        "coverage:e2e:pages": "cross-env CYPRESS_COVERAGE=true cypress run --spec \"cypress/e2e/pages/*.cy.js\"",
         "coverage:report": "nyc report --reporter=text-summary --reporter=html",
         "coverage:run": "npm run coverage:e2e && npm run coverage:report",
-        "coverage:run:with-server": "start-server-and-test \"cross-env CYPRESS_COVERAGE=true npm run dev\" http-get://localhost:3000/api/health \"npm run coverage:e2e && npm run coverage:report\"",
-        "coverage:pages:run": "npm run coverage:e2e:pages && npm run coverage:report",
-        "coverage:pages:with-server": "start-server-and-test \"cross-env CYPRESS_COVERAGE=true npm run dev\" http-get://localhost:3000/api/health \"npm run coverage:e2e:pages && npm run coverage:report\""
+        "coverage:run:with-server": "start-server-and-test \"cross-env CYPRESS_COVERAGE=true npm run dev\" http-get://localhost:3000/api/health \"npm run coverage:e2e && npm run coverage:report\""
     },
     "devDependencies": {
         "@cypress/code-coverage": "^4.0.3",

@@ -18,7 +18,7 @@ const getImageSrc = (image) => {
 	return null;
 };
 
-export default function GamesPage() {
+export default function Games() {
 	const navigate = useNavigate();
 	const [games, setGames] = useState([]);
 	const [loading, setLoading] = useState(true);
@@ -60,7 +60,7 @@ export default function GamesPage() {
 		fetchGames();
 	}, []);
 
-	const q = debouncedSearch.trim().toLowerCase();
+	const searchQuery = debouncedSearch.trim().toLowerCase();
 	const availableTags = Array.from(new Set(games.flatMap((game) => [
 		...(game.genres || []).map((genre) => String(genre?.name || "").trim()),
 		...(game.platforms || []).map((platform) => String(platform?.name || "").trim())
@@ -73,7 +73,7 @@ export default function GamesPage() {
 	});
 
 	const filteredGames = games.filter((game) => {
-		if (!gameMatchesQuery(game, q)) return false;
+		if (!gameMatchesQuery(game, searchQuery)) return false;
 		if (!selectedTag) return true;
 		const genreTags = (game.genres || []).map((genre) => String(genre?.name || "").trim());
 		const platformTags = (game.platforms || []).map((platform) => String(platform?.name || "").trim());
@@ -81,8 +81,8 @@ export default function GamesPage() {
 	});
 
 	const sortedGames = [...filteredGames].sort((a, b) => {
-		const cmp = String(a.name || "").localeCompare(String(b.name || ""));
-		return sortOrder === "name-desc" ? -cmp : cmp;
+		const nameCompare = String(a.name || "").localeCompare(String(b.name || ""));
+		return sortOrder === "name-desc" ? -nameCompare : nameCompare;
 	});
 
 	const { totalPages, safePage, pagedItems: pagedGames } = paginate(sortedGames);
@@ -169,8 +169,8 @@ export default function GamesPage() {
 									? <img src={imageSrc} alt={`${game.name} cover`} className="game-image" />
 									: <span>No image available</span>
 								}
-								<p>Genres: {game.genres.map((g) => g.name).join(", ")}</p>
-								<p>Platforms: {game.platforms.map((p) => p.name).join(", ")}</p>
+								<p>Genres: {game.genres.map((genre) => genre.name).join(", ")}</p>
+								<p>Platforms: {game.platforms.map((platform) => platform.name).join(", ")}</p>
 							</div>
 						</div>
 					);

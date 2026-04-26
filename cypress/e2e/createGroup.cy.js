@@ -16,7 +16,7 @@ describe('create_group_page', () => {
     cy.get('.create-group-field').eq(6).find('select').select('North America');
   }
 
-  it('Renders and shows error states', () => {
+  it('shows create group page and errors', () => {
     visitCreateGroup();
     cy.wait('@getGames');
     cy.wait(500);
@@ -34,7 +34,7 @@ describe('create_group_page', () => {
     cy.get('.error').should('be.visible');
   });
 
-  it('Tag management: add, remove, and deduplication', () => {
+  it('adds, removes, and deduplicates tags', () => {
     visitCreateGroup();
     cy.wait('@getGames');
     cy.wait(500);
@@ -48,7 +48,7 @@ describe('create_group_page', () => {
     cy.contains('.create-group-tag-empty', 'No tags added.').should('be.visible');
   });
 
-  it('Form submission: password validation, API error, success, and payload', () => {
+  it('handles submit validation, api error, and success', () => {
     visitCreateGroup();
     cy.wait('@getGames');
     cy.wait(500);

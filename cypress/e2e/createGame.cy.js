@@ -9,7 +9,7 @@ describe('create_game_page', () => {
     cy.clearCookies();
   });
 
-  it('All Fields Render', () => {
+  it('shows create game fields', () => {
     cy.wait(500);
 
     cy.get('h2').should('contain', 'Create a New Game');
@@ -18,7 +18,7 @@ describe('create_game_page', () => {
     cy.get('button[type="submit"]').should('be.visible').and('contain', 'Add Game');
   });
 
-  it('Shows error for empty game name', () => {
+  it('shows error for empty game name', () => {
     cy.wait(500);
 
     cy.get('input[type="text"]').eq(0).type('   ');
@@ -28,7 +28,7 @@ describe('create_game_page', () => {
     cy.contains('p', 'Error: Game name cannot be empty').should('be.visible');
   });
 
-  it('Shows error when genre or platform is empty', () => {
+  it('shows error when genre or platform is empty', () => {
     cy.wait(500);
 
     cy.get('input[type="text"]').eq(0).type('game1');
@@ -38,7 +38,7 @@ describe('create_game_page', () => {
     cy.contains('p', 'Error: Genre and platform cannot be empty').should('be.visible');
   });
 
-  it('Successful game creation shows success message', () => {
+  it('shows success after game creation', () => {
     cy.wait(500);
 
     cy.get('input[type="text"]').eq(0).type('game1');
@@ -49,7 +49,7 @@ describe('create_game_page', () => {
     cy.contains('p', 'Game added successfully').should('be.visible');
   });
 
-  it('Failed game creation shows error message', () => {
+  it('shows failed game creation error', () => {
     cy.intercept('POST', '**/api/games/add', {
       statusCode: 400,
       body: { error: 'Game already exists' },
@@ -64,12 +64,12 @@ describe('create_game_page', () => {
     cy.contains('p', 'Error: Game already exists').should('be.visible');
   });
 
-  it('Formats genres and platforms as name objects in request payload', () => {
+  it('formats genres and platforms in request payload', () => {
     cy.wait(500);
 
-    cy.get('input[type="text"]').eq(0).type('game3');
-    cy.get('input[type="text"]').eq(1).type(' Action , RPG ,  ');
-    cy.get('input[type="text"]').eq(2).type(' PC, PlayStation ');
+    cy.get('input[type="text"]').eq(0).type('game3', { delay: 0 });
+    cy.get('input[type="text"]').eq(1).type(' Action , RPG ,  ', { delay: 0 });
+    cy.get('input[type="text"]').eq(2).type(' PC, PlayStation ', { delay: 0 });
     cy.get('button[type="submit"]').click();
 
     cy.wait('@addGameRequest').its('request.body').should('deep.equal', {
@@ -80,7 +80,7 @@ describe('create_game_page', () => {
     });
   });
 
-  it('Shows error for invalid image file type', () => {
+  it('shows error for invalid image file type', () => {
     cy.wait(500);
 
     cy.get('input[type="file"]').selectFile({
@@ -94,7 +94,7 @@ describe('create_game_page', () => {
     cy.get('input[type="file"]').should('have.value', '');
   });
 
-  it('Resets form fields after successful creation', () => {
+  it('resets form after successful creation', () => {
     cy.wait(500);
 
     cy.get('input[type="text"]').eq(0).type('game4');
@@ -109,7 +109,7 @@ describe('create_game_page', () => {
     cy.contains('p', 'Game added successfully').should('be.visible');
   });
 
-  it('Includes image data in request when an image is uploaded', () => {
+  it('includes image data when an image is uploaded', () => {
     cy.wait(500);
 
     cy.get('input[type="text"]').eq(0).type('game5');

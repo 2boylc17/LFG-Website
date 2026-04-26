@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 import Navbar from "./pages/components/navbar.jsx";
 import Sidebar from "./pages/components/sidebar.jsx";
@@ -9,7 +9,6 @@ import ViewGroups from "./pages/viewGroups.jsx";
 import ViewGroup from "./pages/viewGroup.jsx";
 import CreateGame from "./pages/createGame.jsx";
 import CreateGroup from "./pages/createGroup.jsx";
-import SocketTest from "./pages/socketTest.jsx";
 import Settings from "./pages/settings.jsx";
 import Calendar from "./pages/calendar.jsx";
 import Profile from "./pages/profile.jsx";
@@ -17,13 +16,74 @@ import Friends from "./pages/friends.jsx";
 import { apiFetch } from "./lib/api.js";
 import { connectSocket, disconnectSocket } from "./lib/socket.js";
 
+function AppLayout({
+    isLoggedIn,
+    username,
+    sidebarOpen,
+    setSidebarOpen,
+    handleLogout,
+    handleLogin
+}) {
+    const location = useLocation();
+    const hasLoadedRouteRef = useRef(false);
+    const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
+    useEffect(() => {
+        if (!hasLoadedRouteRef.current) {
+            hasLoadedRouteRef.current = true;
+            return;
+        }
+
+        if (window.innerWidth <= 768) {
+            setSidebarOpen(false);
+        }
+    }, [location.pathname, location.search, location.hash, setSidebarOpen]);
+
+    return (
+        <>
+            <Navbar
+                isLoggedIn={isLoggedIn}
+                onLogout={handleLogout}
+                username={username}
+                sidebarOpen={sidebarOpen}
+                onToggleSidebar={toggleSidebar}
+            />
+            <Sidebar
+                isLoggedIn={isLoggedIn}
+                sidebarOpen={sidebarOpen}
+                onToggleSidebar={toggleSidebar}
+            />
+            <main className={sidebarOpen ? '' : 'sidebar-collapsed'}>
+                <Routes>
+                    <Route path="/" element={<Games />} />
+                    <Route path="/login" element={<Login onLogin={handleLogin} />} />
+                    <Route
+                        path="/createGame"
+                        element={import.meta.env.PROD ? <Navigate to="/games" replace /> : <CreateGame />}
+                    />
+                    <Route path="/createGroup" element={<CreateGroup />} />
+                    <Route path="/createGroup/:gameSlug" element={<CreateGroup />} />
+                    <Route path="/games" element={<Games />} />
+                    <Route path="/games/:gameSlug" element={<ViewGroups />} />
+                    <Route path="/group" element={<ViewGroup />} />
+                    <Route path="/group/:groupId" element={<ViewGroup />} />
+                    <Route path="/calendar" element={<Calendar />} />
+                    <Route path="/friends" element={<Friends isLoggedIn={isLoggedIn} />} />
+                    <Route path="/settings" element={<Settings isLoggedIn={isLoggedIn} onLogin={handleLogin} />} />
+                    <Route path="/profile/:username" element={<Profile />} />
+                </Routes>
+            </main>
+        </>
+    );
+}
+
 export default function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [username, setUsername] = useState("");
     const [checkingAuth, setCheckingAuth] = useState(true);
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 768);
 
-    const syncStoredUsername = (value = "") => {
+    const syncUsernameStorage = (value = "") => {
         if (value) localStorage.setItem('username', value);
         else localStorage.removeItem('username');
     };
@@ -48,12 +108,12 @@ export default function App() {
                 const ok = response.ok;
                 setIsLoggedIn(ok);
                 setUsername(ok ? storedUsername : "");
-                if (!ok) syncStoredUsername("");
+                if (!ok) syncUsernameStorage("");
             } catch (error) {
                 console.error("Validation error:", error);
                 setIsLoggedIn(false);
                 setUsername("");
-                syncStoredUsername("");
+                syncUsernameStorage("");
             }
             setCheckingAuth(false);
         };
@@ -62,28 +122,19 @@ export default function App() {
 
     useEffect(() => {
         if (isLoggedIn) {
-            const socket = connectSocket();
-
-            const onReady = (payload) => {
-                console.log('Socket connected for user:', payload?.username || payload?.userId);
-            };
-
-            socket.on('socket:ready', onReady);
-
-            return () => {
-                socket.off('socket:ready', onReady);
-            };
+            connectSocket();
+            return undefined;
         }
 
         disconnectSocket();
         return undefined;
     }, [isLoggedIn]);
 
-    const handleLogin = (usernameFromLogin) => {
-        const finalUsername = usernameFromLogin || "";
+    const handleLogin = (newUsername) => {
+        const finalUsername = newUsername || "";
         setIsLoggedIn(true);
         setUsername(finalUsername);
-        syncStoredUsername(finalUsername);
+        syncUsernameStorage(finalUsername);
     };
 
     const handleLogout = async () => {
@@ -98,7 +149,7 @@ export default function App() {
             disconnectSocket();
             setIsLoggedIn(false);
             setUsername("");
-            syncStoredUsername("");
+            syncUsernameStorage("");
             window.location.reload();
         }
     };
@@ -109,29 +160,14 @@ export default function App() {
 
     return (
         <Router>
-            <Navbar isLoggedIn={isLoggedIn} onLogout={handleLogout} username={username} sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-            <Sidebar isLoggedIn={isLoggedIn} sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-            <main className={sidebarOpen ? '' : 'sidebar-collapsed'}>
-                <Routes>
-                    <Route path="/" element={<Games />} />
-                    <Route path="/login" element={<Login onLogin={handleLogin} />} />
-                    <Route
-                        path="/createGame"
-                        element={import.meta.env.PROD ? <Navigate to="/games" replace /> : <CreateGame />}
-                    />
-                    <Route path="/createGroup" element={<CreateGroup />} />
-                    <Route path="/createGroup/:gameSlug" element={<CreateGroup />} />
-                    <Route path="/games" element={<Games />} />
-                    <Route path="/games/:gameSlug" element={<ViewGroups />} />
-                    <Route path="/group" element={<ViewGroup />} />
-                    <Route path="/group/:groupId" element={<ViewGroup />} />
-                    <Route path="/socket-test" element={<SocketTest />} />
-                    <Route path="/calendar" element={<Calendar />} />
-                    <Route path="/friends" element={<Friends isLoggedIn={isLoggedIn} />} />
-                    <Route path="/settings" element={<Settings isLoggedIn={isLoggedIn} onLogin={handleLogin} />} />
-                    <Route path="/profile/:username" element={<Profile />} />
-                </Routes>
-            </main>
+            <AppLayout
+                isLoggedIn={isLoggedIn}
+                username={username}
+                sidebarOpen={sidebarOpen}
+                setSidebarOpen={setSidebarOpen}
+                handleLogout={handleLogout}
+                handleLogin={handleLogin}
+            />
         </Router>
     )
 }

@@ -51,8 +51,8 @@ export default function Profile() {
     const backHref = isAllowedReturnPath ? requestedReturnPath : "/games";
     const signedInUsername = localStorage.getItem("username") || "";
     const isOwnProfile = Boolean(signedInUsername && displayUsername && signedInUsername === displayUsername);
-    const canSendRequest = Boolean(signedInUsername) && !isOwnProfile && Boolean(profile?.username);
-    const toUsernameList = (list) => Array.isArray(list)
+    const canSendFriendRequest = Boolean(signedInUsername) && !isOwnProfile && Boolean(profile?.username);
+    const getUsernameList = (list) => Array.isArray(list)
         ? list.map((entry) => entry?.username).filter(Boolean)
         : [];
 
@@ -60,7 +60,7 @@ export default function Profile() {
         setFriendStatus("none");
         setFriendMessage({ text: "", error: false });
 
-        if (!canSendRequest) {
+        if (!canSendFriendRequest) {
             return;
         }
 
@@ -74,9 +74,9 @@ export default function Profile() {
                 }
 
                 const data = await response.json();
-                const friendUsernames = toUsernameList(data?.friends);
-                const incomingUsernames = toUsernameList(data?.incomingRequests);
-                const outgoingUsernames = toUsernameList(data?.outgoingRequests);
+                const friendUsernames = getUsernameList(data?.friends);
+                const incomingUsernames = getUsernameList(data?.incomingRequests);
+                const outgoingUsernames = getUsernameList(data?.outgoingRequests);
 
                 if (!isDisposed && profile?.username) {
                     if (friendUsernames.includes(profile.username)) {
@@ -99,10 +99,10 @@ export default function Profile() {
         return () => {
             isDisposed = true;
         };
-    }, [canSendRequest, profile?.username]);
+    }, [canSendFriendRequest, profile?.username]);
 
     const handleSendRequest = async () => {
-        if (!profile?.username || !canSendRequest || friendStatus !== "none") {
+        if (!profile?.username || !canSendFriendRequest || friendStatus !== "none") {
             return;
         }
 
@@ -136,7 +136,7 @@ export default function Profile() {
                 <div className="profile-header-row">
                     <h1>Player Profile</h1>
                     <div className="profile-header-actions">
-                        {canSendRequest ? (
+                        {canSendFriendRequest ? (
                             <button
                                 type="button"
                                 className="profile-add-friend-btn"

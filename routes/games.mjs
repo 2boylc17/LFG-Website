@@ -4,19 +4,17 @@ import Game from '../models/Game.mjs';
 const router = express.Router();
 const dataUrlRegex = /^data:([A-Za-z-+/]+);base64,(.+)$/;
 
-// Parse a base64 data URL into a buffer and content type
-const parseImageDataUrl = (imageDataUrl) => {
-	if (!imageDataUrl) return null;
-	const matches = imageDataUrl.match(dataUrlRegex);
-	if (!matches) return null;
-	return { data: Buffer.from(matches[2], 'base64'), contentType: matches[1] };
+const parseImageUrl = (imageUrl) => {
+	if (!imageUrl) return null;
+	const match = imageUrl.match(dataUrlRegex);
+	if (!match) return null;
+	return { data: Buffer.from(match[2], 'base64'), contentType: match[1] };
 };
 
-// Route to add a new game
 router.post('/add', async (req, res) => {
     try {
 		const { name, genres, platforms, image } = req.body;
-		const gameImageData = parseImageDataUrl(image);
+		const gameImage = parseImageUrl(image);
 		const existingGame = await Game.findOne({ name });
         if (existingGame) {
             return res.status(400).json({ message: 'Game already exists' });
@@ -26,21 +24,20 @@ router.post('/add', async (req, res) => {
             return res.status(400).json({ message: 'Genre and platform cannot be empty' });
         }
 
-		const newGame = await Game.create({ name, genres, platforms, image: gameImageData });
+		const newGame = await Game.create({ name, genres, platforms, image: gameImage });
 		return res.status(201).json({ message: 'Game added successfully', gameId: newGame._id });
-    } catch (err) {
-        console.error("Add game error:", err);
+    } catch (error) {
+	    console.error("Add game error:", error);
 		return res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-// Route to fetch all games
 router.get('/list', async (req, res) => {
 	try {
 		const gamesFound = await Game.find({}, { _id: 1, name: 1, genres: 1, platforms: 1, image: 1 });
 		return res.status(200).json(gamesFound);
-	} catch (err) {
-		console.error("List all games error:", err);
+	} catch (error) {
+		console.error("List games error:", error);
 		return res.status(500).json({ error: 'Internal server error' });
 	}
 });

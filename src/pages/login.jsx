@@ -18,9 +18,10 @@ export default function Login({ onLogin }) {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		const u = username.trim(), p = password.trim();
-		if (!u || !p) { setError("Enter a username and password"); return; }
-		if (isRegistering && p.length < 6) {
+		const trimmedUsername = username.trim();
+		const trimmedPassword = password.trim();
+		if (!trimmedUsername || !trimmedPassword) { setError("Enter a username and password"); return; }
+		if (isRegistering && trimmedPassword.length < 6) {
 			setError("Password must be at least 6 characters");
 			return;
 		}
@@ -30,11 +31,11 @@ export default function Login({ onLogin }) {
 				method: 'POST',
 				credentials: 'include',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ username: u, password: p })
+				body: JSON.stringify({ username: trimmedUsername, password: trimmedPassword })
 			});
 			const data = await res.json();
 			if (!res.ok) throw new Error(data.message || (isRegistering ? 'Registration failed' : 'Login failed'));
-			onLogin(data.username || u);
+			onLogin(data.username || trimmedUsername);
 			navigate('/');
 		} catch (err) {
 			setError(err.message);

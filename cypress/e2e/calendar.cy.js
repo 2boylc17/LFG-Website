@@ -8,7 +8,7 @@ describe('calendar_page', () => {
     cy.clearCookies();
   });
 
-  it('Renders page and navigates months', () => {
+  it('shows page and navigates months', () => {
     cy.wait(500);
     cy.get('.calendar-page').should('be.visible');
     cy.get('.calendar-grid').should('be.visible');
@@ -31,24 +31,24 @@ describe('calendar_page', () => {
     cy.get('h1').should('contain', '2030');
   });
 
-  it('Add, edit, cancel edit, sort, and remove events', () => {
+  it('adds, edits, sorts, and removes events', () => {
     cy.wait(500);
-    cy.get('.calendar-event-title-input').type('event-late');
-    cy.get('.calendar-event-time-input').type('15:00');
+    cy.get('.calendar-event-title-input').type('event-late', { delay: 0 });
+    cy.get('.calendar-event-time-input').type('15:00', { delay: 0 });
     cy.get('.calendar-submit-btn').click();
-    cy.get('.calendar-event-title-input').type('event-early');
-    cy.get('.calendar-event-time-input').type('09:00');
+    cy.get('.calendar-event-title-input').type('event-early', { delay: 0 });
+    cy.get('.calendar-event-time-input').type('09:00', { delay: 0 });
     cy.get('.calendar-submit-btn').click();
     cy.get('.calendar-event-item').should('have.length', 2);
     cy.get('.calendar-event-item').first().should('contain', 'event-early');
     cy.get('.calendar-event-item').last().should('contain', 'event-late');
-    cy.get('.calendar-event-title-input').type('event-notime');
+    cy.get('.calendar-event-title-input').type('event-notime', { delay: 0 });
     cy.get('.calendar-submit-btn').click();
     cy.contains('.calendar-event-item', 'event-notime').find('p').should('contain', 'Any time');
     cy.contains('.calendar-event-item', 'event-notime').find('.calendar-event-actions button').contains('Edit').click();
     cy.get('.calendar-submit-btn').should('contain', 'Save Event');
-    cy.get('.calendar-event-title-input').clear().type('event-edited');
-    cy.get('.calendar-event-time-input').clear().type('11:15');
+    cy.get('.calendar-event-title-input').clear().type('event-edited', { delay: 0 });
+    cy.get('.calendar-event-time-input').clear().type('11:15', { delay: 0 });
     cy.get('.calendar-submit-btn').click();
     cy.contains('.calendar-event-item strong', 'event-edited').should('exist');
     cy.contains('.calendar-event-item', 'event-edited').find('.calendar-event-actions button').contains('Edit').click();
@@ -60,10 +60,10 @@ describe('calendar_page', () => {
     cy.get('.calendar-event-item').should('have.length', 2);
   });
 
-  it('Persists events after reload', () => {
+  it('keeps events after reload', () => {
     cy.wait(500);
-    cy.get('.calendar-event-title-input').type('event-persist');
-    cy.get('.calendar-event-time-input').type('08:45');
+    cy.get('.calendar-event-title-input').type('event-persist', { delay: 0 });
+    cy.get('.calendar-event-time-input').type('08:45', { delay: 0 });
     cy.get('.calendar-submit-btn').click();
     cy.reload();
     cy.wait(500);

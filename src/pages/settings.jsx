@@ -4,7 +4,7 @@ import { apiFetch } from '../lib/api.js';
 
 const platforms = ['PC', 'PlayStation', 'Xbox', 'Nintendo Switch', 'Mobile'];
 const playStyles = ['Casual', 'Competitive', 'Mixed'];
-const emptyMsg = { text: '', error: false };
+const emptyNotice = { text: '', error: false };
 
 const requestJson = async (url, options = {}) => {
     const res = await apiFetch(url, options);
@@ -27,9 +27,9 @@ export default function Settings({ isLoggedIn, onLogin }) {
     const [usernameForm, setUsernameForm] = useState({ newUsername: '', password: '' });
     const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
     const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
-    const [profileMsg, setProfileMsg] = useState(emptyMsg);
-    const [usernameMsg, setUsernameMsg] = useState(emptyMsg);
-    const [passwordMsg, setPasswordMsg] = useState(emptyMsg);
+    const [profileMsg, setProfileMsg] = useState(emptyNotice);
+    const [usernameMsg, setUsernameMsg] = useState(emptyNotice);
+    const [passwordMsg, setPasswordMsg] = useState(emptyNotice);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -59,8 +59,8 @@ export default function Settings({ isLoggedIn, onLogin }) {
 
     useEffect(() => {
         if (!isAccountModalOpen) {
-            setUsernameMsg(emptyMsg);
-            setPasswordMsg(emptyMsg);
+            setUsernameMsg(emptyNotice);
+            setPasswordMsg(emptyNotice);
             setUsernameForm({ newUsername: '', password: '' });
             setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
         }
@@ -77,7 +77,7 @@ export default function Settings({ isLoggedIn, onLogin }) {
 
     const handleProfileSave = async (e) => {
         e.preventDefault();
-        setProfileMsg(emptyMsg);
+        setProfileMsg(emptyNotice);
 
         const normalizedProfile = normalizeProfile(profile);
         const normalizedInitial = normalizeProfile(initialProfile);
@@ -114,7 +114,7 @@ export default function Settings({ isLoggedIn, onLogin }) {
 
     const handleUsernameChange = async (e) => {
         e.preventDefault();
-        setUsernameMsg(emptyMsg);
+        setUsernameMsg(emptyNotice);
 
         const newUsername = String(usernameForm.newUsername || '').trim();
         const password = String(usernameForm.password || '').trim();
@@ -152,7 +152,7 @@ export default function Settings({ isLoggedIn, onLogin }) {
 
     const handlePasswordChange = async (e) => {
         e.preventDefault();
-        setPasswordMsg(emptyMsg);
+        setPasswordMsg(emptyNotice);
 
         if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
             setPasswordMsg({ text: 'All password fields are required.', error: true });

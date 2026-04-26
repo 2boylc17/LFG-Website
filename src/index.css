@@ -100,6 +100,7 @@ main.sidebar-collapsed .page {
   display: flex;
   align-items: center;
   gap: 1rem;
+  margin-right: 1rem;
 }
 
 .navbar-title {
@@ -159,10 +160,12 @@ main.sidebar-collapsed .page {
 }
 
 .navbar-settings-btn {
-  font-size: 1.5rem;
-  padding: 0.25rem 0.5rem;
+  font-size: 1.95rem;
+  padding: 0.3rem 0.7rem;
   background: none;
   border: none;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .username-label {
@@ -179,12 +182,24 @@ main.sidebar-collapsed .page {
 
 @media (max-width: 768px) {
   .username-label {
-    font-size: 0.85rem;
+    display: none;
+  }
+
+  .navbar-title {
+    font-size: 1.35rem;
+    max-width: 52vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .navbar-btn {
     padding: 0.3rem 0.6rem;
     font-size: 0.8rem;
+  }
+
+  .navbar-settings-btn {
+    font-size: 1.95rem;
+    padding: 0.3rem 0.7rem;
   }
   
   .auth-btn-row {
@@ -847,21 +862,21 @@ main.sidebar-collapsed .page {
     width: 100vw;
     height: 100vh;
     top: 0;
-    left: -100vw;
+    left: 0;
     padding: 6rem 1.5rem 1.5rem;
-    transform: translateX(0);
+    transform: translateX(-100%);
     border-right: none;
     border-bottom: #7d7d7d solid 1px;
+    transition: transform 0.3s ease;
   }
   
   .sidebar.sidebar-open {
-    left: 0;
     transform: translateX(0);
   }
   
   .sidebar.sidebar-closed {
-    left: -100vw;
     width: 100vw;
+    transform: translateX(-100%);
   }
 }
 
@@ -917,7 +932,6 @@ main.sidebar-collapsed .page {
 
 
 /* ================= SHARED SURFACES & CONTROLS ================= */
-.socket-card,
 .create-group-shell,
 .view-group-card,
 .settings-section {
@@ -928,10 +942,6 @@ main.sidebar-collapsed .page {
 .games-search-input,
 .games-select,
 .tag-search,
-.socket-form-row input,
-.socket-form-row select,
-.socket-actions button,
-.socket-card button,
 .create-group-field input,
 .create-group-field select,
 .create-group-tag-add,
@@ -1054,6 +1064,8 @@ main.sidebar-collapsed .page {
   gap: 0.5rem;
   margin-top: 1.5rem;
   padding: 0 24px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .games-header h1 {
@@ -1177,10 +1189,14 @@ main.sidebar-collapsed .page {
   display: flex;
   flex-wrap: wrap;
   gap: 0.8rem;
+  width: 100%;
 }
 
 .games-filter-block {
   align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
 }
 
 .games-select {
@@ -1196,12 +1212,14 @@ main.sidebar-collapsed .page {
   font-size: 0.9rem;
   border-radius: 8px;
   padding: 0.35rem 0.65rem;
-  width: 180px;
+  width: min(180px, 100%);
+  max-width: 100%;
 }
 
 #games-tag-filter {
-  width: 180px;
-  min-width: 180px;
+  width: min(180px, 100%);
+  max-width: 100%;
+  min-width: 0;
 }
 
 .games-select:focus {
@@ -1284,6 +1302,22 @@ main.sidebar-collapsed .page {
   }
 }
 
+@media (max-width: 768px) {
+  .games-page-size {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .games-page-size label {
+    width: 100%;
+  }
+
+  .games-filter-block .games-select,
+  .games-filter-block .tag-search {
+    width: 100%;
+  }
+}
+
 .gameItem {
   display: flex;
   flex-direction: column;
@@ -1299,90 +1333,6 @@ main.sidebar-collapsed .page {
   max-width: 180px;
   min-width: 80px;
   transition: width 0.2s;
-}
-
-/* ================= SOCKET TEST PAGE ================= */
-.socket-test-page {
-  gap: 1rem;
-  padding: 1.5rem;
-}
-
-.socket-card {
-  border-radius: 12px;
-  padding: 1rem;
-  max-width: 900px;
-}
-
-.socket-status-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.75rem;
-}
-
-.socket-status {
-  padding: 0.3rem 0.7rem;
-  border-radius: 999px;
-  font-weight: 700;
-  border: 1px solid transparent;
-}
-
-.socket-status.connected {
-  color: #8fffb7;
-  background: rgba(26, 84, 49, 0.35);
-  border-color: #2f9b5f;
-}
-
-.socket-status.disconnected {
-  color: #ffaaaa;
-  background: rgba(99, 27, 27, 0.35);
-  border-color: #a14242;
-}
-
-.socket-id {
-  color: #d3d3d3;
-}
-
-.socket-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.socket-form-row {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  margin-bottom: 0.75rem;
-}
-
-.socket-form-row input,
-.socket-form-row select,
-.socket-actions button,
-.socket-card button {
-  border-radius: 8px;
-  padding: 0.45rem 0.65rem;
-}
-
-.socket-actions button:hover,
-.socket-card button:hover {
-  cursor: pointer;
-  background-color: #3b3b3b;
-}
-
-.socket-log {
-  max-height: 280px;
-  overflow-y: auto;
-  border: 1px solid #444;
-  border-radius: 8px;
-  padding: 0.65rem;
-  background-color: #111;
-}
-
-.socket-log p {
-  margin: 0.2rem 0;
-  font-family: Consolas, 'Courier New', monospace;
-  font-size: 0.9rem;
 }
 
 /* ================= CREATE GROUP PAGE ================= */

@@ -11,7 +11,7 @@ describe('view_groups_page', () => {
     cy.clearCookies();
   }
 
-  it('Renders, searches, filters, sorts, navigates, and shows create link', () => {
+  it('shows groups page search, filters, sort, and create link', () => {
     visitGroups();
     cy.wait('@getGroups');
     cy.wait(500);
@@ -39,7 +39,7 @@ describe('view_groups_page', () => {
     cy.url().should('include', '/group/');
   });
 
-  it('Error and empty states, and unmatched search', () => {
+  it('shows error, empty, and unmatched search states', () => {
     visitGroups([]);
     cy.wait('@getGroups');
     cy.wait(500);
@@ -57,7 +57,7 @@ describe('view_groups_page', () => {
     cy.contains('p', 'No groups match your search.').should('be.visible');
   });
 
-  it('Pagination controls move between pages', () => {
+  it('moves between pages with pagination controls', () => {
     const manyGroups = Array.from({ length: 7 }, (_, i) => ({ _id: `507f1f77bcf86cd79943902${i + 1}`, name: `group${i + 1}`, description: 'desc', ...groupBase }));
     visitGroups(manyGroups);
     cy.wait('@getGroups');
@@ -69,5 +69,37 @@ describe('view_groups_page', () => {
     cy.get('.pg-next').should('be.disabled');
     cy.get('.pg-prev').should('not.be.disabled').click();
     cy.get('.games-pagination-info').should('contain', 'Page 1 of 2');
+  });
+
+  it('narrows tag options and separates premade from user tags', () => {
+    visitGroups();
+    cy.wait('@getGroups');
+    cy.wait(500);
+    cy.get('#groups-tag-search').should('be.visible');
+    cy.get('#groups-tag-filter optgroup[label="Filters"]').should('exist');
+    cy.get('#groups-tag-filter optgroup[label="Tags"]').should('exist');
+    cy.get('#groups-tag-filter optgroup[label="Tags"] option[value="Friendly"]').should('exist');
+    cy.get('#groups-tag-filter optgroup[label="Tags"] option[value="Competitive"]').should('exist');
+    cy.get('#groups-tag-filter optgroup[label="Filters"] option[value="PC"]').should('exist');
+    cy.get('#groups-tag-filter optgroup[label="Tags"] option[value="PC"]').should('not.exist');
+    cy.get('#groups-tag-search').type('comp');
+    cy.get('#groups-tag-filter optgroup[label="Tags"] option[value="Competitive"]').should('exist');
+    cy.get('#groups-tag-filter optgroup[label="Tags"] option[value="Friendly"]').should('not.exist');
+    cy.get('#groups-tag-filter optgroup[label="Filters"] option[value="PC"]').should('not.exist');
+    cy.get('#groups-tag-search').clear();
+    cy.get('#groups-tag-filter optgroup[label="Tags"] option[value="Friendly"]').should('exist');
+    cy.get('#groups-tag-filter optgroup[label="Filters"] option[value="PC"]').should('exist');
+  });
+
+  it('filters groups by user-added tag', () => {
+    visitGroups();
+    cy.wait('@getGroups');
+    cy.wait(500);
+    cy.get('#groups-tag-filter').select('Friendly');
+    cy.get('.game-card').should('have.length', 1).and('contain', 'group1');
+    cy.get('#groups-tag-filter').select('Competitive');
+    cy.get('.game-card').should('have.length', 1).and('contain', 'group2');
+    cy.get('#groups-tag-filter').select('');
+    cy.get('.game-card').should('have.length', 2);
   });
 });

@@ -23,7 +23,7 @@ describe('profile_page', () => {
     cy.clearCookies();
   });
 
-  it('Renders profile page and displays content', () => {
+  it('shows profile page content', () => {
     waitForProfile();
     cy.get('.profile-page').should('be.visible');
     cy.get('.profile-card').should('be.visible');
@@ -35,14 +35,14 @@ describe('profile_page', () => {
     cy.get('.profile-platform-chip').should('have.length', 2);
   });
 
-  it('Shows error for unknown user', () => {
+  it('shows error for unknown user', () => {
     cy.intercept('GET', '**/api/settings/public/user2', { statusCode: 404, body: { message: 'User not found' } }).as('getProfile');
     visitProfile('/profile/user2');
     waitForProfile();
     cy.get('.error').should('contain', 'User not found');
   });
 
-  it('Shows fallbacks when bio, playStyle, and platforms are empty', () => {
+  it('shows fallbacks for empty profile fields', () => {
     cy.intercept('GET', '**/api/settings/public/user4', { statusCode: 200, body: { username: 'user4', bio: '', playStyle: '', platforms: [] } }).as('getEmpty');
     visitProfile('/profile/user4');
     cy.wait('@getEmpty');
@@ -52,7 +52,7 @@ describe('profile_page', () => {
     cy.get('.profile-value').should('contain', 'None selected');
   });
 
-  it('Back link variants respect returnTo param', () => {
+  it('uses back link variants from returnTo', () => {
     waitForProfile();
     cy.get('.profile-back-link').should('contain', 'Back to Games').and('have.attr', 'href', '/games');
     visitProfile('/profile/user1?returnTo=/group/id1');
@@ -63,7 +63,7 @@ describe('profile_page', () => {
     cy.get('.profile-back-link').should('contain', 'Back to Friends').and('have.attr', 'href', '/friends');
   });
 
-  it('Friend button reflects relationship status', () => {
+  it('shows friend button relationship status', () => {
     interceptFriends();
     visitProfile('/profile/user1', 'user1');
     waitForProfile();
@@ -86,7 +86,7 @@ describe('profile_page', () => {
     cy.get('.profile-add-friend-btn').should('contain', 'Respond in Friends').and('be.disabled');
   });
 
-  it('Sending friend request shows success or error', () => {
+  it('shows success or error when sending friend request', () => {
     interceptFriends();
     cy.intercept('POST', '**/api/settings/friends/request/user1', { statusCode: 200, body: { message: 'msg1', relationStatus: 'outgoing' } }).as('sendRequest');
     visitProfile('/profile/user1', 'user3');

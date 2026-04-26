@@ -6,7 +6,6 @@ import { validateToken } from '../utils/validateToken.mjs';
 
 const router = express.Router();
 
-// Route to register a new user
 router.post('/register', async (req, res) => {
     try {
         const username = String(req.body.username || '').trim();
@@ -24,13 +23,12 @@ router.post('/register', async (req, res) => {
         const user = await User.create({ username, password });
         generateTokenAndSetCookie(user._id, user.username, res);
         return res.status(201).json({ message: 'User registered successfully' });
-    } catch (err) {
-        console.error("Registration error:", err);
+    } catch (error) {
+        console.error("Register error:", error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-// Route to log in
 router.post('/login', async (req, res) => {
     try {
         const username = String(req.body.username || '').trim();
@@ -43,13 +41,12 @@ router.post('/login', async (req, res) => {
 
         generateTokenAndSetCookie(userFound._id, userFound.username, res);
         return res.status(200).json({ message: 'Login successful', username: userFound.username });
-    } catch (err) {
-        console.error("Login error:", err);
+    } catch (error) {
+        console.error("Login error:", error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
 
-// Route to log out (clears JWT cookie)
 router.post('/logout', async (req, res) => {
     try {
         const isProduction = process.env.NODE_ENV === 'production';
@@ -60,14 +57,12 @@ router.post('/logout', async (req, res) => {
             secure: isProduction
         });
         res.status(200).json({ message: 'Logout successful' });
-    } catch (err) {
-        console.error("Logout error:", err);
+    } catch (error) {
+        console.error("Logout error:", error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
 
-
-// Route to validate the current JWT
 router.head('/validate', async (req, res) => {
     const token = req.cookies.jwt;
     try {
@@ -83,8 +78,8 @@ router.head('/validate', async (req, res) => {
             });
             return res.status(401).json({ message: 'Token is invalid' });
         }
-    } catch (err) {
-        console.error("Validation error:", err);
+    } catch (error) {
+        console.error("Validate error:", error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 });

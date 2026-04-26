@@ -14,7 +14,7 @@ describe('login_page', () => {
     cy.clearCookies();
   });
 
-  it('All Fields Render', () => {
+  it('shows login fields', () => {
     cy.wait(500);
 
     cy.get('h2').should('contain', 'Welcome Back');
@@ -25,7 +25,7 @@ describe('login_page', () => {
     cy.get('button.login-toggle').should('be.visible');
   });
 
-  it('Toggle to register mode', () => {
+  it('toggles to register mode', () => {
     cy.wait(500);
 
     cy.get('button.login-toggle').click();
@@ -33,14 +33,14 @@ describe('login_page', () => {
     cy.get('button.login-submit').should('contain', 'Register');
   });
 
-  it('Shows required field error', () => {
+  it('shows required field error', () => {
     cy.wait(500);
 
     cy.get('button.login-submit').click();
     cy.contains('.login-error', 'Enter a username and password').should('be.visible');
   });
 
-  it('Shows short password error in register mode', () => {
+  it('shows short password error in register mode', () => {
     cy.wait(500);
 
     cy.get('button.login-toggle').click();
@@ -50,7 +50,7 @@ describe('login_page', () => {
     cy.contains('.login-error', 'Password must be at least 6 characters').should('be.visible');
   });
 
-  it('Successful login navigates to home', () => {
+  it('logs in and goes home', () => {
     cy.wait(500);
 
     cy.get('input.login-input[type="text"]').type('user1');
@@ -60,7 +60,7 @@ describe('login_page', () => {
     cy.url().should('eq', 'http://localhost:3000/');
   });
 
-  it('Failed login shows error message', () => {
+  it('shows failed login error', () => {
     cy.intercept('POST', '**/api/auth/login', {
       statusCode: 400,
       body: { message: 'Invalid username or password' },
@@ -74,7 +74,7 @@ describe('login_page', () => {
     cy.contains('.login-error', 'Invalid username or password').should('be.visible');
   });
 
-  it('Successful registration navigates to home', () => {
+  it('registers and goes home', () => {
     cy.wait(500);
 
     cy.get('button.login-toggle').click();
@@ -85,7 +85,7 @@ describe('login_page', () => {
     cy.url().should('eq', 'http://localhost:3000/');
   });
 
-  it('Failed registration shows error message', () => {
+  it('shows failed registration error', () => {
     cy.intercept('POST', '**/api/auth/register', {
       statusCode: 400,
       body: { message: 'Username already exists' },

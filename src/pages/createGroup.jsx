@@ -20,13 +20,13 @@ const tagSections = [
 	}
 ];
 
-const normalizePlatformName = (platformValue) => {
+const getPlatformName = (platformValue) => {
 	if (typeof platformValue === "string") return platformValue.trim();
 	if (platformValue && typeof platformValue === "object") return String(platformValue.name || "").trim();
 	return "";
 };
 
-const getImageSrc = (image) => {
+const getImageUrl = (image) => {
 	if (!image?.data || !image?.contentType) return null;
 
 	if (image.data.type === "Buffer" && Array.isArray(image.data.data)) {
@@ -65,10 +65,10 @@ export default function CreateGroup() {
 
 	const availablePlatforms = useMemo(() => {
 		if (!selectedGame || !Array.isArray(selectedGame.platforms)) return [];
-		return selectedGame.platforms.map(normalizePlatformName).filter(Boolean);
+		return selectedGame.platforms.map(getPlatformName).filter(Boolean);
 	}, [selectedGame]);
 
-	const gameImageSrc = useMemo(() => getImageSrc(selectedGame?.image), [selectedGame]);
+	const gameImageSrc = useMemo(() => getImageUrl(selectedGame?.image), [selectedGame]);
 
 	useEffect(() => {
 		const fetchGameDetails = async () => {

@@ -67,7 +67,6 @@ const deleteInactiveGroups = async (gameId) => {
 	await Group.deleteMany(staleFilter);
 };
 
-// True if group is expired or has no members
 const isInactiveGroup = (group) => {
 	if (!group) return true;
 	const createdAt = group.createdAt ? new Date(group.createdAt).getTime() : 0;
@@ -76,7 +75,6 @@ const isInactiveGroup = (group) => {
 	return isExpired || hasNoMembers;
 };
 
-// Route to add a new group
 router.post('/add/:gameName', async (req, res) => {
 	try {
 		const {
@@ -157,13 +155,12 @@ router.post('/add/:gameName', async (req, res) => {
 		});
 
 		return res.status(201).json({ message: 'Group added successfully', groupId: newGroup._id });
-	} catch (err) {
-		console.error('Add group error:', err);
+	} catch (error) {
+		console.error('Add group error:', error);
 		return res.status(500).json({ error: 'Internal server error' });
 	}
 });
 
-// Route to join a group
 router.post('/join/:groupId', async (req, res) => {
 	try {
 		const { groupId } = req.params;
@@ -263,13 +260,12 @@ router.post('/join/:groupId', async (req, res) => {
 		});
 
 		return res.status(200).json({ message: 'Joined group successfully', status: 'member', group: updatedGroup });
-	} catch (err) {
-		console.error('Join group error:', err);
+	} catch (error) {
+		console.error('Join group error:', error);
 		return res.status(500).json({ error: 'Internal server error' });
 	}
 });
 
-// Route to list groups by game
 router.get('/list/:gameName', async (req, res) => {
 	try {
 		const gameName = req.params.gameName?.trim();
@@ -298,13 +294,12 @@ router.get('/list/:gameName', async (req, res) => {
 			.sort({ createdAt: -1 });
 
 		return res.status(200).json(groups);
-	} catch (err) {
-		console.error('List groups by game name error:', err);
+	} catch (error) {
+		console.error('List groups error:', error);
 		return res.status(500).json({ error: 'Internal server error' });
 	}
 });
 
-// Route to fetch a group by id
 router.get('/id/:groupId', async (req, res) => {
 	try {
 		const { groupId } = req.params;
@@ -331,13 +326,12 @@ router.get('/id/:groupId', async (req, res) => {
 		}
 
 		return res.status(200).json(group);
-	} catch (err) {
-		console.error('Fetch group by id error:', err);
+	} catch (error) {
+		console.error('Get group error:', error);
 		return res.status(500).json({ error: 'Internal server error' });
 	}
 });
 
-// Route to remove a member (owner only)
 router.post('/remove-member/:groupId/:memberId', async (req, res) => {
 	try {
 		const { groupId, memberId } = req.params;
@@ -395,13 +389,12 @@ router.post('/remove-member/:groupId/:memberId', async (req, res) => {
 		});
 
 		return res.status(200).json({ message: 'Member removed', group: updatedGroup });
-	} catch (err) {
-		console.error('Remove member error:', err);
+	} catch (error) {
+		console.error('Remove member error:', error);
 		return res.status(500).json({ error: 'Internal server error' });
 	}
 });
 
-// Route to leave a group
 router.post('/leave/:groupId', async (req, res) => {
 	try {
 		const { groupId } = req.params;

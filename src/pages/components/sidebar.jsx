@@ -7,7 +7,7 @@ export default function Sidebar({ isLoggedIn, sidebarOpen, onToggleSidebar }) {
     const location = useLocation();
     const [pendingRequestCount, setPendingRequestCount] = useState(0);
 
-    const handleProtectedTabClick = (targetPath) => {
+    const openProtectedPage = (targetPath) => {
         if (!isLoggedIn) {
             navigate('/login');
             return;
@@ -69,11 +69,11 @@ export default function Sidebar({ isLoggedIn, sidebarOpen, onToggleSidebar }) {
             {sidebarOpen && (
                 <div className="sidebar-items-container">
                     <div className="sideBox" id="gamesBox" onClick={() => navigate('/games')}>Games</div>
-                    <div className="sideBox sideBox-with-badge" id="friendsBox" onClick={() => handleProtectedTabClick('/friends')}>
+                    <div className="sideBox sideBox-with-badge" id="friendsBox" onClick={() => openProtectedPage('/friends')}>
                         Friends
                         {pendingRequestCount > 0 ? <span className="sideBox-request-badge">{pendingRequestCount}</span> : null}
                     </div>
-                    <div className="sideBox" id="calendarBox" onClick={() => handleProtectedTabClick('/calendar')}>Calendar</div>
+                    <div className="sideBox" id="calendarBox" onClick={() => openProtectedPage('/calendar')}>Calendar</div>
                 </div>
             )}
         </aside>

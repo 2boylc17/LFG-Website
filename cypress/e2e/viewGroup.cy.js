@@ -79,7 +79,7 @@ describe('view_group_page', () => {
     cy.intercept('HEAD', '**/api/auth/validate', { statusCode: 200 }).as('validateAuth');
   });
 
-  it('Renders group page and displays details', () => {
+  it('shows group page details', () => {
     visitGroup();
     cy.get('.view-group-page').should('be.visible');
     cy.get('.view-group-card').should('be.visible');
@@ -88,14 +88,14 @@ describe('view_group_page', () => {
     cy.contains('button', 'Join').should('be.visible');
   });
 
-  it('Shows Invalid group id when route has no group id', () => {
+  it('shows invalid group id when route has no group id', () => {
     cy.visit('http://localhost:3000/group');
     cy.contains('.error', 'Invalid group id').should('be.visible');
     cy.contains('Loading group...').should('not.exist');
     cy.get('.view-group-card').should('not.exist');
   });
 
-  it('Shows error and stops loading when group fetch fails', () => {
+  it('shows error when group fetch fails', () => {
     cy.intercept('GET', `**/api/groups/id/${groupId}`, { forceNetworkError: true }).as('getGroupFail');
     cy.visit(`http://localhost:3000/group/${groupId}`);
     cy.wait('@getGroupFail');
@@ -106,7 +106,7 @@ describe('view_group_page', () => {
     cy.get('.view-group-card').should('not.exist');
   });
 
-  it('Covers tags, join requirement variants, and image rendering', () => {
+  it('shows tags, join variants, and image rendering', () => {
     visitGroup({ username: 'member' });
     cy.get('.view-group-required-tag-chip').should('have.length', 4);
     cy.contains('.view-group-required-tag-chip', 'PC').should('exist');
@@ -168,7 +168,7 @@ describe('view_group_page', () => {
     cy.get('.view-group-game-image-fallback').should('not.exist');
   });
 
-  it('Handles join flows including invalid id guard and API failure', () => {
+  it('handles join flows and api failure', () => {
     const invalidGroupBody = {
       ...groupBody,
       _id: 'invalid-id',
@@ -199,7 +199,7 @@ describe('view_group_page', () => {
     cy.get('.error').should('contain', 'Not logged in');
   });
 
-  it('Covers member actions: profile, leave, and chat behavior', () => {
+  it('handles member actions and chat behavior', () => {
     cy.intercept('POST', `**/api/groups/leave/${groupId}`, { statusCode: 200, body: { group: memberGroupBody } }).as('leaveGroup');
 
     visitGroup({
@@ -241,7 +241,7 @@ describe('view_group_page', () => {
     cy.url().should('include', '/games');
   });
 
-  it('Shows deleted-group state after user was already in the group', () => {
+  it('shows deleted group state after user was already in the group', () => {
     visitGroup({
       body: memberGroupBody,
       alias: 'getMemberGroupDeleted',
@@ -266,7 +266,7 @@ describe('view_group_page', () => {
     cy.contains('button', 'Leave Group').should('not.exist');
   });
 
-  it('Covers owner controls for remove member and request review', () => {
+  it('handles owner controls for member removal and request review', () => {
     const afterRemove = {
       ...ownerGroupBody,
       members: [{ _id: ownerId, username: 'owner' }],

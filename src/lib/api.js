@@ -5,10 +5,6 @@ const normalizePath = (path) => {
     return rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
 };
 
-/**
- * Wrapper around fetch that prepends the Railway backend URL in production.
- * Usage: apiFetch('/api/auth/login', { method: 'POST', ... })
- */
 export const apiFetch = (path, options = {}) => {
     const requestPath = normalizePath(path);
 

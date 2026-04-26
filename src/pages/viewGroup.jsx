@@ -12,7 +12,7 @@ const getGroupSocket = () => {
 
 const isValidObjectId = (value) => /^[a-f\d]{24}$/i.test(String(value || ""));
 
-const getImageSrc = (image) => {
+const getImageUrl = (image) => {
     if (!image?.data || !image?.contentType) return null;
 
     if (image.data.type === "Buffer" && Array.isArray(image.data.data)) {
@@ -373,7 +373,7 @@ export default function ViewGroup() {
     const requiredTags = [group?.platform, group?.experience, group?.microphone, group?.region].filter(Boolean);
     const optionalTags = Array.isArray(group?.tags) ? group.tags.filter(Boolean) : [];
     const pendingMembers = Array.isArray(group?.pendingMembers) ? group.pendingMembers : [];
-    const gameImageSrc = getImageSrc(group?.game?.image);
+    const gameImageSrc = getImageUrl(group?.game?.image);
     const isCurrentUserPending = Boolean(
         pendingMembers.some((member) => member?.username === currentUsername)
     );

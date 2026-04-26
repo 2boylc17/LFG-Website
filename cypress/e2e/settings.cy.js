@@ -25,13 +25,13 @@ describe('settings_page', () => {
     cy.clearCookies();
   });
 
-  it('Redirects to login when not logged in', () => {
+  it('redirects to login when not logged in', () => {
     cy.intercept('HEAD', '**/api/auth/validate', { statusCode: 401 }).as('validateUnauth');
     cy.visit(`${base}/settings`);
     cy.url().should('include', '/login');
   });
 
-  it('Renders all fields and allows profile interactions', () => {
+  it('shows fields and allows profile interactions', () => {
     waitForSettings();
     cy.get('.settings-page').should('be.visible');
     cy.get('.settings-title').should('contain', 'Settings');
@@ -44,7 +44,7 @@ describe('settings_page', () => {
     cy.get('#playStyle').select('Competitive').should('have.value', 'Competitive');
   });
 
-  it('Opens and closes modal via button and backdrop', () => {
+  it('opens and closes modal', () => {
     waitForSettings();
     openModal();
     cy.get('.settings-modal').should('be.visible');
@@ -56,7 +56,7 @@ describe('settings_page', () => {
     cy.get('.settings-modal').should('not.exist');
   });
 
-  it('Profile save: no changes, success, and error', () => {
+  it('handles profile save states', () => {
     waitForSettings();
     cy.get('.settings-save-btn').first().click();
     cy.get('.settings-success').should('contain', 'No profile changes to save.');
@@ -71,7 +71,7 @@ describe('settings_page', () => {
     cy.get('.settings-error').should('contain', 'err1');
   });
 
-  it('Username form validation and submission', () => {
+  it('handles username form validation and submission', () => {
     waitForSettings();
     openModal();
     cy.contains('.settings-save-btn', 'Update Username').click();
@@ -92,7 +92,7 @@ describe('settings_page', () => {
     cy.get('.settings-success').should('contain', 'Username updated. Please log in again.');
   });
 
-  it('Password form validation and submission', () => {
+  it('handles password form validation and submission', () => {
     waitForSettings();
     openModal();
     cy.contains('.settings-save-btn', 'Update Password').click();

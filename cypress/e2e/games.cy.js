@@ -4,7 +4,7 @@ describe('games_page', () => {
     cy.clearCookies();
   });
 
-  it('All Fields Render', () => {
+  it('shows game page fields', () => {
     cy.wait(500);
 
     cy.get('h1').should('contain', 'Games');
@@ -16,7 +16,7 @@ describe('games_page', () => {
     cy.get('.games-list').should('exist');
   });
 
-  it('Change number of games per page', () => {
+  it('changes number of games per page', () => {
     cy.wait(500);
     
     cy.get('#page-size').select('6').should('have.value', '6');
@@ -32,7 +32,7 @@ describe('games_page', () => {
     cy.get('button.pg-prev').should('be.disabled');
   });
 
-  it('Search for a game', () => {
+  it('searches for a game', () => {
     cy.wait(500);
 
     cy.get('.games-search-input').should('be.visible').type('a');
@@ -48,7 +48,7 @@ describe('games_page', () => {
     cy.get('.games-search-clear').should('not.exist');
   });
 
-  it('Filter by tag', () => {
+  it('filters by tag', () => {
     cy.wait(500);
 
     cy.get('#games-tag-filter').should('be.visible');
@@ -72,7 +72,7 @@ describe('games_page', () => {
     
   });
 
-  it('Sort order', () => {
+  it('changes sort order', () => {
     cy.wait(500);
 
     cy.get('#games-sort-order').should('be.visible').and('have.value', 'name-asc');
@@ -92,14 +92,14 @@ describe('games_page', () => {
 
   });
 
-  it('Handles API error', () => {
+  it('shows api error', () => {
     cy.intercept('GET', '**/api/games/list', { statusCode: 500 });
     cy.visit('/games');
     cy.wait(500);
     cy.contains('.error', 'Failed to load games').should('be.visible');
   });
 
-  it('Clicking a game navigates to the game page', () => {
+  it('opens game page on click', () => {
     cy.wait(500);
 
     cy.get('.game-card').its('length').should('be.gte', 1);

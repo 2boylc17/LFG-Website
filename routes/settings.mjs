@@ -5,7 +5,6 @@ import { validateToken } from '../utils/validateToken.mjs';
 
 const router = express.Router();
 
-// GET public profile by username
 router.get('/public/:username', async (req, res) => {
     try {
         const username = String(req.params.username || '').trim();
@@ -22,13 +21,12 @@ router.get('/public/:username', async (req, res) => {
         }
 
         return res.status(200).json(user);
-    } catch (err) {
-        console.error('Public profile fetch error:', err);
+    } catch (error) {
+        console.error('Public profile fetch error:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
 
-// Verify JWT and attach userId/username to req
 const authenticate = (req, res, next) => {
     const token = req.cookies.jwt;
     const decoded = validateToken(token);
@@ -40,19 +38,17 @@ const authenticate = (req, res, next) => {
     next();
 };
 
-// GET current user settings
 router.get('/', authenticate, async (req, res) => {
     try {
         const user = await User.findById(req.userId).select('-password');
         if (!user) return res.status(404).json({ message: 'User not found' });
         res.json(user);
-    } catch (err) {
-        console.error('Settings fetch error:', err);
+    } catch (error) {
+	    console.error('Settings fetch error:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
 
-// GET current user's friends
 router.get('/friends', authenticate, async (req, res) => {
     try {
         const user = await User.findById(req.userId)
@@ -70,13 +66,12 @@ router.get('/friends', authenticate, async (req, res) => {
             incomingRequests: user.friendRequestsIncoming || [],
             outgoingRequests: user.friendRequestsOutgoing || []
         });
-    } catch (err) {
-        console.error('Friends fetch error:', err);
+    } catch (error) {
+	    console.error('Friends fetch error:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
 
-// GET incoming friend request count
 router.get('/friends/request-count', authenticate, async (req, res) => {
     try {
         const user = await User.findById(req.userId).select('friendRequestsIncoming');
@@ -85,13 +80,12 @@ router.get('/friends/request-count', authenticate, async (req, res) => {
         }
 
         return res.status(200).json({ count: Array.isArray(user.friendRequestsIncoming) ? user.friendRequestsIncoming.length : 0 });
-    } catch (err) {
-        console.error('Friend request count error:', err);
+    } catch (error) {
+	    console.error('Friend request count error:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
 
-// POST send friend request by username
 router.post('/friends/request/:username', authenticate, async (req, res) => {
     try {
         const targetUsername = String(req.params.username || '').trim();
@@ -140,13 +134,12 @@ router.post('/friends/request/:username', authenticate, async (req, res) => {
         ]);
 
         return res.status(200).json({ message: `Friend request sent to ${targetUser.username}`, relationStatus: 'outgoing' });
-    } catch (err) {
-        console.error('Send friend request error:', err);
+    } catch (error) {
+	    console.error('Send friend request error:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
 
-// POST accept friend request from username
 router.post('/friends/request/:username/accept', authenticate, async (req, res) => {
     try {
         const requesterUsername = String(req.params.username || '').trim();
@@ -182,13 +175,12 @@ router.post('/friends/request/:username/accept', authenticate, async (req, res) 
         ]);
 
         return res.status(200).json({ message: `You are now friends with ${requesterUser.username}` });
-    } catch (err) {
-        console.error('Accept friend request error:', err);
+    } catch (error) {
+	    console.error('Accept friend request error:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
 
-// POST reject friend request from username
 router.post('/friends/request/:username/reject', authenticate, async (req, res) => {
     try {
         const requesterUsername = String(req.params.username || '').trim();
@@ -211,13 +203,12 @@ router.post('/friends/request/:username/reject', authenticate, async (req, res) 
         ]);
 
         return res.status(200).json({ message: `Rejected friend request from ${requesterUser.username}` });
-    } catch (err) {
-        console.error('Reject friend request error:', err);
+    } catch (error) {
+	    console.error('Reject friend request error:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
 
-// POST remove friend by username
 router.post('/friends/remove/:username', authenticate, async (req, res) => {
     try {
         const targetUsername = String(req.params.username || '').trim();

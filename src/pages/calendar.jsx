@@ -42,7 +42,7 @@ const sortEventsByTime = (events) =>
     return a.time.localeCompare(b.time);
   });
 
-export default function CalendarPage() {
+export default function Calendar() {
   const now = new Date();
   const [viewDate, setViewDate] = useState(() => {
     return new Date(now.getFullYear(), now.getMonth(), 1);

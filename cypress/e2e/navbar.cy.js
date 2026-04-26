@@ -50,6 +50,8 @@ describe('navbar', () => {
     cy.viewport(390, 844);
     visitLoggedOut('/games');
 
+    cy.get('main').should('have.class', 'sidebar-collapsed');
+    cy.get('.navbar-toggle-btn').click();
     cy.get('main').should('not.have.class', 'sidebar-collapsed');
     cy.get('.navbar-toggle-btn').click();
     cy.get('main').should('have.class', 'sidebar-collapsed');

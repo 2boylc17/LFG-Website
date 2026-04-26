@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { apiFetch } from "../lib/api.js";
 import { connectSocket, getSocket } from "../lib/socket.js";
 
-const emptyNotice = { text: "", error: false };
+const emptyMessage = { text: "", error: false };
 
 const getThreadSocket = () => {
     if (typeof window !== 'undefined' && window.__friendsTestSocket) {
@@ -34,7 +34,7 @@ export default function Friends({ isLoggedIn }) {
     const [selectedFriendUsername, setSelectedFriendUsername] = useState("");
     const [threadMessages, setThreadMessages] = useState([]);
     const [loadingThread, setLoadingThread] = useState(false);
-    const [messagesNotice, setMessagesNotice] = useState(emptyNotice);
+    const [messagesNotice, setMessagesNotice] = useState(emptyMessage);
     const [composer, setComposer] = useState("");
     const [sending, setSending] = useState(false);
     const [socketReady, setSocketReady] = useState(false);
@@ -71,7 +71,7 @@ export default function Friends({ isLoggedIn }) {
 
         try {
             setLoadingThread(true);
-            setMessagesNotice(emptyNotice);
+            setMessagesNotice(emptyMessage);
 
             const socket = getThreadSocket();
             const data = await new Promise((resolve) => {
@@ -271,7 +271,7 @@ export default function Friends({ isLoggedIn }) {
 
         try {
             setSending(true);
-            setMessagesNotice(emptyNotice);
+            setMessagesNotice(emptyMessage);
 
             const socket = getSocket() || connectSocket();
             const data = await new Promise((resolve) => {

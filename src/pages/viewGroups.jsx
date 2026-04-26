@@ -12,6 +12,7 @@ export default function ViewGroups() {
 	const [error, setError] = useState(null);
 	const pageSize = 6;
 	const [selectedTag, setSelectedTag] = useState("");
+	const [tagSearch, setTagSearch] = useState("");
 	const [sortOrder, setSortOrder] = useState("newest");
 	const {
 		searchTerm,
@@ -61,13 +62,26 @@ export default function ViewGroups() {
 		fetchGroups();
 	}, [gameSlug]);
 
-	const q = debouncedSearch.trim().toLowerCase();
-	const availableTags = Array.from(new Set(groups.flatMap((group) => [
-		...getGroupTags(group)
+	const searchQuery = debouncedSearch.trim().toLowerCase();
+
+	// Premade tags come from structured fields; user tags come from free-form group.tags.
+	const premadeTags = Array.from(new Set(groups.flatMap((group) => [
+		String(group.platform || "").trim(),
+		String(group.experience || "").trim(),
+		String(group.microphone || "").trim(),
+		String(group.region || "").trim(),
 	]).filter(Boolean))).sort((a, b) => a.localeCompare(b));
 
+	const userTags = Array.from(new Set(groups.flatMap((group) =>
+		(group.tags || []).map((tag) => String(tag || "").trim())
+	).filter(Boolean))).filter((tag) => !premadeTags.includes(tag)).sort((a, b) => a.localeCompare(b));
+
+	const tagQuery = tagSearch.trim().toLowerCase();
+	const visiblePremadeTags = premadeTags.filter((tag) => !tagQuery || tag === selectedTag || tag.toLowerCase().includes(tagQuery));
+	const visibleUserTags = userTags.filter((tag) => !tagQuery || tag === selectedTag || tag.toLowerCase().includes(tagQuery));
+
 	const filteredGroups = groups.filter((group) => {
-		if (!groupMatchesQuery(group, q)) return false;
+		if (!groupMatchesQuery(group, searchQuery)) return false;
 		if (!selectedTag) return true;
 		return getGroupTags(group).includes(selectedTag);
 	});
@@ -109,6 +123,14 @@ export default function ViewGroups() {
 				<div className="games-filters">
 					<div className="games-page-size games-filter-block">
 						<label htmlFor="groups-tag-filter">Filter tag</label>
+						<input
+							type="search"
+							id="groups-tag-search"
+							className="tag-search"
+							value={tagSearch}
+							onChange={(e) => setTagSearch(e.target.value)}
+							placeholder="Search tags"
+						/>
 						<select
 							id="groups-tag-filter"
 							value={selectedTag}
@@ -116,9 +138,20 @@ export default function ViewGroups() {
 							className="games-select"
 						>
 							<option value="">All tags</option>
-							{availableTags.map((tag) => (
-								<option key={tag} value={tag}>{tag}</option>
-							))}
+							{visiblePremadeTags.length > 0 && (
+								<optgroup label="Filters">
+									{visiblePremadeTags.map((tag) => (
+										<option key={tag} value={tag}>{tag}</option>
+									))}
+								</optgroup>
+							)}
+							{visibleUserTags.length > 0 && (
+								<optgroup label="Tags">
+									{visibleUserTags.map((tag) => (
+										<option key={tag} value={tag}>{tag}</option>
+									))}
+								</optgroup>
+							)}
 						</select>
 					</div>
 					<div className="games-page-size games-filter-block">

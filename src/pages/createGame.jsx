@@ -8,13 +8,13 @@ export default function CreateGame() {
     const [message, setMessage] = useState("");
     const [selectedImage, setSelectedImage] = useState(null);
 
-    const fileToDataUrl = (file) => new Promise((resolve) => {
+    const fileToImageUrl = (file) => new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result);
         reader.readAsDataURL(file);
     });
 
-    const toNameList = (csvValue) => csvValue
+    const parseNameList = (csvValue) => csvValue
         .split(',')
         .map((value) => value.trim())
         .filter(Boolean)
@@ -31,11 +31,11 @@ export default function CreateGame() {
 
             let imageData = null;
             if (selectedImage) {
-                imageData = await fileToDataUrl(selectedImage);
+                imageData = await fileToImageUrl(selectedImage);
             }
 
-            const formattedGenres = toNameList(genresInput);
-            const formattedPlatforms = toNameList(platformsInput);
+            const formattedGenres = parseNameList(genresInput);
+            const formattedPlatforms = parseNameList(platformsInput);
 
             if (!formattedGenres.length || !formattedPlatforms.length) {
                 throw new Error("Genre and platform cannot be empty");

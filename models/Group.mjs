@@ -17,5 +17,5 @@ const groupSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now, expires: 60 * 60 * 24 }
 });
 
-const Group = mongoose.model('Groups', groupSchema, 'Groups');
-export default Group;
+const GroupModel = mongoose.model('Groups', groupSchema, 'Groups');
+export default GroupModel;
