@@ -23,6 +23,18 @@ a,
 li {
   text-decoration: none;
 }
+
+/* WCAG Contrast: readable placeholder on dark inputs. */
+input::placeholder,
+textarea::placeholder {
+  color: #bcbcbc;
+}
+
+/* WCAG Focus: visible keyboard focus indicator. */
+:focus-visible {
+  outline: 2px solid #8ea685;
+  outline-offset: 2px;
+}
 /* =============== END BASE ELEMENTS =============== */
 
 
@@ -65,11 +77,12 @@ main.sidebar-collapsed .page {
   position: fixed;
   left: 0;
   top: 0;
+  /* Layout: sits above all page content. */
   z-index: 10;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   height: 11vh;
   width: 100%;
-  border-bottom: #7d7d7d solid 1px;
+  border-bottom: #888888 solid 1px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -87,6 +100,7 @@ main.sidebar-collapsed .page {
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0.5rem;
+  /* Mobile: shown only on small screens via media query below. */
   display: none;
 }
 
@@ -104,6 +118,7 @@ main.sidebar-collapsed .page {
 }
 
 .navbar-title {
+  /* Layout: centered absolutely so left/right slots can size independently. */
   position: absolute;
   left: 50%;
   top: 50%;
@@ -112,6 +127,7 @@ main.sidebar-collapsed .page {
   color: #fff;
   font-family: 'Georgia', serif;
   font-size: 3rem;
+  /* Interaction: title is decorative; clicks pass through to elements beneath. */
   pointer-events: none;
   white-space: nowrap;
 }
@@ -131,7 +147,7 @@ main.sidebar-collapsed .page {
 .navbar-btn {
   background-color: #2d2d2d;
   color: #fff;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 8px;
   padding: 0.4rem 0.8rem;
   font-size: 0.9rem;
@@ -147,7 +163,7 @@ main.sidebar-collapsed .page {
 .navbar-auth-btn {
   background-color: #2d2d2d;
   color: #fff;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 8px;
   padding: 0.4rem 0.8rem;
   font-size: 0.9rem;
@@ -184,6 +200,7 @@ main.sidebar-collapsed .page {
   .navbar {
     height: auto;
     min-height: 11vh;
+    /* Mobile: wraps into two rows so the title appears above the controls. */
     flex-wrap: wrap;
     row-gap: 0.3rem;
   }
@@ -193,8 +210,10 @@ main.sidebar-collapsed .page {
   }
 
   .navbar-title {
+    /* Mobile: leaves absolute flow so it can occupy its own row. */
     position: static;
     transform: none;
+    /* Mobile: forces title to the first flex row. */
     order: -1;
     flex: 0 0 100%;
     margin: 0;
@@ -233,7 +252,8 @@ main.sidebar-collapsed .page {
 
 .profile-card {
   width: min(720px, 100%);
-  border: 1px solid #4a4a4a;
+  /* WCAG Contrast: minimum border contrast. */
+  border: 1px solid #6e6e6e;
   border-radius: 12px;
   background: #1f1f1f;
   color: #fff;
@@ -260,7 +280,7 @@ main.sidebar-collapsed .page {
 }
 
 .profile-add-friend-btn {
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 8px;
   padding: 0.35rem 0.7rem;
   background: #274032;
@@ -279,7 +299,7 @@ main.sidebar-collapsed .page {
 }
 
 .profile-back-link {
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 8px;
   padding: 0.35rem 0.7rem;
   color: #fff;
@@ -309,7 +329,8 @@ main.sidebar-collapsed .page {
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  border: 1px solid #4a4a4a;
+  /* WCAG Contrast: minimum border contrast. */
+  border: 1px solid #6e6e6e;
   border-radius: 12px;
   background: linear-gradient(135deg, #252525 0%, #1f1f1f 100%);
   padding: 0.8rem;
@@ -319,7 +340,7 @@ main.sidebar-collapsed .page {
   width: 3.1rem;
   height: 3.1rem;
   border-radius: 999px;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   background: radial-gradient(circle at 30% 30%, #5b5b5b, #2f2f2f);
   display: grid;
   place-items: center;
@@ -353,7 +374,8 @@ main.sidebar-collapsed .page {
 }
 
 .profile-field-card {
-  border: 1px solid #4a4a4a;
+  /* WCAG Contrast: minimum border contrast. */
+  border: 1px solid #6e6e6e;
   border-radius: 10px;
   background: #242424;
   padding: 0.68rem;
@@ -382,7 +404,8 @@ main.sidebar-collapsed .page {
 .profile-platform-chip {
   display: inline-flex;
   align-items: center;
-  border: 1px solid #6f6f6f;
+  /* WCAG Contrast: minimum border contrast. */
+  border: 1px solid #888888;
   border-radius: 999px;
   background: #2f2f2f;
   color: #fff;
@@ -398,7 +421,7 @@ main.sidebar-collapsed .page {
 
 .friends-shell {
   background-color: #1D1D1D;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 12px;
   padding: 1rem;
   width: min(980px, 100%);
@@ -448,7 +471,7 @@ main.sidebar-collapsed .page {
 
 .friend-requests-shell {
   background-color: #1D1D1D;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 12px;
   padding: 1rem;
   width: min(980px, 100%);
@@ -461,7 +484,7 @@ main.sidebar-collapsed .page {
 }
 
 .friend-requests-toggle-btn {
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 8px;
   padding: 0.28rem 0.62rem;
   background: #2d2d2d;
@@ -492,7 +515,7 @@ main.sidebar-collapsed .page {
 
 .friend-request-accept-btn,
 .friend-request-reject-btn {
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 8px;
   padding: 0.3rem 0.65rem;
   color: #fff;
@@ -528,7 +551,8 @@ main.sidebar-collapsed .page {
 }
 
 .friend-card {
-  border: 1px solid #4a4a4a;
+  /* WCAG Contrast: minimum border contrast. */
+  border: 1px solid #6e6e6e;
   border-radius: 10px;
   background: #242424;
   padding: 0.75rem;
@@ -556,7 +580,7 @@ main.sidebar-collapsed .page {
 }
 
 .friend-profile-link {
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 8px;
   padding: 0.25rem 0.55rem;
   background: #2d2d2d;
@@ -567,7 +591,7 @@ main.sidebar-collapsed .page {
 }
 
 .friend-message-link {
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 8px;
   padding: 0.25rem 0.55rem;
   background: #2d2d2d;
@@ -581,7 +605,7 @@ main.sidebar-collapsed .page {
 }
 
 .friend-remove-btn {
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 8px;
   padding: 0.25rem 0.55rem;
   background: #4b2d2d;
@@ -601,16 +625,18 @@ main.sidebar-collapsed .page {
 .friends-confirm-overlay {
   position: fixed;
   inset: 0;
+  /* Layout: darkened backdrop behind the confirmation dialog. */
   background: rgba(0, 0, 0, 0.55);
   display: grid;
   place-items: center;
+  /* Layout: sits above friend cards and shell panels. */
   z-index: 60;
 }
 
 .friends-confirm-card {
   width: min(420px, calc(100vw - 2rem));
   background: #1d1d1d;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 12px;
   padding: 1rem;
   display: grid;
@@ -640,7 +666,7 @@ main.sidebar-collapsed .page {
 
 .messages-shell {
   background-color: #1D1D1D;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 12px;
   padding: 1rem;
   width: min(980px, 100%);
@@ -664,7 +690,8 @@ main.sidebar-collapsed .page {
 }
 
 .messages-friends-list {
-  border: 1px solid #4a4a4a;
+  /* WCAG Contrast: minimum border contrast. */
+  border: 1px solid #6e6e6e;
   border-radius: 10px;
   background: #242424;
   padding: 0.55rem;
@@ -674,7 +701,7 @@ main.sidebar-collapsed .page {
 }
 
 .messages-friend-item {
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 8px;
   background: #2d2d2d;
   color: #fff;
@@ -693,7 +720,8 @@ main.sidebar-collapsed .page {
 }
 
 .messages-thread {
-  border: 1px solid #4a4a4a;
+  /* WCAG Contrast: minimum border contrast. */
+  border: 1px solid #6e6e6e;
   border-radius: 10px;
   background: #242424;
   padding: 0.65rem;
@@ -710,7 +738,8 @@ main.sidebar-collapsed .page {
 }
 
 .messages-log {
-  border: 1px solid #3f3f3f;
+  /* WCAG Contrast: minimum border contrast. */
+  border: 1px solid #656565;
   border-radius: 8px;
   background: #1b1b1b;
   padding: 0.65rem;
@@ -721,7 +750,8 @@ main.sidebar-collapsed .page {
 }
 
 .messages-bubble {
-  border: 1px solid #555;
+  /* WCAG Contrast: minimum border contrast. */
+  border: 1px solid #707070;
   border-radius: 9px;
   padding: 0.5rem 0.62rem;
   max-width: 78%;
@@ -759,7 +789,7 @@ main.sidebar-collapsed .page {
   padding: 0.55rem 0.7rem;
   background: #2d2d2d;
   color: #fff;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
 }
 
 .messages-form button {
@@ -768,7 +798,7 @@ main.sidebar-collapsed .page {
   font-weight: 700;
   background: #2d2d2d;
   color: #fff;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
 }
 
 .messages-form button:hover:not(:disabled) {
@@ -832,13 +862,14 @@ main.sidebar-collapsed .page {
   background-color: #1D1D1D;
   overflow-x: hidden;
   padding: 1.5rem 1rem;
-  border-right: #7d7d7d solid 1px;
+  border-right: #888888 solid 1px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   gap: 1rem;
   transition: width 0.3s ease, transform 0.3s ease;
+  /* Layout: sits below navbar but above page content. */
   z-index: 9;
 }
 
@@ -876,10 +907,12 @@ main.sidebar-collapsed .page {
     height: 100vh;
     top: 0;
     left: 0;
+    /* Mobile: extra top padding clears the navbar when open. */
     padding: 6rem 1.5rem 1.5rem;
+    /* Mobile: hidden off-screen by default; slides in when open. */
     transform: translateX(-100%);
     border-right: none;
-    border-bottom: #7d7d7d solid 1px;
+    border-bottom: #888888 solid 1px;
     transition: transform 0.3s ease;
   }
   
@@ -897,7 +930,7 @@ main.sidebar-collapsed .page {
   background-color: #2d2d2d;
   color: #fff;
   text-align: center;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 14px;
   min-height: 4.5rem;
   display: flex;
@@ -918,6 +951,7 @@ main.sidebar-collapsed .page {
   right: 0.6rem;
   min-width: 1.2rem;
   height: 1.2rem;
+  /* Layout: pill shape scales with content. */
   border-radius: 999px;
   background: #c84343;
   border: 1px solid #ff9f9f;
@@ -945,11 +979,12 @@ main.sidebar-collapsed .page {
 
 
 /* ================= SHARED SURFACES & CONTROLS ================= */
+/* WCAG Contrast: minimum border contrast. */
 .create-group-shell,
 .view-group-card,
 .settings-section {
   background-color: #1D1D1D;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
 }
 
 .games-search-input,
@@ -971,7 +1006,7 @@ main.sidebar-collapsed .page {
 .settings-save-btn {
   background-color: #2d2d2d;
   color: #fff;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
 }
 /* =============== END SHARED SURFACES & CONTROLS =============== */
 
@@ -986,6 +1021,7 @@ main.sidebar-collapsed .page {
   place-items: center;
   padding: 1.2rem;
   box-sizing: border-box;
+  /* Visual: subtle radial gradients add depth without distracting from the form. */
   background:
     radial-gradient(circle at 20% 20%, rgba(86, 124, 86, 0.25), transparent 55%),
     radial-gradient(circle at 80% 70%, rgba(96, 96, 96, 0.2), transparent 60%);
@@ -996,7 +1032,7 @@ main.sidebar-collapsed .page {
   color: #fff;
   width: min(460px, 94%);
   border-radius: 20px;
-  border: #7d7d7d solid 1px;
+  border: #888888 solid 1px;
   padding: 2rem;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.32);
 }
@@ -1018,7 +1054,7 @@ main.sidebar-collapsed .page {
 
 .login-input {
   background-color: #2d2d2d;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   color: #fff;
   border-radius: 10px;
   padding: 0.65rem 0.8rem;
@@ -1026,6 +1062,7 @@ main.sidebar-collapsed .page {
 }
 
 .login-input:focus {
+  /* WCAG Focus: visible keyboard focus indicator. */
   outline: 2px solid #8ea685;
   outline-offset: 1px;
 }
@@ -1033,7 +1070,7 @@ main.sidebar-collapsed .page {
 .login-submit {
   background-color: #33513a;
   color: #fff;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 10px;
   padding: 0.65rem 0.8rem;
   font-size: 1rem;
@@ -1049,6 +1086,7 @@ main.sidebar-collapsed .page {
   margin-top: 0.85rem;
   background: transparent;
   border: none;
+  /* Visual: underline signals this is a navigation action, not a form action. */
   color: #c8d7c1;
   text-decoration: underline;
   cursor: pointer;
@@ -1109,7 +1147,8 @@ main.sidebar-collapsed .page {
 }
 
 .games-search-input:focus {
-  outline: 2px solid #7d7d7d;
+  /* WCAG Focus: visible keyboard focus indicator. */
+  outline: 2px solid #888888;
   outline-offset: 2px;
 }
 
@@ -1144,7 +1183,7 @@ main.sidebar-collapsed .page {
 .pg-next {
   background-color: #2d2d2d;
   color: #fff;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 8px;
   padding: 0.45rem 1.1rem;
   font-size: 0.95rem;
@@ -1174,7 +1213,7 @@ main.sidebar-collapsed .page {
 .create-group-link {
   margin-top: 0.25rem;
   display: inline-block;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 10px;
   padding: 0.5rem 0.8rem;
   background-color: #2d2d2d;
@@ -1217,6 +1256,7 @@ main.sidebar-collapsed .page {
   font-size: 0.9rem;
   border-radius: 8px;
   padding: 0.35rem 1.8rem 0.35rem 0.65rem;
+  /* Layout: hides the native arrow so a custom one can be used if needed. */
   appearance: none;
 }
 
@@ -1236,13 +1276,14 @@ main.sidebar-collapsed .page {
 }
 
 .games-select:focus {
-  outline: 2px solid #7d7d7d;
+  /* WCAG Focus: visible keyboard focus indicator. */
+  outline: 2px solid #888888;
   outline-offset: 2px;
 }
 
 .game-card {
   background-color: #2d2d2d;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 16px;
   overflow: hidden;
   display: flex;
@@ -1279,7 +1320,7 @@ main.sidebar-collapsed .page {
   height: auto;
   max-width: 100%;
   object-fit: contain;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
 }
 
 .game-card .game-body h2 {
@@ -1288,6 +1329,7 @@ main.sidebar-collapsed .page {
 
 .game-card:hover {
   background-color: #3c3c3c;
+  /* Visual: inset ring on hover gives a selected-state feel without layout shift. */
   box-shadow: inset 0 0 0 2px #9a9a9a, inset 0 10px 24px rgba(0, 0, 0, 0.25);
 }
 
@@ -1373,7 +1415,7 @@ main.sidebar-collapsed .page {
   display: block;
   width: 100%;
   max-width: 240px;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 12px;
   object-fit: cover;
 }
@@ -1385,7 +1427,7 @@ main.sidebar-collapsed .page {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 12px;
   background-color: #2d2d2d;
   color: #d6d6d6;
@@ -1447,6 +1489,7 @@ main.sidebar-collapsed .page {
 
 .create-group-field input:focus,
 .create-group-field select:focus {
+  /* WCAG Focus: visible keyboard focus indicator. */
   outline: 2px solid #9a9a9a;
   outline-offset: 2px;
 }
@@ -1504,10 +1547,12 @@ main.sidebar-collapsed .page {
   top: 1.5rem;
   right: 1.5rem;
   width: min(100%, 390px);
-  border: 1px solid #5a5a5a;
+  /* WCAG Contrast: minimum border contrast. */
+  border: 1px solid #777777;
   border-radius: 10px;
   background-color: #242424;
   padding: 0.8rem 0.85rem 0.6rem;
+  /* Layout: floats above group description text on wide viewports. */
   z-index: 3;
 }
 
@@ -1538,7 +1583,7 @@ main.sidebar-collapsed .page {
   width: 58px;
   height: 58px;
   border-radius: 10px;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   object-fit: cover;
 }
 
@@ -1546,7 +1591,7 @@ main.sidebar-collapsed .page {
   width: 58px;
   height: 58px;
   border-radius: 10px;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   background-color: #2d2d2d;
   color: #cfcfcf;
   display: flex;
@@ -1591,7 +1636,7 @@ main.sidebar-collapsed .page {
   font-weight: 600;
   line-height: 1;
   text-decoration: none;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   background-color: #2d2d2d;
   color: #fff;
   transition: background-color 0.15s ease;
@@ -1616,7 +1661,7 @@ main.sidebar-collapsed .page {
 }
 
 .view-group-join-password-input {
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 8px;
   background-color: #2d2d2d;
   color: #fff;
@@ -1633,7 +1678,7 @@ main.sidebar-collapsed .page {
 .view-group-tag-chip {
   display: inline-flex;
   align-items: center;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 999px;
   background-color: #2d2d2d;
   color: #fff;
@@ -1642,6 +1687,7 @@ main.sidebar-collapsed .page {
 
 .view-group-tag-chip-optional {
   font-size: 0.8rem;
+  /* Visual: slightly faded to distinguish optional from required tags. */
   opacity: 0.9;
   padding: 0.26rem 0.62rem;
 }
@@ -1660,7 +1706,8 @@ main.sidebar-collapsed .page {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border: 1px solid #4a4a4a;
+  /* WCAG Contrast: minimum border contrast. */
+  border: 1px solid #6e6e6e;
   border-radius: 8px;
   background-color: #2a2a2a;
   padding: 0.45rem 0.6rem;
@@ -1668,7 +1715,8 @@ main.sidebar-collapsed .page {
 
 .view-group-member-row.pending {
   background-color: #2a2a2a;
-  border-color: #5a5a5a;
+  /* WCAG Contrast: minimum border contrast. */
+  border-color: #777777;
   opacity: 0.68;
 }
 
@@ -1677,12 +1725,13 @@ main.sidebar-collapsed .page {
 }
 
 .view-group-owner-badge {
-  color: #4b3232;
+  /* WCAG Contrast: sufficient text contrast. */
+  color: #ffb3b3;
   font-weight: 700;
 }
 
 .view-group-profile-btn {
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 8px;
   background-color: #2f3340;
   color: #fff;
@@ -1700,7 +1749,7 @@ main.sidebar-collapsed .page {
 }
 
 .view-group-remove-member-btn {
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 8px;
   background-color: #3a2a2a;
   color: #fff;
@@ -1714,7 +1763,7 @@ main.sidebar-collapsed .page {
 }
 
 .view-group-approve-member-btn {
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 8px;
   background-color: #2a4030;
   color: #fff;
@@ -1737,7 +1786,8 @@ main.sidebar-collapsed .page {
 
 .group-chat-log {
   background-color: #111;
-  border: 1px solid #444;
+  /* WCAG Contrast: minimum border contrast. */
+  border: 1px solid #666666;
   border-radius: 10px;
   max-height: 320px;
   overflow-y: auto;
@@ -1783,7 +1833,7 @@ main.sidebar-collapsed .page {
   padding: 0.5rem 1.4rem;
   font-size: 0.55rem;
   font-weight: 600;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   background-color: #2d2d2d;
   color: #fff;
   transition: background-color 0.15s ease, opacity 0.12s ease;
@@ -1808,7 +1858,7 @@ main.sidebar-collapsed .page {
   border-radius: 8px;
   padding: 0.5rem 0.85rem;
   font-weight: 700;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   background-color: #3a2626;
   color: #fff;
 }
@@ -1851,7 +1901,7 @@ main.sidebar-collapsed .page {
   margin-top: 0;
   margin-bottom: 1.25rem;
   font-size: 1.5rem;
-  border-bottom: 1px solid #7d7d7d;
+  border-bottom: 1px solid #888888;
   padding-bottom: 0.5rem;
 }
 
@@ -1898,6 +1948,7 @@ main.sidebar-collapsed .page {
 .settings-field input:focus,
 .settings-field textarea:focus,
 .settings-field select:focus {
+  /* WCAG Focus: visible keyboard focus indicator. */
   outline: 2px solid #9a9a9a;
   outline-offset: 2px;
 }
@@ -1971,7 +2022,9 @@ main.sidebar-collapsed .page {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Visual: semi-transparent backdrop dims the page behind the modal. */
   background-color: rgba(0, 0, 0, 0.7);
+  /* Layout: sits above navbar and sidebar. */
   z-index: 20;
   padding: 1rem;
 }
@@ -1981,7 +2034,7 @@ main.sidebar-collapsed .page {
   max-height: 85vh;
   overflow-y: auto;
   background-color: #1D1D1D;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 18px;
   padding: 1.5rem 2rem 2rem;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
@@ -2001,7 +2054,7 @@ main.sidebar-collapsed .page {
 
 .settings-modal-close {
   background: transparent;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 999px;
   color: #fff;
   cursor: pointer;
@@ -2047,7 +2100,7 @@ main.sidebar-collapsed .page {
 .calendar-today-btn,
 .calendar-event-form button,
 .calendar-event-item button {
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   background-color: #2d2d2d;
   color: #fff;
   border-radius: 10px;
@@ -2061,7 +2114,7 @@ main.sidebar-collapsed .page {
 }
 
 .calendar-jump-group select {
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 10px;
   background-color: #2d2d2d;
   color: #fff;
@@ -2088,6 +2141,7 @@ main.sidebar-collapsed .page {
 
 .calendar-grid {
   display: grid;
+  /* Layout: square grid sized to fit the available viewport height. */
   width: min(100%, calc(100vh - 38vh));
   max-height: 100%;
   aspect-ratio: 1 / 1;
@@ -2105,7 +2159,7 @@ main.sidebar-collapsed .page {
 }
 
 .calendar-day {
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   background-color: #1D1D1D;
   border-radius: 10px;
   color: #fff;
@@ -2124,6 +2178,7 @@ main.sidebar-collapsed .page {
 }
 
 .calendar-day.outside-month {
+  /* Visual: faded days belong to the previous or next month. */
   opacity: 0.45;
 }
 
@@ -2133,6 +2188,7 @@ main.sidebar-collapsed .page {
 }
 
 .calendar-day-number {
+  /* Layout: fluid size scales between small mobile and large desktop. */
   font-size: clamp(0.8rem, 1.4vw, 1.15rem);
   font-weight: 700;
 }
@@ -2145,7 +2201,7 @@ main.sidebar-collapsed .page {
 
 .calendar-events-panel {
   background-color: #1D1D1D;
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 14px;
   padding: 0.8rem 0.9rem;
   display: grid;
@@ -2178,7 +2234,7 @@ main.sidebar-collapsed .page {
 }
 
 .calendar-event-form input {
-  border: 1px solid #7d7d7d;
+  border: 1px solid #888888;
   border-radius: 10px;
   background-color: #2d2d2d;
   color: #fff;
@@ -2198,7 +2254,8 @@ main.sidebar-collapsed .page {
 }
 
 .calendar-event-item {
-  border: 1px solid #4e4e4e;
+  /* WCAG Contrast: minimum border contrast. */
+  border: 1px solid #6e6e6e;
   border-radius: 10px;
   background-color: #2a2a2a;
   padding: 0.45rem 0.55rem;
