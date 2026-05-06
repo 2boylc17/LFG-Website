@@ -6,11 +6,14 @@ import { groupMatchesQuery } from "../lib/queryMatchers.js";
 
 export default function ViewGroups() {
 	const { gameSlug } = useParams();
+	// Decode game name from URL slug
 	const gameName = decodeURIComponent(gameSlug || "").replace(/-/g, " ");
+	// Groups list & state
 	const [groups, setGroups] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const pageSize = 6;
+	// Filter & sort state
 	const [selectedTag, setSelectedTag] = useState("");
 	const [tagSearch, setTagSearch] = useState("");
 	const [sortOrder, setSortOrder] = useState("newest");
@@ -26,6 +29,7 @@ export default function ViewGroups() {
 		setCurrentPage(1);
 	}, [selectedTag, sortOrder, setCurrentPage]);
 
+	// Extract all tags from group (predefined + custom)
 	const getGroupTags = (group) => [
 		...(group.tags || []).map((tag) => String(tag || "").trim()),
 		String(group.platform || "").trim(),
@@ -34,6 +38,7 @@ export default function ViewGroups() {
 		String(group.region || "").trim()
 	].filter(Boolean);
 
+	// Fetch groups for game
 	useEffect(() => {
 		window.scrollTo({ top: 0, behavior: "auto" });
 		if (!gameName) {
@@ -62,9 +67,11 @@ export default function ViewGroups() {
 		fetchGroups();
 	}, [gameSlug]);
 
+	// Get debounced search query
 	const searchQuery = debouncedSearch.trim().toLowerCase();
 
 	// Premade tags come from structured fields; user tags come from free-form group.tags.
+	// Separate predefined tags from user tags
 	const premadeTags = Array.from(new Set(groups.flatMap((group) => [
 		String(group.platform || "").trim(),
 		String(group.experience || "").trim(),
@@ -76,16 +83,19 @@ export default function ViewGroups() {
 		(group.tags || []).map((tag) => String(tag || "").trim())
 	).filter(Boolean))).filter((tag) => !premadeTags.includes(tag)).sort((a, b) => a.localeCompare(b));
 
+	// Filter tags for dropdown
 	const tagQuery = tagSearch.trim().toLowerCase();
 	const visiblePremadeTags = premadeTags.filter((tag) => !tagQuery || tag === selectedTag || tag.toLowerCase().includes(tagQuery));
 	const visibleUserTags = userTags.filter((tag) => !tagQuery || tag === selectedTag || tag.toLowerCase().includes(tagQuery));
 
+	// Apply search & tag filters
 	const filteredGroups = groups.filter((group) => {
 		if (!groupMatchesQuery(group, searchQuery)) return false;
 		if (!selectedTag) return true;
 		return getGroupTags(group).includes(selectedTag);
 	});
 
+	// Sort groups by order preference
 	const sortedGroups = [...filteredGroups].sort((a, b) => {
 		if (sortOrder === "name-asc") return String(a.name || "").localeCompare(String(b.name || ""));
 		if (sortOrder === "name-desc") return String(b.name || "").localeCompare(String(a.name || ""));

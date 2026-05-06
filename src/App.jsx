@@ -79,11 +79,13 @@ function AppLayout({
 }
 
 export default function App() {
+    // Auth state & UI state
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [username, setUsername] = useState("");
     const [checkingAuth, setCheckingAuth] = useState(true);
     const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 768);
 
+    // Persist/clear username in localStorage
     const syncUsernameStorage = (value = "") => {
         if (value) localStorage.setItem('username', value);
         else localStorage.removeItem('username');
@@ -121,6 +123,7 @@ export default function App() {
         initAuth();
     }, []);
 
+    // Connect/disconnect socket based on login state
     useEffect(() => {
         if (isLoggedIn) {
             connectSocket();

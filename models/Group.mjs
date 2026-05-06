@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+// Group schema with members, join requirements, 24-hour TTL
 const groupSchema = new mongoose.Schema({
     name: { type: String, required: true },
     description: { type: String },

@@ -3,6 +3,7 @@ import React, { useMemo, useState } from "react";
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const storageKey = "lfg-calendar-events";
 
+// Format date to YYYY-MM-DD key
 const toDateKey = (date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -10,6 +11,7 @@ const toDateKey = (date) => {
   return `${year}-${month}-${day}`;
 };
 
+// Read stored events from localStorage
 const readStoredEvents = () => {
   try {
     const raw = localStorage.getItem(storageKey);
@@ -24,6 +26,7 @@ const readStoredEvents = () => {
 const formatMonthYear = (date) =>
   date.toLocaleDateString(undefined, { month: "long", year: "numeric" });
 
+// Format date to readable string
 const formatReadableDate = (key) => {
   const [year, month, day] = key.split("-").map(Number);
   return new Date(year, month - 1, day).toLocaleDateString(undefined, {
@@ -34,6 +37,7 @@ const formatReadableDate = (key) => {
   });
 };
 
+// Sort events chronologically
 const sortEventsByTime = (events) =>
   [...events].sort((a, b) => {
     if (!a.time && !b.time) return 0;
@@ -43,16 +47,20 @@ const sortEventsByTime = (events) =>
   });
 
 export default function Calendar() {
+  // Date & view state
   const now = new Date();
   const [viewDate, setViewDate] = useState(() => {
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
   const [selectedDateKey, setSelectedDateKey] = useState(() => toDateKey(new Date()));
+  // Event storage
   const [eventsByDate, setEventsByDate] = useState(() => readStoredEvents());
+  // Form input state
   const [titleInput, setTitleInput] = useState("");
   const [timeInput, setTimeInput] = useState("");
   const [editingEventId, setEditingEventId] = useState(null);
 
+  // Generate 6-week calendar grid starting from first day
   const monthGrid = useMemo(() => {
     const year = viewDate.getFullYear();
     const month = viewDate.getMonth();
@@ -73,17 +81,20 @@ export default function Calendar() {
   const selectedEvents = eventsByDate[selectedDateKey] || [];
   const yearOptions = Array.from({ length: 17 }, (_, index) => now.getFullYear() - 8 + index);
 
+  // Save events to localStorage
   const saveEvents = (nextEventsByDate) => {
     setEventsByDate(nextEventsByDate);
     localStorage.setItem(storageKey, JSON.stringify(nextEventsByDate));
   };
 
+  // Clear form inputs
   const clearForm = () => {
     setTitleInput("");
     setTimeInput("");
     setEditingEventId(null);
   };
 
+  // Add new event or update existing
   const addOrUpdateEvent = (e) => {
     e.preventDefault();
     const title = titleInput.trim();
@@ -116,6 +127,7 @@ export default function Calendar() {
     clearForm();
   };
 
+  // Remove event from date
   const removeEvent = (eventId) => {
     const nextEventsForDate = selectedEvents.filter((event) => event.id !== eventId);
     const nextEventsByDate = { ...eventsByDate };
@@ -131,21 +143,25 @@ export default function Calendar() {
     if (editingEventId === eventId) clearForm();
   };
 
+  // Load event into editor
   const startEditingEvent = (event) => {
     setEditingEventId(event.id);
     setTitleInput(event.title);
     setTimeInput(event.time || "");
   };
 
+  // Navigate month view
   const moveMonth = (direction) => {
     setViewDate((current) => new Date(current.getFullYear(), current.getMonth() + direction, 1));
   };
 
+  // Go to current month & day
   const jumpToToday = () => {
     setViewDate(new Date(now.getFullYear(), now.getMonth(), 1));
     setSelectedDateKey(toDateKey(now));
   };
 
+  // Navigate to specific month/year
   const jumpToMonthYear = (month, year) => {
     setViewDate(new Date(year, month, 1));
   };

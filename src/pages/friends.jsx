@@ -5,6 +5,7 @@ import { connectSocket, getSocket } from "../lib/socket.js";
 
 const emptyMessage = { text: "", error: false };
 
+// Get socket for thread history (dm:thread:get)
 const getThreadSocket = () => {
     if (typeof window !== 'undefined' && window.__friendsTestSocket) {
         return window.__friendsTestSocket;
@@ -12,6 +13,7 @@ const getThreadSocket = () => {
     return getSocket() || connectSocket();
 };
 
+// Get socket for live message events
 const getLiveSocket = () => {
     if (typeof window !== 'undefined' && window.__friendsLiveSocket) {
         return window.__friendsLiveSocket;
@@ -21,17 +23,22 @@ const getLiveSocket = () => {
 
 export default function Friends({ isLoggedIn }) {
     const navigate = useNavigate();
+    // Friends & requests lists
     const [friends, setFriends] = useState([]);
     const [incomingRequests, setIncomingRequests] = useState([]);
     const [outgoingRequests, setOutgoingRequests] = useState([]);
+    // Page state
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [requestActionMessage, setRequestActionMessage] = useState({ text: "", error: false });
+    // Request processing
     const [processingRequestUsername, setProcessingRequestUsername] = useState("");
     const [removingFriendUsername, setRemovingFriendUsername] = useState("");
     const [removeFriendConfirmUsername, setRemoveFriendConfirmUsername] = useState("");
+    // Requests panel & chat UI
     const [isRequestsOpen, setIsRequestsOpen] = useState(false);
     const [selectedFriendUsername, setSelectedFriendUsername] = useState("");
+    // Direct messages state
     const [threadMessages, setThreadMessages] = useState([]);
     const [loadingThread, setLoadingThread] = useState(false);
     const [messagesNotice, setMessagesNotice] = useState(emptyMessage);
@@ -42,12 +49,14 @@ export default function Friends({ isLoggedIn }) {
     const currentUsername = localStorage.getItem("username") || "";
     const selectedFriend = friends.find((friend) => String(friend?.username || '') === selectedFriendUsername) || null;
 
+    // Emit badge update to sidebar
     const emitIncomingRequestCount = (count) => {
         if (typeof window !== 'undefined') {
             window.dispatchEvent(new CustomEvent('friends:incoming-count', { detail: { count } }));
         }
     };
 
+    // Fetch friends, incoming requests, outgoing requests
     const loadFriendsData = async () => {
         const response = await apiFetch('/api/settings/friends', { credentials: 'include' });
         const data = await response.json();
@@ -63,6 +72,7 @@ export default function Friends({ isLoggedIn }) {
         emitIncomingRequestCount(nextIncomingRequests.length);
     };
 
+    // Load message thread history with friend
     const loadThread = async (friendUsername) => {
         if (!friendUsername) {
             setThreadMessages([]);
@@ -93,6 +103,7 @@ export default function Friends({ isLoggedIn }) {
         }
     };
 
+    // Load friends on mount
     useEffect(() => {
         if (!isLoggedIn) {
             navigate('/login');
@@ -115,6 +126,7 @@ export default function Friends({ isLoggedIn }) {
         load();
     }, [isLoggedIn, navigate]);
 
+    // Listen for incoming messages in real-time
     useEffect(() => {
         const socket = getLiveSocket();
 
@@ -153,6 +165,7 @@ export default function Friends({ isLoggedIn }) {
         };
     }, [selectedFriendUsername]);
 
+    // Auto-select first friend when list changes
     useEffect(() => {
         if (friends.length === 0) {
             setSelectedFriendUsername('');
@@ -181,6 +194,7 @@ export default function Friends({ isLoggedIn }) {
         loadThread(nextSelected);
     }, [friends]);
 
+    // Accept/reject incoming friend request
     const reviewFriendRequest = async (requestUsername, action) => {
         if (!requestUsername) return;
 
@@ -211,6 +225,7 @@ export default function Friends({ isLoggedIn }) {
         }
     };
 
+    // Remove existing friend
     const handleRemoveFriend = async (friendUsername) => {
         if (!friendUsername) return;
 
@@ -237,22 +252,26 @@ export default function Friends({ isLoggedIn }) {
         }
     };
 
+    // Show remove confirmation dialog
     const openRemoveFriendConfirm = (friendUsername) => {
         if (!friendUsername) return;
         setRemoveFriendConfirmUsername(friendUsername);
     };
 
+    // Close remove confirmation
     const closeRemoveFriendConfirm = () => {
         if (removingFriendUsername) return;
         setRemoveFriendConfirmUsername("");
     };
 
+    // Confirm & execute remove friend
     const confirmRemoveFriend = async () => {
         if (!removeFriendConfirmUsername) return;
         await handleRemoveFriend(removeFriendConfirmUsername);
         setRemoveFriendConfirmUsername("");
     };
 
+    // Select friend & load message thread
     const handleSelectFriendForChat = async (friendUsername) => {
         if (!friendUsername) return;
         setSelectedFriendUsername(friendUsername);
@@ -264,6 +283,7 @@ export default function Friends({ isLoggedIn }) {
         }
     };
 
+    // Send direct message to friend
     const handleSendMessage = async (e) => {
         e.preventDefault();
         const text = String(composer || '').trim();

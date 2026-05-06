@@ -9,6 +9,7 @@ export default function Navbar({
   onToggleSidebar
 }) {
   const navigate = useNavigate();
+  // Handle logout button
   const logout = async () => {
     await onLogout();
     navigate('/');

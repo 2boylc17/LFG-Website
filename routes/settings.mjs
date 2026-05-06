@@ -5,6 +5,7 @@ import { validateToken } from '../utils/validateToken.mjs';
 
 const router = express.Router();
 
+// Get public profile by username
 router.get('/public/:username', async (req, res) => {
     try {
         const username = String(req.params.username || '').trim();
@@ -27,6 +28,7 @@ router.get('/public/:username', async (req, res) => {
     }
 });
 
+// Authenticate user from JWT cookie
 const authenticate = (req, res, next) => {
     const token = req.cookies.jwt;
     const decoded = validateToken(token);
@@ -38,6 +40,7 @@ const authenticate = (req, res, next) => {
     next();
 };
 
+// Get authenticated user's profile
 router.get('/', authenticate, async (req, res) => {
     try {
         const user = await User.findById(req.userId).select('-password');
@@ -49,6 +52,7 @@ router.get('/', authenticate, async (req, res) => {
     }
 });
 
+// Get friends & pending requests
 router.get('/friends', authenticate, async (req, res) => {
     try {
         const user = await User.findById(req.userId)
@@ -72,6 +76,7 @@ router.get('/friends', authenticate, async (req, res) => {
     }
 });
 
+// Get incoming friend request count
 router.get('/friends/request-count', authenticate, async (req, res) => {
     try {
         const user = await User.findById(req.userId).select('friendRequestsIncoming');
@@ -86,6 +91,7 @@ router.get('/friends/request-count', authenticate, async (req, res) => {
     }
 });
 
+// Send friend request to user
 router.post('/friends/request/:username', authenticate, async (req, res) => {
     try {
         const targetUsername = String(req.params.username || '').trim();
@@ -140,6 +146,7 @@ router.post('/friends/request/:username', authenticate, async (req, res) => {
     }
 });
 
+// Accept incoming friend request
 router.post('/friends/request/:username/accept', authenticate, async (req, res) => {
     try {
         const requesterUsername = String(req.params.username || '').trim();
@@ -181,6 +188,7 @@ router.post('/friends/request/:username/accept', authenticate, async (req, res) 
     }
 });
 
+// Reject incoming friend request
 router.post('/friends/request/:username/reject', authenticate, async (req, res) => {
     try {
         const requesterUsername = String(req.params.username || '').trim();
@@ -209,6 +217,7 @@ router.post('/friends/request/:username/reject', authenticate, async (req, res) 
     }
 });
 
+// Remove friend from list
 router.post('/friends/remove/:username', authenticate, async (req, res) => {
     try {
         const targetUsername = String(req.params.username || '').trim();
@@ -262,6 +271,7 @@ router.post('/friends/remove/:username', authenticate, async (req, res) => {
 });
 
 // PUT update profile
+// Update profile (bio, platforms, play style)
 router.put('/profile', authenticate, async (req, res) => {
     try {
         const { bio, platforms, playStyle } = req.body;
@@ -294,6 +304,7 @@ router.put('/profile', authenticate, async (req, res) => {
 });
 
 // PUT change username
+// Change username (requires password)
 router.put('/username', authenticate, async (req, res) => {
     try {
         const { newUsername, password } = req.body;

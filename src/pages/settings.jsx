@@ -6,12 +6,14 @@ const platforms = ['PC', 'PlayStation', 'Xbox', 'Nintendo Switch', 'Mobile'];
 const playStyles = ['Casual', 'Competitive', 'Mixed'];
 const emptyNotice = { text: '', error: false };
 
+// Helper to fetch & parse JSON response
 const requestJson = async (url, options = {}) => {
     const res = await apiFetch(url, options);
     const data = await res.json();
     return { ok: res.ok, data };
 };
 
+// Normalize profile object for comparison
 const normalizeProfile = (profile) => ({
     bio: String(profile?.bio || '').trim(),
     platforms: [...(profile?.platforms || [])].sort(),
@@ -22,16 +24,21 @@ export default function Settings({ isLoggedIn, onLogin }) {
     const navigate = useNavigate();
     const currentUsername = localStorage.getItem('username') || '';
 
+    // Profile field state
     const [profile, setProfile] = useState({ bio: '', platforms: [], playStyle: '' });
     const [initialProfile, setInitialProfile] = useState({ bio: '', platforms: [], playStyle: '' });
+    // Account change forms
     const [usernameForm, setUsernameForm] = useState({ newUsername: '', password: '' });
     const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    // UI state
     const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+    // Feedback messages
     const [profileMsg, setProfileMsg] = useState(emptyNotice);
     const [usernameMsg, setUsernameMsg] = useState(emptyNotice);
     const [passwordMsg, setPasswordMsg] = useState(emptyNotice);
     const [loading, setLoading] = useState(true);
 
+    // Load user settings on mount
     useEffect(() => {
         if (!isLoggedIn) {
             navigate('/login');
@@ -57,6 +64,7 @@ export default function Settings({ isLoggedIn, onLogin }) {
         loadSettings();
     }, [isLoggedIn, navigate]);
 
+    // Clear account form when modal closes
     useEffect(() => {
         if (!isAccountModalOpen) {
             setUsernameMsg(emptyNotice);
@@ -66,6 +74,7 @@ export default function Settings({ isLoggedIn, onLogin }) {
         }
     }, [isAccountModalOpen]);
 
+    // Toggle platform selection
     const togglePlatform = (platform) => {
         setProfile((prev) => ({
             ...prev,
@@ -75,6 +84,7 @@ export default function Settings({ isLoggedIn, onLogin }) {
         }));
     };
 
+    // Save profile bio, platforms, play style
     const handleProfileSave = async (e) => {
         e.preventDefault();
         setProfileMsg(emptyNotice);
@@ -112,6 +122,7 @@ export default function Settings({ isLoggedIn, onLogin }) {
         }
     };
 
+    // Change username (requires password)
     const handleUsernameChange = async (e) => {
         e.preventDefault();
         setUsernameMsg(emptyNotice);
@@ -150,6 +161,7 @@ export default function Settings({ isLoggedIn, onLogin }) {
         }
     };
 
+    // Change password (requires current password)
     const handlePasswordChange = async (e) => {
         e.preventDefault();
         setPasswordMsg(emptyNotice);

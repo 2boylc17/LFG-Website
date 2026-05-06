@@ -5,13 +5,16 @@ import { apiFetch } from "../lib/api.js";
 export default function Profile() {
     const { username } = useParams();
     const location = useLocation();
+    // Profile data & loading state
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    // Friend request UI state
     const [friendMessage, setFriendMessage] = useState({ text: "", error: false });
     const [isSendingRequest, setIsSendingRequest] = useState(false);
     const [friendStatus, setFriendStatus] = useState("none");
 
+    // Fetch profile data by username
     useEffect(() => {
         const fetchProfile = async () => {
             const trimmedUsername = String(username || "").trim();
@@ -56,6 +59,7 @@ export default function Profile() {
         ? list.map((entry) => entry?.username).filter(Boolean)
         : [];
 
+    // Load friend request status on mount
     useEffect(() => {
         setFriendStatus("none");
         setFriendMessage({ text: "", error: false });

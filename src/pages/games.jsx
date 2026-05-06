@@ -5,6 +5,7 @@ import useSearchPagination from "../lib/useSearchPagination.js";
 import { gameMatchesQuery } from "../lib/queryMatchers.js";
 
 const getImageSrc = (image) => {
+	// Convert image data to base64 data URI
 	if (!image?.data) return null;
 	if (image.data.type === "Buffer" && image.data.data) {
 		const bytes = new Uint8Array(image.data.data);
@@ -19,6 +20,7 @@ const getImageSrc = (image) => {
 };
 
 export default function Games() {
+	// Games list & filters
 	const [games, setGames] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
@@ -26,6 +28,7 @@ export default function Games() {
 	const [tagSearch, setTagSearch] = useState("");
 	const [selectedTag, setSelectedTag] = useState("");
 	const [sortOrder, setSortOrder] = useState("name-asc");
+	// Search & pagination hook
 	const {
 		searchTerm,
 		setSearchTerm,
@@ -38,6 +41,7 @@ export default function Games() {
 		setCurrentPage(1);
 	}, [selectedTag, sortOrder, setCurrentPage]);
 
+	// Fetch all games
 	useEffect(() => {
 		const fetchGames = async () => {
 			try {
@@ -60,17 +64,20 @@ export default function Games() {
 	}, []);
 
 	const searchQuery = debouncedSearch.trim().toLowerCase();
+	// Extract unique tags from games
 	const availableTags = Array.from(new Set(games.flatMap((game) => [
 		...(game.genres || []).map((genre) => String(genre?.name || "").trim()),
 		...(game.platforms || []).map((platform) => String(platform?.name || "").trim())
 	]).filter(Boolean))).sort((a, b) => a.localeCompare(b));
 
+	// Filter tags based on search input
 	const tagQuery = tagSearch.trim().toLowerCase();
 	const visibleTags = availableTags.filter((tag) => {
 		if (!tagQuery) return true;
 		return tag === selectedTag || tag.toLowerCase().includes(tagQuery);
 	});
 
+	// Apply search and tag filters
 	const filteredGames = games.filter((game) => {
 		if (!gameMatchesQuery(game, searchQuery)) return false;
 		if (!selectedTag) return true;
@@ -79,6 +86,7 @@ export default function Games() {
 		return [...genreTags, ...platformTags].includes(selectedTag);
 	});
 
+	// Sort games by name order
 	const sortedGames = [...filteredGames].sort((a, b) => {
 		const nameCompare = String(a.name || "").localeCompare(String(b.name || ""));
 		return sortOrder === "name-desc" ? -nameCompare : nameCompare;

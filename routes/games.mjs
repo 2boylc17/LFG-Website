@@ -2,8 +2,10 @@ import express from 'express';
 import Game from '../models/Game.mjs';
 
 const router = express.Router();
+// Match base64 image data URL
 const dataUrlRegex = /^data:([A-Za-z-+/]+);base64,(.+)$/;
 
+// Convert data URL to Buffer
 const parseImageUrl = (imageUrl) => {
 	if (!imageUrl) return null;
 	const match = imageUrl.match(dataUrlRegex);
@@ -11,6 +13,7 @@ const parseImageUrl = (imageUrl) => {
 	return { data: Buffer.from(match[2], 'base64'), contentType: match[1] };
 };
 
+// Add new game to database
 router.post('/add', async (req, res) => {
     try {
 		const { name, genres, platforms, image } = req.body;
@@ -32,6 +35,7 @@ router.post('/add', async (req, res) => {
     }
 });
 
+// Get all games
 router.get('/list', async (req, res) => {
 	try {
 		const gamesFound = await Game.find({}, { _id: 1, name: 1, genres: 1, platforms: 1, image: 1 });

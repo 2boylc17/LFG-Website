@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 
+// Create JWT & set httpOnly cookie
 export const generateTokenAndSetCookie = (userId, username, res) => {
     const token = jwt.sign({ userId, username }, process.env.token_secret, { expiresIn: '7d' });
     const isProduction = process.env.NODE_ENV === 'production';

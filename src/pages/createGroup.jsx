@@ -48,21 +48,26 @@ const getImageUrl = (image) => {
 export default function CreateGroup() {
 	const { gameSlug } = useParams();
 	const navigate = useNavigate();
+	// Group form fields
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
 	const [platform, setPlatform] = useState("");
 	const [joinRequirement, setJoinRequirement] = useState("auto");
 	const [joinPassword, setJoinPassword] = useState("");
+	// Tag fields: predefined + freeform
 	const [tags, setTags] = useState({ experience: "", microphone: "", region: "" });
 	const [extraTags, setExtraTags] = useState([]);
 	const [extraTagInput, setExtraTagInput] = useState("");
+	// Game context & state
 	const [message, setMessage] = useState("");
 	const [selectedGame, setSelectedGame] = useState(null);
 	const [loadingGame, setLoadingGame] = useState(true);
 	const [gameError, setGameError] = useState("");
 
+	// Get game name from URL slug
 	const selectedGameName = decodeURIComponent(gameSlug || "").replace(/-/g, " ").trim();
 
+	// Build platform list from game
 	const availablePlatforms = useMemo(() => {
 		if (!selectedGame || !Array.isArray(selectedGame.platforms)) return [];
 		return selectedGame.platforms.map(getPlatformName).filter(Boolean);
@@ -70,6 +75,7 @@ export default function CreateGroup() {
 
 	const gameImageSrc = useMemo(() => getImageUrl(selectedGame?.image), [selectedGame]);
 
+	// Fetch game details to get available platforms
 	useEffect(() => {
 		const fetchGameDetails = async () => {
 			if (!selectedGameName) {
@@ -122,6 +128,7 @@ export default function CreateGroup() {
 		setExtraTags((prev) => prev.filter((t) => t !== value));
 	};
 
+	// Add freeform tag on Enter or button click
 	const handleExtraTagKeyDown = (e) => {
 		if (e.key === "Enter") {
 			e.preventDefault();
@@ -129,6 +136,7 @@ export default function CreateGroup() {
 		}
 	};
 
+	// Validate & submit new group
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setMessage("");

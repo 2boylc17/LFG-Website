@@ -1,5 +1,7 @@
+// Convert value to searchable lowercase string
 const toText = (value) => String(value || "").toLowerCase();
 
+// Match game by name, genres, or platforms
 export const gameMatchesQuery = (game, query) => {
 	if (!query) return true;
 	const name = toText(game.name);
@@ -8,6 +10,7 @@ export const gameMatchesQuery = (game, query) => {
 	return name.includes(query) || genres.includes(query) || platforms.includes(query);
 };
 
+// Match group by name, description, platform, or tags
 export const groupMatchesQuery = (group, query) => {
 	if (!query) return true;
 	const name = toText(group.name);

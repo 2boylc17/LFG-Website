@@ -6,6 +6,7 @@ import { validateToken } from '../utils/validateToken.mjs';
 
 const router = express.Router();
 
+// Register new user
 router.post('/register', async (req, res) => {
     try {
         const username = String(req.body.username || '').trim();
@@ -29,6 +30,7 @@ router.post('/register', async (req, res) => {
     }
 });
 
+// Login user & set JWT
 router.post('/login', async (req, res) => {
     try {
         const username = String(req.body.username || '').trim();
@@ -47,6 +49,7 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// Logout by clearing JWT cookie
 router.post('/logout', async (req, res) => {
     try {
         const isProduction = process.env.NODE_ENV === 'production';
@@ -63,6 +66,7 @@ router.post('/logout', async (req, res) => {
     }
 });
 
+// Validate JWT token
 router.head('/validate', async (req, res) => {
     const token = req.cookies.jwt;
     try {

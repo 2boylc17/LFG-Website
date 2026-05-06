@@ -10,10 +10,12 @@ const router = express.Router();
 // 24-hour group TTL
 const groupMaxAgeMs = 24 * 60 * 60 * 1000;
 const joinRequirements = new Set(['auto', 'password', 'request']);
+// Validate ObjectId format
 const isValidId = (value) => mongoose.Types.ObjectId.isValid(value);
+// Get user ID from JWT token
 const getAuthUserId = (req) => validateToken(req.cookies?.jwt)?.userId;
 
-// Assign first member as owner if none set
+// Assign first member as owner if unset
 const ensureOwnerAssigned = async (groupId) => {
 	const group = await Group.findById(groupId);
 	if (!group) return null;
@@ -24,7 +26,7 @@ const ensureOwnerAssigned = async (groupId) => {
 	return group;
 };
 
-// Sanitize tag array
+// Remove duplicates & clean up tag strings
 const normalizeTagArray = (value) => {
 	if (!Array.isArray(value)) {
 		return [];
@@ -37,7 +39,7 @@ const normalizeTagArray = (value) => {
 	)];
 };
 
-// Filter: active, non-empty groups
+// Build filter for active, non-empty groups
 const getActiveGroupFilter = (gameId) => {
 	const filter = {
 		createdAt: { $gt: new Date(Date.now() - groupMaxAgeMs) },
@@ -51,7 +53,7 @@ const getActiveGroupFilter = (gameId) => {
 	return filter;
 };
 
-// Delete expired/empty groups
+// Remove expired or empty groups
 const deleteInactiveGroups = async (gameId) => {
 	const staleFilter = {
 		$or: [
@@ -67,6 +69,7 @@ const deleteInactiveGroups = async (gameId) => {
 	await Group.deleteMany(staleFilter);
 };
 
+// Check if group is expired or has no members
 const isInactiveGroup = (group) => {
 	if (!group) return true;
 	const createdAt = group.createdAt ? new Date(group.createdAt).getTime() : 0;
@@ -75,6 +78,7 @@ const isInactiveGroup = (group) => {
 	return isExpired || hasNoMembers;
 };
 
+// Create new group
 router.post('/add/:gameName', async (req, res) => {
 	try {
 		const {
@@ -161,6 +165,7 @@ router.post('/add/:gameName', async (req, res) => {
 	}
 });
 
+// Join group (auto, password, or request-based)
 router.post('/join/:groupId', async (req, res) => {
 	try {
 		const { groupId } = req.params;
@@ -293,13 +298,14 @@ router.get('/list/:gameName', async (req, res) => {
 			.populate('pendingMembers', 'username')
 			.sort({ createdAt: -1 });
 
-		return res.status(200).json(groups);
+	return res.status(200).json(groups);
 	} catch (error) {
 		console.error('List groups error:', error);
 		return res.status(500).json({ error: 'Internal server error' });
 	}
 });
 
+// Get group by ID
 router.get('/id/:groupId', async (req, res) => {
 	try {
 		const { groupId } = req.params;

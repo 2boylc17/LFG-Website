@@ -4,14 +4,17 @@ import { apiFetch } from "../lib/api.js";
 import { connectSocket, getSocket } from "../lib/socket.js";
 
 const getGroupSocket = () => {
+    // Use test socket if available, otherwise get live socket
     if (typeof window !== 'undefined' && window.__groupTestSocket) {
         return window.__groupTestSocket;
     }
     return connectSocket();
 };
 
+// Validate MongoDB ObjectId format
 const isValidObjectId = (value) => /^[a-f\d]{24}$/i.test(String(value || ""));
 
+// Convert image to base64 data URI
 const getImageUrl = (image) => {
     if (!image?.data || !image?.contentType) return null;
 
@@ -34,21 +37,26 @@ const getImageUrl = (image) => {
 export default function ViewGroup() {
     const { groupId } = useParams();
     const navigate = useNavigate();
+    // Group data & state
     const [group, setGroup] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    // Chat state
     const [messages, setMessages] = useState([]);
     const [messageInput, setMessageInput] = useState("");
     const [sending, setSending] = useState(false);
+    // Group action state
     const [joining, setJoining] = useState(false);
     const [leaving, setLeaving] = useState(false);
     const [joinPassword, setJoinPassword] = useState("");
     const [removingMemberId, setRemovingMemberId] = useState("");
     const [reviewingMemberId, setReviewingMemberId] = useState("");
+    // Auto-scroll refs
     const chatLogRef = useRef(null);
     const shouldAutoScrollRef = useRef(true);
     const currentUsername = localStorage.getItem("username") || "";
 
+    // Fetch group details
     useEffect(() => {
         const fetchGroup = async () => {
             try {
@@ -84,6 +92,7 @@ export default function ViewGroup() {
         fetchGroup();
     }, [groupId]);
 
+    // Auto-scroll chat when messages arrive
     useEffect(() => {
         const chatElement = chatLogRef.current;
         if (!chatElement) return;
@@ -93,6 +102,7 @@ export default function ViewGroup() {
         }
     }, [messages]);
 
+    // Track manual scroll position
     const handleChatScroll = () => {
         const chatElement = chatLogRef.current;
         if (!chatElement) return;
@@ -105,6 +115,7 @@ export default function ViewGroup() {
         Array.isArray(group?.members) && group.members.some((member) => member?.username === currentUsername)
     );
 
+    // Connect to group chat room
     useEffect(() => {
         if (!groupId || !isCurrentUserMember) return undefined;
 
@@ -159,6 +170,7 @@ export default function ViewGroup() {
         };
     }, [groupId, isCurrentUserMember]);
 
+    // Listen for join request reviews
     useEffect(() => {
         if (!groupId) return undefined;
 
@@ -179,6 +191,7 @@ export default function ViewGroup() {
         };
     }, [groupId]);
 
+    // Join group (auto, password, or request)
     const handleJoinGroup = async () => {
         if (!groupId || !isValidObjectId(groupId)) {
             setError("Invalid group id");
@@ -226,6 +239,7 @@ export default function ViewGroup() {
         }
     };
 
+    // Send message to group chat
     const handleSendMessage = (e) => {
         e.preventDefault();
 
@@ -252,6 +266,7 @@ export default function ViewGroup() {
         });
     };
 
+    // Remove member from group (owner only)
     const handleRemoveMember = async (memberId) => {
         if (!memberId || !groupId) return;
 
@@ -285,6 +300,7 @@ export default function ViewGroup() {
         }
     };
 
+    // Leave group or cancel request
     const handleLeaveGroup = async () => {
         if (!groupId) return;
 
@@ -330,6 +346,7 @@ export default function ViewGroup() {
         }
     };
 
+    // Approve/reject join request (owner only)
     const handleReviewRequest = async (memberId, action) => {
         if (!groupId || !memberId) return;
         if (!isCurrentUserOwner) {
@@ -359,6 +376,7 @@ export default function ViewGroup() {
         }
     };
 
+    // Navigate to user's profile
     const handleOpenProfile = (username) => {
         const trimmedUsername = String(username || "").trim();
         if (!trimmedUsername) {

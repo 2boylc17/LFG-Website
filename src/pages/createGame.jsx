@@ -2,24 +2,28 @@ import React, { useState } from "react";
 import { apiFetch } from "../lib/api.js";
 
 export default function CreateGame() {
+    // Form fields & state
     const [name, setName] = useState("");
     const [genresInput, setGenresInput] = useState("");
     const [platformsInput, setPlatformsInput] = useState("");
     const [message, setMessage] = useState("");
     const [selectedImage, setSelectedImage] = useState(null);
 
+    // Convert file to base64 data URL
     const fileToImageUrl = (file) => new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result);
         reader.readAsDataURL(file);
     });
 
+    // Parse CSV string to objects
     const parseNameList = (csvValue) => csvValue
         .split(',')
         .map((value) => value.trim())
         .filter(Boolean)
         .map((name) => ({ name }));
 
+    // Validate & submit new game
     const handleSubmit = async (e) => {
         e.preventDefault();
         setMessage("");
@@ -70,6 +74,7 @@ export default function CreateGame() {
         }
     };
 
+    // Validate image type and store file
     const handleImageUpload = (e) => {
         const file = e.target.files?.[0];
         if (!file) return;

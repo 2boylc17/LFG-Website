@@ -5,8 +5,10 @@ import { apiFetch } from '../../lib/api.js';
 export default function Sidebar({ isLoggedIn, sidebarOpen, onToggleSidebar }) {
     const navigate = useNavigate();
     const location = useLocation();
+    // Incoming friend request badge count
     const [pendingRequestCount, setPendingRequestCount] = useState(0);
 
+    // Navigate to page or prompt login
     const openProtectedPage = (targetPath) => {
         if (!isLoggedIn) {
             navigate('/login');
@@ -18,6 +20,7 @@ export default function Sidebar({ isLoggedIn, sidebarOpen, onToggleSidebar }) {
         }
     };
 
+    // Load pending request count & refresh on navigation
     useEffect(() => {
         if (!isLoggedIn) {
             setPendingRequestCount(0);
@@ -49,6 +52,7 @@ export default function Sidebar({ isLoggedIn, sidebarOpen, onToggleSidebar }) {
         };
     }, [isLoggedIn, location.pathname]);
 
+    // Listen for badge update event from friends page
     useEffect(() => {
         const onIncomingCountChanged = (event) => {
             const nextCount = Number(event?.detail?.count || 0);

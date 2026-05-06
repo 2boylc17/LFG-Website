@@ -24,10 +24,12 @@ const HOST = process.env.HOST || '0.0.0.0';
 const isProduction = process.env.NODE_ENV === 'production';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+// MongoDB connection string
 const db_user = encodeURIComponent(process.env.db_user);
 const db_password = encodeURIComponent(process.env.db_password);
 const db_cluster = process.env.db_cluster;
 const DB_URI = `mongodb+srv://${db_user}:${db_password}@${db_cluster}`;
+// CORS allowed origins
 const CLIENT_ORIGIN = String(process.env.CLIENT_ORIGIN || 'http://localhost:5173').replace(/\/+$/, '');
 const ADDITIONAL_CLIENT_ORIGINS = String(process.env.ADDITIONAL_CLIENT_ORIGINS || '')
     .split(',')
@@ -35,6 +37,7 @@ const ADDITIONAL_CLIENT_ORIGINS = String(process.env.ADDITIONAL_CLIENT_ORIGINS |
     .filter(Boolean);
 const ALLOWED_ORIGINS = [CLIENT_ORIGIN, ...ADDITIONAL_CLIENT_ORIGINS, 'http://localhost:5173'];
 
+// Check if origin allowed for CORS
 const isAllowedOrigin = (origin) => {
     if (!origin) return true;
     const normalizedOrigin = String(origin).replace(/\/+$/, '');
@@ -44,6 +47,7 @@ const isAllowedOrigin = (origin) => {
     return /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/.test(normalizedOrigin);
 };
 
+// CORS config delegate for dynamic origin checking
 const corsOptionsDelegate = (req, callback) => {
     const requestOrigin = req.header('Origin');
     const allowed = isAllowedOrigin(requestOrigin);
@@ -56,22 +60,25 @@ const corsOptionsDelegate = (req, callback) => {
     });
 };
 
-// Middleware
+// Middleware setup
 app.use(cors(corsOptionsDelegate));
 app.options(/.*/, cors(corsOptionsDelegate));
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('dev'));
 
+// Health check endpoint
 app.get('/api/health', (req, res) => {
     res.status(200).json({ ok: true, uptime: process.uptime() });
 });
 
+// Connect to MongoDB
 mongoose.connect(DB_URI).then(() => 
     console.log('Connected to MongoDB')
 ).catch((err) => 
     console.log(err));
 
+// Mount API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/games', gameRoutes);
 app.use('/api/groups', groupRoutes);
@@ -79,6 +86,7 @@ app.use('/api/settings', settingsRoutes);
 
 let server;
 
+// Production: serve static dist folder
 if (isProduction) {
     const distPath = path.join(__dirname, 'dist');
     app.use(express.static(distPath));
@@ -94,6 +102,7 @@ if (isProduction) {
     });
 }
 
+// Socket.IO server setup
 const io = new Server(server, {
     cors: {
         origin: (origin, callback) => callback(null, isAllowedOrigin(origin)),
@@ -103,24 +112,32 @@ const io = new Server(server, {
 
 app.set('io', io);
 
+// In-memory chat history: groupId -> messages
 const groupChatHistory = new Map();
 const maxGroupChatMessages = 100;
+// In-memory DM history: userA:userB -> messages
 const directMessageHistory = new Map();
 const maxDirectMessagePerThread = 200;
+// Grace period before removing idle group members
 const groupLeaveGraceMs = 20 * 1000;
+// Group TTL (24 hours)
 const groupMaxAgeMs = 24 * 60 * 60 * 1000;
+// Track active group sessions per membership
 const activeGroupSessions = new Map();
 const pendingGroupRemovals = new Map();
 
+// Generate DM thread key from two user IDs
 const getDirectMessageThreadKey = (userAId, userBId) => {
     return [String(userAId || ''), String(userBId || '')].sort().join(':');
 };
 
+// Check if user is friend with another user
 const isFriend = (userDoc, friendId) => {
     return Array.isArray(userDoc?.friends)
         && userDoc.friends.some((existingFriendId) => String(existingFriendId) === String(friendId));
 };
 
+// Parse cookie header string
 const parseCookieHeader = (rawCookieHeader) => {
     if (!rawCookieHeader) return {};
 
@@ -136,6 +153,7 @@ const parseCookieHeader = (rawCookieHeader) => {
         }, {});
 };
 
+// Reject socket connection with error
 const rejectSocket = (next, message, code, details) => {
     const error = new Error(message);
     error.data = {
@@ -145,13 +163,16 @@ const rejectSocket = (next, message, code, details) => {
     return next(error);
 };
 
+// Generate membership key for user in group
 const getMembershipKey = (groupId, userId) => `${groupId}:${userId}`;
 
+// Check if group has expired by TTL
 const isExpiredGroup = (group) => {
     if (!group?.createdAt) return true;
     return (Date.now() - new Date(group.createdAt).getTime()) >= groupMaxAgeMs;
 };
 
+// Clear pending removal timer for user
 const clearPendingRemoval = (groupId, userId) => {
     const membershipKey = getMembershipKey(groupId, userId);
     const pendingTimeout = pendingGroupRemovals.get(membershipKey);
@@ -161,10 +182,12 @@ const clearPendingRemoval = (groupId, userId) => {
     }
 };
 
+// Send ACK callback if provided
 const sendAck = (ack, payload) => {
     if (typeof ack === 'function') ack(payload);
 };
 
+// Remove user from group (delete if empty/expired)
 const removeUserFromGroup = async (groupId, userId) => {
     const group = await Group.findByIdAndUpdate(
         groupId,
@@ -211,6 +234,7 @@ const removeUserFromGroup = async (groupId, userId) => {
     return group;
 };
 
+// Schedule user removal after grace period
 const scheduleGroupRemoval = (groupId, userId) => {
     clearPendingRemoval(groupId, userId);
 
@@ -227,6 +251,7 @@ const scheduleGroupRemoval = (groupId, userId) => {
     pendingGroupRemovals.set(membershipKey, timeoutId);
 };
 
+// Track active socket for group membership
 const trackActiveGroupSession = (groupId, userId, socketId) => {
     const membershipKey = getMembershipKey(groupId, userId);
     const existingSessions = activeGroupSessions.get(membershipKey) || new Set();
@@ -235,6 +260,7 @@ const trackActiveGroupSession = (groupId, userId, socketId) => {
     clearPendingRemoval(groupId, userId);
 };
 
+// Untrack socket from group membership
 const untrackActiveGroupSession = (groupId, userId, socketId) => {
     const membershipKey = getMembershipKey(groupId, userId);
     const existingSessions = activeGroupSessions.get(membershipKey);
@@ -250,6 +276,7 @@ const untrackActiveGroupSession = (groupId, userId, socketId) => {
     activeGroupSessions.set(membershipKey, existingSessions);
 };
 
+// Authenticate Socket.IO connection via JWT
 io.use((socket, next) => {
     try {
         const rawCookieHeader = socket.handshake.headers.cookie;
@@ -282,6 +309,7 @@ io.use((socket, next) => {
     }
 });
 
+// Log Socket.IO engine connection errors
 io.engine.on('connection_error', (error) => {
     console.error('Socket engine connection error:', {
         code: error?.code,
@@ -290,16 +318,21 @@ io.engine.on('connection_error', (error) => {
     });
 });
 
+// Handle new socket connection
 io.on('connection', (socket) => {
+    // User room for targeted broadcasts
     const userRoom = `user:${socket.userId}`;
+    // Track groups user has joined
     socket.joinedGroupIds = new Set();
     socket.join(userRoom);
 
+    // Notify client socket is ready
     socket.emit('socket:ready', {
         userId: socket.userId,
         username: socket.username
     });
 
+    // Notify recipient of typing status
     socket.on('dm:typing', ({ toUserId, isTyping }) => {
         if (!toUserId) return;
 
@@ -309,6 +342,7 @@ io.on('connection', (socket) => {
         });
     });
 
+    // Get message history with friend
     socket.on('dm:thread:get', async ({ withUsername }, ack) => {
         try {
             const targetUsername = String(withUsername || '').trim();
@@ -343,6 +377,7 @@ io.on('connection', (socket) => {
         }
     });
 
+    // Send direct message to friend
     socket.on('dm:message:send', async ({ toUsername, text }, ack) => {
         try {
             const targetUsername = String(toUsername || '').trim();
@@ -447,6 +482,7 @@ io.on('connection', (socket) => {
 
             socket.join(`group:${groupId}`);
             socket.joinedGroupIds.add(String(groupId));
+            // Track user as active in group
             trackActiveGroupSession(String(groupId), String(socket.userId), socket.id);
             const history = groupChatHistory.get(groupId) || [];
 
@@ -465,14 +501,17 @@ io.on('connection', (socket) => {
         }
     });
 
+    // Leave group chat room
     socket.on('group:leave', ({ groupId }) => {
         if (!groupId) return;
         const normalizedGroupId = String(groupId);
         socket.joinedGroupIds?.delete(normalizedGroupId);
         socket.leave(`group:${groupId}`);
+        // Untrack user, schedule removal if no other sessions
         untrackActiveGroupSession(normalizedGroupId, String(socket.userId), socket.id);
     });
 
+    // Send message to group chat
     socket.on('group:message:send', ({ groupId, text }, ack) => {
         try {
             const normalizedGroupId = String(groupId || '').trim();
@@ -497,6 +536,7 @@ io.on('connection', (socket) => {
                 createdAt: new Date().toISOString()
             };
 
+            // Store message in history (bounded)
             const history = groupChatHistory.get(normalizedGroupId) || [];
             history.push(messagePayload);
             if (history.length > maxGroupChatMessages) {
@@ -504,6 +544,7 @@ io.on('connection', (socket) => {
             }
             groupChatHistory.set(normalizedGroupId, history);
 
+            // Broadcast message to group
             io.to(`group:${normalizedGroupId}`).emit('group:message:new', messagePayload);
 
             sendAck(ack, { ok: true, message: messagePayload });
@@ -512,6 +553,7 @@ io.on('connection', (socket) => {
         }
     });
 
+    // Clean up on disconnect
     socket.on('disconnect', () => {
         for (const groupId of socket.joinedGroupIds || []) {
             untrackActiveGroupSession(String(groupId), String(socket.userId), socket.id);

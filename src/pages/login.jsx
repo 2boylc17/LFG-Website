@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { apiFetch } from '../lib/api.js';
 
 export default function Login({ onLogin }) {
+	// Track login vs register mode
 	const [isRegistering, setIsRegistering] = useState(false);
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
@@ -10,12 +11,14 @@ export default function Login({ onLogin }) {
 	const navigate = useNavigate();
 	const [searchParams] = useSearchParams();
 
+	// Toggle between login and register
 	useEffect(() => {
 		const mode = (searchParams.get("mode") || "").toLowerCase();
 		setIsRegistering(mode === "register");
 		setError("");
 	}, [searchParams]);
 
+	// Validate & submit login/register
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		const trimmedUsername = username.trim();
