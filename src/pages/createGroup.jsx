@@ -194,8 +194,10 @@ export default function CreateGroup() {
 			<div className="create-group-shell">
 				<h2>Create a New Group</h2>
 				<p className="create-group-game">Game: {selectedGameName || 'No game selected'}</p>
-				{loadingGame ? <p>Loading game details...</p> : null}
-				{gameError ? <p className="error">{gameError}</p> : null}
+				{/* WCAG 4.1.3 Status Messages: announce game-detail loading progress without shifting focus. */}
+				{loadingGame ? <p role="status" aria-live="polite">Loading game details...</p> : null}
+				{/* WCAG 3.3.1 Error Identification: announce game-load failures immediately as errors. */}
+				{gameError ? <p className="error" role="alert">{gameError}</p> : null}
 				{!loadingGame && !gameError ? (
 					<div className="create-group-game-media">
 						{gameImageSrc ? (
@@ -209,10 +211,13 @@ export default function CreateGroup() {
 						)}
 					</div>
 				) : null}
-				<form className="create-group-form" onSubmit={handleSubmit} autoComplete="off">
+				{/* WCAG 3.3.1 Error Identification: connect create-group feedback to the form so users hear validation and submit results in context. */}
+				<form className="create-group-form" onSubmit={handleSubmit} autoComplete="off" aria-describedby={message ? "create-group-message" : undefined}>
 				<div className="create-group-field">
-					<label>Name:</label>
+					{/* WCAG 1.3.1 Info and Relationships and 3.3.2 Labels or Instructions: explicitly bind the group-name label to its field. */}
+					<label htmlFor="create-group-name">Name:</label>
 					<input
+						id="create-group-name"
 						type="text"
 						value={name}
 						onChange={(e) => setName(e.target.value)}
@@ -220,8 +225,10 @@ export default function CreateGroup() {
 					/>
 				</div>
 				<div className="create-group-field">
-					<label>Description:</label>
+					{/* WCAG 1.3.1 Info and Relationships and 3.3.2 Labels or Instructions: explicitly bind the description label to its field. */}
+					<label htmlFor="create-group-description">Description:</label>
 					<input
+						id="create-group-description"
 						type="text"
 						value={description}
 						onChange={(e) => setDescription(e.target.value)}
@@ -229,8 +236,10 @@ export default function CreateGroup() {
 					/>
 				</div>
 				<div className="create-group-field">
-					<label>Join Requirements:</label>
+					{/* WCAG 1.3.1 Info and Relationships and 3.3.2 Labels or Instructions: explicitly bind the join-requirement label to its control. */}
+					<label htmlFor="create-group-join-requirement">Join Requirements:</label>
 					<select
+						id="create-group-join-requirement"
 						value={joinRequirement}
 						onChange={(e) => setJoinRequirement(e.target.value)}
 					>
@@ -241,8 +250,10 @@ export default function CreateGroup() {
 				</div>
 				{joinRequirement === "password" ? (
 					<div className="create-group-field">
-						<label>Group Password:</label>
+						{/* WCAG 3.3.2 Labels or Instructions and 1.3.1 Info and Relationships: explicitly label the conditional password field when password-protected joins are enabled. */}
+						<label htmlFor="create-group-password">Group Password:</label>
 						<input
+							id="create-group-password"
 							type="password"
 							name="group-create-password"
 							autoComplete="new-password"
@@ -254,8 +265,10 @@ export default function CreateGroup() {
 					</div>
 				) : null}
 				<div className="create-group-field">
-					<label>Platform:</label>
+					{/* WCAG 1.3.1 Info and Relationships and 3.3.2 Labels or Instructions: explicitly bind the platform label to its select control. */}
+					<label htmlFor="create-group-platform">Platform:</label>
 					<select
+						id="create-group-platform"
 						value={platform}
 						onChange={(e) => setPlatform(e.target.value)}
 						required
@@ -273,9 +286,11 @@ export default function CreateGroup() {
 				</div>
 				{tagSections.map((section) => (
 					<div className="create-group-field" key={section.key}>
-						<label>{section.label}:</label>
+						{/* WCAG 1.3.1 Info and Relationships and 3.3.2 Labels or Instructions: explicitly bind each required tag category to its select control. */}
+						<label htmlFor={`create-group-${section.key}`}>{section.label}:</label>
 						<div className="create-group-tag-input-row">
 							<select
+								id={`create-group-${section.key}`}
 								value={tags[section.key]}
 								onChange={(e) => setTag(section.key, e.target.value)}
 								required
@@ -289,9 +304,11 @@ export default function CreateGroup() {
 					</div>
 				))}
 				<div className="create-group-field">
-					<label>Tags:</label>
+					{/* WCAG 1.3.1 Info and Relationships and 3.3.2 Labels or Instructions: explicitly bind the freeform tags label to its input. */}
+					<label htmlFor="create-group-extra-tags">Tags:</label>
 					<div className="create-group-tag-input-row">
 						<input
+							id="create-group-extra-tags"
 							type="text"
 							value={extraTagInput}
 							onChange={(e) => setExtraTagInput(e.target.value)}
@@ -309,11 +326,13 @@ export default function CreateGroup() {
 					{extraTags.length > 0 ? (
 						<div className="create-group-tag-list">
 							{extraTags.map((tagValue) => (
+								/* WCAG 4.1.2 Name, Role, Value: give each removable tag chip a clear spoken action name. */
 								<button
 									key={tagValue}
 									type="button"
 									className="create-group-tag-chip"
 									onClick={() => removeExtraTag(tagValue)}
+									aria-label={`Remove tag ${tagValue}`}
 								>
 									{tagValue} x
 								</button>
@@ -325,7 +344,8 @@ export default function CreateGroup() {
 				</div>
 				<button className="create-group-submit" type="submit">Add Group</button>
 			</form>
-			{message && <p className="create-group-message">{message}</p>}
+			{/* WCAG 4.1.3 Status Messages: announce create-group feedback without stealing focus from the page. */}
+			{message && <p id="create-group-message" className="create-group-message" aria-live="polite">{message}</p>}
 			</div>
 		</div>
 	);

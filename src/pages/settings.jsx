@@ -191,7 +191,8 @@ export default function Settings({ isLoggedIn, onLogin }) {
         }
     };
 
-    if (loading) return <div className="page"><p>Loading settings...</p></div>;
+    // WCAG 4.1.3 Status Messages: announce settings-page loading progress without changing focus.
+    if (loading) return <div className="page"><p role="status" aria-live="polite">Loading settings...</p></div>;
 
     return (
         <div className="page settings-page">
@@ -215,13 +216,15 @@ export default function Settings({ isLoggedIn, onLogin }) {
 
                     <div className="settings-field">
                         <label>Gaming Platforms</label>
-                        <div className="platform-grid">
+                        {/* WCAG 1.3.1 Info and Relationships plus 4.1.2 Name, Role, Value: expose the platform toggles as a named group with pressed-state buttons. */}
+                        <div className="platform-grid" role="group" aria-label="Gaming platforms">
                             {platforms.map((platform) => (
                                 <button
                                     type="button"
                                     key={platform}
                                     className={`platform-btn ${profile.platforms.includes(platform) ? 'active' : ''}`}
                                     onClick={() => togglePlatform(platform)}
+                                    aria-pressed={profile.platforms.includes(platform)}
                                 >
                                     {platform}
                                 </button>
@@ -244,7 +247,8 @@ export default function Settings({ isLoggedIn, onLogin }) {
                     </div>
 
                     {profileMsg.text && (
-                        <p className={profileMsg.error ? 'settings-error' : 'settings-success'}>{profileMsg.text}</p>
+                        /* WCAG 4.1.3 Status Messages: announce profile-save success and error feedback. */
+                        <p className={profileMsg.error ? 'settings-error' : 'settings-success'} role={profileMsg.error ? 'alert' : 'status'} aria-live="polite">{profileMsg.text}</p>
                     )}
                     <button type="submit" className="settings-save-btn">Save Profile</button>
                 </form>
@@ -264,9 +268,10 @@ export default function Settings({ isLoggedIn, onLogin }) {
 
             {isAccountModalOpen && (
                 <div className="settings-modal-backdrop" onClick={() => setIsAccountModalOpen(false)}>
-                    <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
+                    {/* WCAG 1.3.1 Info and Relationships and 4.1.2 Name, Role, Value: expose account settings as a modal dialog with a programmatic title. */}
+                    <div className="settings-modal" role="dialog" aria-modal="true" aria-labelledby="account-settings-title" onClick={(e) => e.stopPropagation()}>
                         <div className="settings-modal-header">
-                            <h2>Account Settings</h2>
+                            <h2 id="account-settings-title">Account Settings</h2>
                             <button
                                 type="button"
                                 className="settings-modal-close"
@@ -302,7 +307,8 @@ export default function Settings({ isLoggedIn, onLogin }) {
                                 />
                             </div>
                             {usernameMsg.text && (
-                                <p className={usernameMsg.error ? 'settings-error' : 'settings-success'}>{usernameMsg.text}</p>
+                                /* WCAG 4.1.3 Status Messages: announce username-change outcomes from within the modal form. */
+                                <p className={usernameMsg.error ? 'settings-error' : 'settings-success'} role={usernameMsg.error ? 'alert' : 'status'} aria-live="polite">{usernameMsg.text}</p>
                             )}
                             <button type="submit" className="settings-save-btn">Update Username</button>
                         </form>
@@ -343,7 +349,8 @@ export default function Settings({ isLoggedIn, onLogin }) {
                                 />
                             </div>
                             {passwordMsg.text && (
-                                <p className={passwordMsg.error ? 'settings-error' : 'settings-success'}>{passwordMsg.text}</p>
+                                /* WCAG 4.1.3 Status Messages: announce password-change outcomes from within the modal form. */
+                                <p className={passwordMsg.error ? 'settings-error' : 'settings-success'} role={passwordMsg.error ? 'alert' : 'status'} aria-live="polite">{passwordMsg.text}</p>
                             )}
                             <button type="submit" className="settings-save-btn">Update Password</button>
                         </form>

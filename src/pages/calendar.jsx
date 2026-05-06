@@ -153,11 +153,13 @@ export default function Calendar() {
   return (
     <section className="calendar-page">
       <div className="calendar-toolbar">
-        <button type="button" className="calendar-nav-btn" onClick={() => moveMonth(-1)}>
+        {/* WCAG 2.4.6 Headings and Labels plus 4.1.2 Name, Role, Value: give the previous-month button a descriptive accessible name beyond its short visible text. */}
+        <button type="button" className="calendar-nav-btn" onClick={() => moveMonth(-1)} aria-label="Go to previous month">
           Prev
         </button>
         <h1>{formatMonthYear(viewDate)}</h1>
-        <button type="button" className="calendar-nav-btn" onClick={() => moveMonth(1)}>
+        {/* WCAG 2.4.6 Headings and Labels plus 4.1.2 Name, Role, Value: give the next-month button a descriptive accessible name beyond its short visible text. */}
+        <button type="button" className="calendar-nav-btn" onClick={() => moveMonth(1)} aria-label="Go to next month">
           Next
         </button>
         <div className="calendar-jump-group">
@@ -202,11 +204,14 @@ export default function Calendar() {
             const isSelected = selectedDateKey === cell.key;
 
             return (
+              /* WCAG 4.1.2 Name, Role, Value: expose each day cell with a full spoken date, event count, and selected state. */
               <button
                 key={cell.key}
                 type="button"
                 className={`calendar-day ${cell.isCurrentMonth ? "" : "outside-month"} ${isSelected ? "selected" : ""}`}
                 onClick={() => setSelectedDateKey(cell.key)}
+                aria-label={`${formatReadableDate(cell.key)}${dayEvents.length > 0 ? `, ${dayEvents.length} event${dayEvents.length === 1 ? "" : "s"}` : ''}`}
+                aria-pressed={isSelected}
               >
                 <span className="calendar-day-number">{cell.date.getDate()}</span>
                 {dayEvents.length > 0 && (
@@ -222,19 +227,23 @@ export default function Calendar() {
         <h2>{selectedDateKey ? formatReadableDate(selectedDateKey) : "Choose a date"}</h2>
 
         <form className="calendar-event-form" onSubmit={addOrUpdateEvent}>
+          {/* WCAG 3.3.2 Labels or Instructions: give the event title field a persistent programmatic label. */}
           <input
             className="calendar-event-title-input"
             type="text"
             placeholder="Event title"
             value={titleInput}
             onChange={(e) => setTitleInput(e.target.value)}
+            aria-label="Event title"
             required
           />
+          {/* WCAG 3.3.2 Labels or Instructions: give the event time field a persistent programmatic label. */}
           <input
             className="calendar-event-time-input"
             type="time"
             value={timeInput}
             onChange={(e) => setTimeInput(e.target.value)}
+            aria-label="Event time"
           />
           <button className="calendar-submit-btn" type="submit">{editingEventId ? "Save Event" : "Add Event"}</button>
           {editingEventId && (
@@ -244,6 +253,7 @@ export default function Calendar() {
           )}
         </form>
 
+        {/* WCAG 4.1.3 Status Messages: announce event-list updates when the selected day changes or events are added and removed. */}
         <div className="calendar-event-list" aria-live="polite">
           {selectedEvents.length === 0 && <p>No events for this date yet.</p>}
           {selectedEvents.map((event) => (

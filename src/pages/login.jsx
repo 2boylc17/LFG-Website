@@ -47,18 +47,27 @@ export default function Login({ onLogin }) {
 			<div className="login-container">
 				<h2>{isRegistering ? "Create Account" : "Welcome Back"}</h2>
 				<p className="login-copy">{isRegistering ? "Create an account." : "Sign in."}</p>
-				<form className="login-form" onSubmit={handleSubmit}>
+				{/* WCAG 3.3.1 Error Identification and 4.1.3 Status Messages: connect any auth error to the form so assistive tech announces it in context. */}
+				<form className="login-form" onSubmit={handleSubmit} aria-describedby={error ? "login-error" : undefined}>
+					{/* WCAG 3.3.2 Labels or Instructions and 1.3.1 Info and Relationships: give the username field a programmatic name and appropriate autocomplete token. */}
 					<input
+						id="login-username"
 						className="login-input"
 						type="text"
 						placeholder="Username"
+						aria-label="Username"
+						autoComplete="username"
 						value={username}
 						onChange={(e) => setUsername(e.target.value)}
 					/>
+					{/* WCAG 3.3.2 Labels or Instructions and 1.3.5 Identify Input Purpose: give the password field a programmatic label and correct autocomplete purpose. */}
 					<input
+						id="login-password"
 						className="login-input"
 						type="password"
 						placeholder="Password"
+						aria-label="Password"
+						autoComplete={isRegistering ? "new-password" : "current-password"}
 						value={password}
 						onChange={(e) => setPassword(e.target.value)}
 					/>
@@ -71,7 +80,8 @@ export default function Login({ onLogin }) {
 				>
 					{isRegistering ? "Already have an account? Login here." : "Don't have an account? Register here."}
 				</button>
-				{error && <p className="error login-error">{error}</p>}
+				{/* WCAG 3.3.1 Error Identification and 4.1.3 Status Messages: expose login errors as an assertive message so failed authentication is announced immediately. */}
+				{error && <p id="login-error" className="error login-error" role="alert">{error}</p>}
 			</div>
 		</div>
 	);

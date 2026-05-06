@@ -164,10 +164,13 @@ export default function Profile() {
                     </div>
                 </div>
 
-                {loading ? <p className="profile-loading">Loading profile...</p> : null}
-                {!loading && error ? <p className="error">{error}</p> : null}
+                {/* WCAG 4.1.3 Status Messages: announce profile loading progress without forcing focus changes. */}
+                {loading ? <p className="profile-loading" role="status" aria-live="polite">Loading profile...</p> : null}
+                {/* WCAG 3.3.1 Error Identification: announce profile-load failures as alerts. */}
+                {!loading && error ? <p className="error" role="alert">{error}</p> : null}
                 {!loading && !error && friendMessage.text ? (
-                    <p className={friendMessage.error ? 'error' : 'profile-success'}>{friendMessage.text}</p>
+                    /* WCAG 4.1.3 Status Messages: expose friend-request outcomes as live feedback for assistive-tech users. */
+                    <p className={friendMessage.error ? 'error' : 'profile-success'} role={friendMessage.error ? 'alert' : 'status'} aria-live="polite">{friendMessage.text}</p>
                 ) : null}
 
                 {!loading && !error && profile ? (

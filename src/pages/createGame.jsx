@@ -87,26 +87,32 @@ export default function CreateGame() {
     return (
         <div className="page">
             <h2>Create a New Game</h2>
-            <form onSubmit={handleSubmit}>
+            {/* WCAG 3.3.1 Error Identification: associate any submit feedback with the form so assistive tech can announce it in context. */}
+            <form onSubmit={handleSubmit} aria-describedby={message ? "create-game-message" : undefined}>
                 <div>
-                    <label>Name:</label>
-                    <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+                    {/* WCAG 1.3.1 Info and Relationships and 3.3.2 Labels or Instructions: explicitly bind the game-name label to its input. */}
+                    <label htmlFor="create-game-name">Name:</label>
+                    <input id="create-game-name" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
                 </div>
                 <div>
-                    <label>Genres (comma separated):</label>
-                    <input type="text" value={genresInput} onChange={(e) => setGenresInput(e.target.value)} required />
+                    {/* WCAG 1.3.1 Info and Relationships and 3.3.2 Labels or Instructions: explicitly bind the genres label to its input. */}
+                    <label htmlFor="create-game-genres">Genres (comma separated):</label>
+                    <input id="create-game-genres" type="text" value={genresInput} onChange={(e) => setGenresInput(e.target.value)} required />
                 </div>
                 <div>
-                    <label>Platforms (comma separated):</label>
-                    <input type="text" value={platformsInput} onChange={(e) => setPlatformsInput(e.target.value)} required />
+                    {/* WCAG 1.3.1 Info and Relationships and 3.3.2 Labels or Instructions: explicitly bind the platforms label to its input. */}
+                    <label htmlFor="create-game-platforms">Platforms (comma separated):</label>
+                    <input id="create-game-platforms" type="text" value={platformsInput} onChange={(e) => setPlatformsInput(e.target.value)} required />
                 </div>
                 <div>
-                    <label>Image:</label>
-                    <input type="file" accept="image/*" onChange={handleImageUpload} />
+                    {/* WCAG 3.3.2 Labels or Instructions: give the file picker a persistent label so its purpose is not conveyed by placement alone. */}
+                    <label htmlFor="create-game-image">Image:</label>
+                    <input id="create-game-image" type="file" accept="image/*" onChange={handleImageUpload} />
                 </div>
                 <button type="submit">Add Game</button>
             </form>
-            {message && <p>{message}</p>}
+            {/* WCAG 4.1.3 Status Messages: announce upload and submit feedback without moving focus away from the form. */}
+            {message && <p id="create-game-message" aria-live="polite">{message}</p>}
         </div>
     );
 }

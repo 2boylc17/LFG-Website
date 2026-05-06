@@ -130,6 +130,8 @@ export default function ViewGroups() {
 							value={tagSearch}
 							onChange={(e) => setTagSearch(e.target.value)}
 							placeholder="Search tags"
+							/* WCAG 3.3.2 Labels or Instructions: give the group tag search field a programmatic name beyond placeholder text. */
+							aria-label="Search group tags"
 						/>
 						<select
 							id="groups-tag-filter"
@@ -169,17 +171,21 @@ export default function ViewGroups() {
 						</select>
 					</div>
 				</div>
-				<Link className="create-group-link" to={`/createGroup/${encodeURIComponent(gameSlug || "")}`}>
+				{/* WCAG 2.4.4 Link Purpose: give the create-group shortcut an explicit accessible name that includes the selected game context. */}
+				<Link className="create-group-link" to={`/createGroup/${encodeURIComponent(gameSlug || "")}`} aria-label={`Create a group for ${gameName}`}>
 					Create Group For This Game
 				</Link>
 			</div>
 
-			{loading && <p>Loading groups...</p>}
-			{error && <p className="error">{error}</p>}
+			{/* WCAG 4.1.3 Status Messages: announce loading progress for group results. */}
+			{loading && <p role="status" aria-live="polite">Loading groups...</p>}
+			{/* WCAG 3.3.1 Error Identification: announce request failures as alerts. */}
+			{error && <p className="error" role="alert">{error}</p>}
 
 			<div className="games-list">
-				{!loading && !error && groups.length === 0 && <p>No groups found.</p>}
-				{!loading && !error && groups.length > 0 && filteredGroups.length === 0 && <p>No groups match your search.</p>}
+				{/* WCAG 4.1.3 Status Messages: announce empty-result states when no groups exist or filters remove all matches. */}
+				{!loading && !error && groups.length === 0 && <p role="status" aria-live="polite">No groups found.</p>}
+				{!loading && !error && groups.length > 0 && filteredGroups.length === 0 && <p role="status" aria-live="polite">No groups match your search.</p>}
 				{!loading && !error && pagedGroups.map((group) => (
 					<div key={group._id} className="game-card">
 						<div className="game-body">

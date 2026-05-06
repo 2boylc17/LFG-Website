@@ -295,7 +295,12 @@ export default function Friends({ isLoggedIn }) {
     return (
         <div className="page friends-page">
             {!loading && !error && requestActionMessage.text ? (
-                <p className={`friends-action-message ${requestActionMessage.error ? 'friends-action-message-error' : 'friends-action-message-success'}`}>
+                /* WCAG 4.1.3 Status Messages: announce friend-request outcomes without moving focus away from the current task. */
+                <p
+                    className={`friends-action-message ${requestActionMessage.error ? 'friends-action-message-error' : 'friends-action-message-success'}`}
+                    role={requestActionMessage.error ? 'alert' : 'status'}
+                    aria-live="polite"
+                >
                     {requestActionMessage.text}
                 </p>
             ) : null}
@@ -305,18 +310,23 @@ export default function Friends({ isLoggedIn }) {
                     <h2>Friend Requests</h2>
                     <div className="friend-requests-actions">
                         <span className="friends-count">{incomingRequests.length} pending</span>
+                        {/* WCAG 4.1.2 Name, Role, Value: expose the request panel as a toggle button with expanded state and controlled content. */}
                         <button
                             type="button"
                             className="friend-requests-toggle-btn"
                             onClick={() => setIsRequestsOpen((prev) => !prev)}
+                            aria-expanded={isRequestsOpen}
+                            aria-controls="friend-requests-list"
                         >
                             {isRequestsOpen ? 'Hide Requests' : 'Open Requests'}
                         </button>
                     </div>
                 </div>
 
-                {loading ? <p>Loading requests...</p> : null}
-                {!loading && error ? <p className="error">{error}</p> : null}
+                {/* WCAG 4.1.3 Status Messages: announce request loading progress. */}
+                {loading ? <p role="status" aria-live="polite">Loading requests...</p> : null}
+                {/* WCAG 3.3.1 Error Identification: announce request-load failures as alerts. */}
+                {!loading && error ? <p className="error" role="alert">{error}</p> : null}
 
                 {!loading && !error && !isRequestsOpen ? (
                     <p className="friends-empty">Open requests to review incoming friend requests.</p>
@@ -327,7 +337,8 @@ export default function Friends({ isLoggedIn }) {
                 ) : null}
 
                 {!loading && !error && isRequestsOpen && incomingRequests.length > 0 ? (
-                    <div className="friends-list">
+                    /* WCAG 4.1.2 Name, Role, Value: connect the disclosure button to the request list it expands and collapses. */
+                    <div id="friend-requests-list" className="friends-list">
                         {incomingRequests.map((requestUser) => {
                             const requestName = String(requestUser?.username || "Unknown");
                             const isWorking = processingRequestUsername === requestName;
@@ -373,11 +384,13 @@ export default function Friends({ isLoggedIn }) {
             <section className="friends-shell" id="friends-messages-section">
                 <div className="messages-header-row">
                     <h2>Messages</h2>
-                    <p>{socketReady ? 'Live chat connected' : 'Connecting...'}</p>
+                    {/* WCAG 4.1.3 Status Messages: announce live-chat connection state changes. */}
+                    <p role="status" aria-live="polite">{socketReady ? 'Live chat connected' : 'Connecting...'}</p>
                 </div>
 
                 {messagesNotice.text ? (
-                    <p className={messagesNotice.error ? 'error' : 'profile-success'}>{messagesNotice.text}</p>
+                    /* WCAG 4.1.3 Status Messages: announce messaging outcomes such as send failures or successes. */
+                    <p className={messagesNotice.error ? 'error' : 'profile-success'} role={messagesNotice.error ? 'alert' : 'status'} aria-live="polite">{messagesNotice.text}</p>
                 ) : null}
 
                 {!loading && !error && friends.length === 0 ? (
@@ -392,11 +405,13 @@ export default function Friends({ isLoggedIn }) {
                                 const isSelected = friendName === selectedFriendUsername;
 
                                 return (
+                                    /* WCAG 4.1.2 Name, Role, Value: expose friend selection as a pressed-state button so the active conversation is communicated programmatically. */
                                     <button
                                         key={String(friend?._id || friendName)}
                                         type="button"
                                         className={`messages-friend-item ${isSelected ? 'active' : ''}`}
                                         onClick={() => handleSelectFriendForChat(friendName)}
+                                        aria-pressed={isSelected}
                                     >
                                         {friendName}
                                     </button>
@@ -446,7 +461,8 @@ export default function Friends({ isLoggedIn }) {
                             ) : null}
 
                             {!loadingThread && threadMessages.length > 0 ? (
-                                <div className="messages-log">
+                                /* WCAG 4.1.3 Status Messages and WAI-ARIA log pattern: announce new chat messages as additions to a conversation log. */
+                                <div className="messages-log" role="log" aria-live="polite" aria-relevant="additions text">
                                     {threadMessages.map((message) => {
                                         const isOwnMessage = message?.senderUsername === currentUsername;
 
@@ -466,11 +482,13 @@ export default function Friends({ isLoggedIn }) {
                             ) : null}
 
                             <form className="messages-form" onSubmit={handleSendMessage}>
+                                {/* WCAG 3.3.2 Labels or Instructions: give the message composer an explicit programmatic label. */}
                                 <input
                                     type="text"
                                     value={composer}
                                     onChange={(e) => setComposer(e.target.value)}
                                     maxLength={500}
+                                    aria-label="Message composer"
                                     placeholder={selectedFriendUsername ? 'Write a message' : 'Select a friend to chat'}
                                     disabled={!selectedFriendUsername || sending}
                                 />
@@ -484,10 +502,11 @@ export default function Friends({ isLoggedIn }) {
             </section>
 
             {removeFriendConfirmUsername ? (
-                <div className="friends-confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="remove-friend-title">
+                /* WCAG 1.3.1 Info and Relationships and 4.1.2 Name, Role, Value: expose the confirmation overlay as a labeled dialog with descriptive text. */
+                <div className="friends-confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="remove-friend-title" aria-describedby="remove-friend-description">
                     <div className="friends-confirm-card">
                         <h3 id="remove-friend-title">Remove Friend?</h3>
-                        <p>
+                        <p id="remove-friend-description">
                             Remove <strong>{removeFriendConfirmUsername}</strong> from your friends list?
                         </p>
                         <div className="friends-confirm-actions">

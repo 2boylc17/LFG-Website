@@ -383,8 +383,10 @@ export default function ViewGroup() {
 
     return (
         <div className="page view-group-page">
-            {loading ? <p>Loading group...</p> : null}
-            {!loading && error ? <p className="error">{error}</p> : null}
+            {/* WCAG 4.1.3 Status Messages: announce group loading progress without moving focus. */}
+            {loading ? <p role="status" aria-live="polite">Loading group...</p> : null}
+            {/* WCAG 3.3.1 Error Identification: announce group-load failures as alerts. */}
+            {!loading && error ? <p className="error" role="alert">{error}</p> : null}
 
             {!loading && !error && group ? (
                 <>
@@ -425,6 +427,7 @@ export default function ViewGroup() {
                             <div className="view-group-join-panel">
                                 {group?.joinRequirement === "password" ? (
                                     <>
+                                        {/* WCAG 3.3.2 Labels or Instructions: give the password-protected join field a programmatic label. */}
                                         <input
                                             type="password"
                                             name="group-join-password"
@@ -433,6 +436,7 @@ export default function ViewGroup() {
                                             onChange={(e) => setJoinPassword(e.target.value)}
                                             placeholder="Enter group password"
                                             className="view-group-join-password-input"
+                                            aria-label="Group password"
                                         />
                                         <button className="group-join-button" onClick={handleJoinGroup} disabled={joining}>
                                             {joining ? "Joining..." : "Join Group"}
@@ -554,7 +558,8 @@ export default function ViewGroup() {
                         <section className="view-group-card">
                             <h2>Group Chat</h2>
 
-                            <div className="group-chat-log" ref={chatLogRef} onScroll={handleChatScroll}>
+                            {/* WCAG 4.1.3 Status Messages and WAI-ARIA log pattern: expose incoming group chat messages as additions to a live conversation log. */}
+                            <div className="group-chat-log" ref={chatLogRef} onScroll={handleChatScroll} role="log" aria-live="polite" aria-relevant="additions text">
                                 {messages.length === 0 ? <p>No messages yet.</p> : null}
                                 {messages.map((msg) => (
                                     <div key={msg.id} className="group-chat-message">
@@ -567,12 +572,14 @@ export default function ViewGroup() {
                             </div>
 
                             <form className="group-chat-form" onSubmit={handleSendMessage}>
+                                {/* WCAG 3.3.2 Labels or Instructions: give the group chat composer a persistent programmatic label. */}
                                 <input
                                     type="text"
                                     value={messageInput}
                                     onChange={(e) => setMessageInput(e.target.value)}
                                     placeholder="Send a message"
                                     maxLength={500}
+                                    aria-label="Group chat message"
                                 />
                                 <button type="submit" disabled={sending}>
                                     {sending ? "Sending..." : "Send"}

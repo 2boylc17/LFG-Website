@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { apiFetch } from "../lib/api.js";
 import useSearchPagination from "../lib/useSearchPagination.js";
 import { gameMatchesQuery } from "../lib/queryMatchers.js";
@@ -19,7 +19,6 @@ const getImageSrc = (image) => {
 };
 
 export default function Games() {
-	const navigate = useNavigate();
 	const [games, setGames] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
@@ -124,6 +123,8 @@ export default function Games() {
 							value={tagSearch}
 							onChange={(e) => setTagSearch(e.target.value)}
 							placeholder="Search tags"
+							/* WCAG 3.3.2 Labels or Instructions: give the tag-search field a programmatic name beyond placeholder text. */
+							aria-label="Search available tags"
 						/>
 						<select
 							id="games-tag-filter"
@@ -152,26 +153,30 @@ export default function Games() {
 				</div>
 			</div>
 
-			{loading && <p>Loading games...</p>}
-			{error && <p className="error">{error}</p>}
+			{/* WCAG 4.1.3 Status Messages: announce loading progress without changing focus. */}
+			{loading && <p role="status" aria-live="polite">Loading games...</p>}
+			{/* WCAG 3.3.1 Error Identification: expose fetch failures as alert content so errors are announced immediately. */}
+			{error && <p className="error" role="alert">{error}</p>}
 
 			<div className="games-list">
-				{!loading && !error && games.length === 0 && <p>No games found.</p>}
-				{!loading && !error && games.length > 0 && filteredGames.length === 0 && <p>No games match your search.</p>}
+				{/* WCAG 4.1.3 Status Messages: announce empty-result states so filtered content changes are conveyed to assistive tech. */}
+				{!loading && !error && games.length === 0 && <p role="status" aria-live="polite">No games found.</p>}
+				{!loading && !error && games.length > 0 && filteredGames.length === 0 && <p role="status" aria-live="polite">No games match your search.</p>}
 				{!loading && !error && pagedGames.map((game) => {
 					const imageSrc = getImageSrc(game.image);
 					return (
 						<div key={game._id} className="game-card">
-							<div className="game-body" onClick={() => navigate(`/games/${game.name.trim().replace(/\s+/g, '-')}`)}
-							>
+							{/* WCAG 2.4.4 Link Purpose and 4.1.2 Name, Role, Value: make the whole game card a semantic link with an explicit destination name. */}
+							<Link className="game-body" to={`/games/${game.name.trim().replace(/\s+/g, '-')}`} aria-label={`View groups for ${game.name}`}>
 								<h2>{game.name}</h2>
 								{imageSrc
 									? <img src={imageSrc} alt={`${game.name} cover`} className="game-image" />
-									: <span>No image available</span>
+									/* WCAG 1.1.1 Non-text Content: provide a spoken replacement when a game card has no image. */
+									: <span aria-label="No game image available">No image available</span>
 								}
 								<p>Genres: {game.genres.map((genre) => genre.name).join(", ")}</p>
 								<p>Platforms: {game.platforms.map((platform) => platform.name).join(", ")}</p>
-							</div>
+							</Link>
 						</div>
 					);
 				})}

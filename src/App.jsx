@@ -53,7 +53,8 @@ function AppLayout({
                 sidebarOpen={sidebarOpen}
                 onToggleSidebar={toggleSidebar}
             />
-            <main className={sidebarOpen ? '' : 'sidebar-collapsed'}>
+            {/* WCAG 2.4.1 Bypass Blocks, WAI page landmarks: expose a stable main-content target so keyboard and assistive-tech users can jump directly to routed content. */}
+            <main id="main-content" className={sidebarOpen ? '' : 'sidebar-collapsed'} tabIndex="-1">
                 <Routes>
                     <Route path="/" element={<Games />} />
                     <Route path="/login" element={<Login onLogin={handleLogin} />} />
@@ -155,7 +156,8 @@ export default function App() {
     };
 
     if (checkingAuth) {
-        return <div>Loading...</div>;
+        // WCAG 4.1.3 Status Messages, WAI-ARIA live regions: announce auth-check progress without forcing focus to move.
+        return <div role="status" aria-live="polite">Loading...</div>;
     }
 
     return (

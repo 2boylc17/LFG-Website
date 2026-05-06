@@ -62,18 +62,31 @@ export default function Sidebar({ isLoggedIn, sidebarOpen, onToggleSidebar }) {
     }, []);
 
     return (
-        <aside className={`sidebar ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-            <button className="sidebar-toggle-btn" onClick={onToggleSidebar} title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}>
+        /* WCAG 1.3.1 Info and Relationships, WAI landmarks: identify the sidebar as a labeled complementary navigation region. */
+        <aside id="sidebar-navigation" className={`sidebar ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`} aria-label="Sidebar">
+            {/* WCAG 4.1.2 Name, Role, Value: keep the sidebar toggle keyboard-operable and expose its expanded state and controlled container. */}
+            <button
+                type="button"
+                className="sidebar-toggle-btn"
+                onClick={onToggleSidebar}
+                title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+                aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+                aria-expanded={sidebarOpen}
+                aria-controls="sidebar-items"
+            >
                 {sidebarOpen ? '◀' : '▶'}
             </button>
             {sidebarOpen && (
-                <div className="sidebar-items-container">
-                    <div className="sideBox" id="gamesBox" onClick={() => navigate('/games')}>Games</div>
-                    <div className="sideBox sideBox-with-badge" id="friendsBox" onClick={() => openProtectedPage('/friends')}>
+                <div id="sidebar-items" className="sidebar-items-container">
+                    {/* WCAG 2.1.1 Keyboard and 4.1.2 Name, Role, Value: use real buttons for navigation actions so they are reachable and operable from the keyboard. */}
+                    <button type="button" className="sideBox" id="gamesBox" onClick={() => navigate('/games')}>Games</button>
+                    {/* WCAG 2.1.1 Keyboard, 4.1.2 Name, Role, Value, and 1.3.1 Info and Relationships: keep the Friends action semantic and expose the request badge meaning to assistive tech. */}
+                    <button type="button" className="sideBox sideBox-with-badge" id="friendsBox" onClick={() => openProtectedPage('/friends')}>
                         Friends
-                        {pendingRequestCount > 0 ? <span className="sideBox-request-badge">{pendingRequestCount}</span> : null}
-                    </div>
-                    <div className="sideBox" id="calendarBox" onClick={() => openProtectedPage('/calendar')}>Calendar</div>
+                        {pendingRequestCount > 0 ? <span className="sideBox-request-badge" aria-label={`${pendingRequestCount} pending friend requests`}>{pendingRequestCount}</span> : null}
+                    </button>
+                    {/* WCAG 2.1.1 Keyboard and 4.1.2 Name, Role, Value: use a semantic button for the Calendar action instead of a click-only container. */}
+                    <button type="button" className="sideBox" id="calendarBox" onClick={() => openProtectedPage('/calendar')}>Calendar</button>
                 </div>
             )}
         </aside>
