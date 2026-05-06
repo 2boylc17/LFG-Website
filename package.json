@@ -33,15 +33,11 @@
     },
     "devDependencies": {
         "@cypress/code-coverage": "^4.0.3",
-        "@tailwindcss/postcss": "^4.2.2",
-        "autoprefixer": "^10.4.27",
         "babel-plugin-istanbul": "^8.0.0",
         "cross-env": "^10.1.0",
         "cypress": "^15.14.1",
         "nyc": "^18.0.0",
-        "postcss": "^8.5.8",
-        "start-server-and-test": "^3.0.2",
-        "tailwindcss": "^4.2.2"
+        "start-server-and-test": "^3.0.2"
     },
     "nyc": {
         "report-dir": "coverage",
