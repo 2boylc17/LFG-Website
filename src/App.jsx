@@ -56,7 +56,7 @@ function AppLayout({
             {/* WCAG 2.4.1 Bypass Blocks, WAI page landmarks: expose a stable main-content target so keyboard and assistive-tech users can jump directly to routed content. */}
             <main id="main-content" className={sidebarOpen ? '' : 'sidebar-collapsed'} tabIndex="-1">
                 <Routes>
-                    <Route path="/" element={<Games />} />
+                    <Route path="/" element={<Games isLoggedIn={isLoggedIn} />} />
                     <Route path="/login" element={<Login onLogin={handleLogin} />} />
                     <Route
                         path="/createGame"
@@ -64,7 +64,7 @@ function AppLayout({
                     />
                     <Route path="/createGroup" element={<CreateGroup />} />
                     <Route path="/createGroup/:gameSlug" element={<CreateGroup />} />
-                    <Route path="/games" element={<Games />} />
+                    <Route path="/games" element={<Games isLoggedIn={isLoggedIn} />} />
                     <Route path="/games/:gameSlug" element={<ViewGroups />} />
                     <Route path="/group" element={<ViewGroup />} />
                     <Route path="/group/:groupId" element={<ViewGroup />} />

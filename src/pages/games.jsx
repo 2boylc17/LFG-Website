@@ -19,7 +19,7 @@ const getImageSrc = (image) => {
 	return null;
 };
 
-export default function Games() {
+export default function Games({ isLoggedIn = false }) {
 	// Games list & filters
 	const [games, setGames] = useState([]);
 	const [loading, setLoading] = useState(true);
@@ -172,10 +172,16 @@ export default function Games() {
 				{!loading && !error && games.length > 0 && filteredGames.length === 0 && <p role="status" aria-live="polite">No games match your search.</p>}
 				{!loading && !error && pagedGames.map((game) => {
 					const imageSrc = getImageSrc(game.image);
+					const gameSlug = game.name.trim().replace(/\s+/g, '-');
+					const destination = isLoggedIn ? `/games/${gameSlug}` : '/login';
 					return (
 						<div key={game._id} className="game-card">
 							{/* WCAG 2.4.4 Link Purpose and 4.1.2 Name, Role, Value: make the whole game card a semantic link with an explicit destination name. */}
-							<Link className="game-body" to={`/games/${game.name.trim().replace(/\s+/g, '-')}`} aria-label={`View groups for ${game.name}`}>
+							<Link
+								className="game-body"
+								to={destination}
+								aria-label={isLoggedIn ? `View groups for ${game.name}` : `Login required to view groups for ${game.name}`}
+							>
 								<h2>{game.name}</h2>
 								{imageSrc
 									? <img src={imageSrc} alt={`${game.name} cover`} className="game-image" />
