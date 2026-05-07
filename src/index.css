@@ -969,6 +969,12 @@ main.sidebar-collapsed .page {
   cursor: pointer;
 }
 
+.sideBox:focus-visible {
+  outline: none;
+  background-color: #3b3b3b;
+  border-color: #8ea685;
+}
+
 @media (max-width: 768px) {
   .sideBox {
     min-height: 3rem;
@@ -1332,6 +1338,16 @@ main.sidebar-collapsed .page {
   background-color: #3c3c3c;
   /* Visual: inset ring on hover gives a selected-state feel without layout shift. */
   box-shadow: inset 0 0 0 2px #9a9a9a, inset 0 10px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* WCAG 2.4.7 Focus Visible: game-card overflow:hidden clips child outlines; use focus-within on the card itself instead. */
+.game-card:focus-within {
+  background-color: #3c3c3c;
+  box-shadow: inset 0 0 0 2px #8ea685, inset 0 10px 24px rgba(0, 0, 0, 0.25);
+}
+
+.game-body:focus-visible {
+  outline: none;
 }
 
 .games-list {
