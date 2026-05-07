@@ -2,14 +2,13 @@
 
 ## Table of Contents
 - [Overview](#overview)
+- [Tech Stack](#tech-stack)
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Testing](#testing)
 - [Coverage](#coverage)
 - [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Overview
 LFG-Website is a real-time gaming community platform that helps players find groups to play games with. Users can browse games, create or join groups with custom join requirements, manage friends, and communicate via group chat or direct messages.
