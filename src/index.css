@@ -933,6 +933,7 @@ main.sidebar-collapsed .page {
   border: 1px solid #888888;
   border-radius: 14px;
   min-height: 4.5rem;
+  font-size: 1.05rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -971,7 +972,7 @@ main.sidebar-collapsed .page {
 @media (max-width: 768px) {
   .sideBox {
     min-height: 3rem;
-    font-size: 1.2rem;
+    font-size: 1rem;
   }
 }
 
