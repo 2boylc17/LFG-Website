@@ -38,6 +38,132 @@ textarea::placeholder {
 /* =============== END BASE ELEMENTS =============== */
 
 
+/* ================= COOKIE CONSENT ================= */
+.cookie-consent-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #1d1d1d;
+  border-top: 1px solid #888888;
+  z-index: 10000;
+  padding: 1.25rem 1.5rem;
+  box-sizing: border-box;
+}
+
+.cookie-consent-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.cookie-consent-text {
+  flex: 1 1 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cookie-consent-description {
+  margin: 0;
+  color: #fff;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.cookie-consent-details-toggle {
+  background: none;
+  border: none;
+  color: #8ea685;
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  width: fit-content;
+}
+
+.cookie-consent-details-toggle:hover {
+  text-decoration: underline;
+}
+
+.cookie-consent-details {
+  background-color: #2d2d2d;
+  border: 1px solid #888888;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-top: 0.25rem;
+}
+
+.cookie-consent-category {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.cookie-consent-category p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #ccc;
+}
+
+.cookie-consent-category-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cookie-consent-required-badge {
+  font-size: 0.75rem;
+  background-color: #3b5c38;
+  color: #a8d5a2;
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  font-weight: 600;
+}
+
+.cookie-consent-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.cookie-consent-btn {
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border: 1px solid #888888;
+  white-space: nowrap;
+}
+
+.cookie-consent-btn-accept {
+  background-color: #3b5c38;
+  color: #fff;
+  border-color: #4e7a4a;
+}
+
+.cookie-consent-btn-accept:hover {
+  background-color: #4e7a4a;
+}
+
+@media (max-width: 600px) {
+  .cookie-consent-actions {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .cookie-consent-btn {
+    flex: 1;
+  }
+}
+/* =============== END COOKIE CONSENT =============== */
+
+
 /* ================= LAYOUT CLASSES ================= */
 .app {
   position: absolute;

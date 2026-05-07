@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "r
 
 import Navbar from "./pages/components/navbar.jsx";
 import Sidebar from "./pages/components/sidebar.jsx";
+import CookieConsent, { getStoredConsent } from "./pages/components/CookieConsent.jsx";
 import Login from "./pages/login.jsx";
 import Games from "./pages/games.jsx";
 import ViewGroups from "./pages/viewGroups.jsx";
@@ -84,6 +85,8 @@ export default function App() {
     const [username, setUsername] = useState("");
     const [checkingAuth, setCheckingAuth] = useState(true);
     const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 768);
+    // Banner is hidden once the user has made a consent choice stored in localStorage
+    const [consentGiven, setConsentGiven] = useState(() => getStoredConsent() !== null);
 
     // Persist/clear username in localStorage
     const syncUsernameStorage = (value = "") => {
@@ -173,6 +176,9 @@ export default function App() {
                 handleLogout={handleLogout}
                 handleLogin={handleLogin}
             />
+            {!consentGiven && (
+                <CookieConsent onConsent={() => setConsentGiven(true)} />
+            )}
         </Router>
     )
 }
