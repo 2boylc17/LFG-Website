@@ -1,6 +1,23 @@
 describe('games_page', () => {
+  const gamesBody = [
+    { _id: '1', name: 'Apex Legends', genres: [{ name: 'FPS' }], platforms: [{ name: 'PC' }] },
+    { _id: '2', name: 'Baldurs Gate 3', genres: [{ name: 'RPG' }], platforms: [{ name: 'PC' }] },
+    { _id: '3', name: 'Counter-Strike 2', genres: [{ name: 'FPS' }], platforms: [{ name: 'PC' }] },
+    { _id: '4', name: 'Destiny 2', genres: [{ name: 'Shooter' }], platforms: [{ name: 'Xbox' }] },
+    { _id: '5', name: 'Elden Ring', genres: [{ name: 'Action RPG' }], platforms: [{ name: 'PlayStation' }] },
+    { _id: '6', name: 'Fortnite', genres: [{ name: 'Battle Royale' }], platforms: [{ name: 'Switch' }] },
+    { _id: '7', name: 'Genshin Impact', genres: [{ name: 'RPG' }], platforms: [{ name: 'Mobile' }] },
+    { _id: '8', name: 'Helldivers 2', genres: [{ name: 'Co-op' }], platforms: [{ name: 'PC' }] }
+  ];
+
   beforeEach(() => {
-    cy.visit('http://localhost:3000/games');
+    cy.intercept('GET', '**/api/games/list', { statusCode: 200, body: gamesBody }).as('getGames');
+    cy.visit('http://localhost:3000/games', {
+      onBeforeLoad: (win) => {
+        win.localStorage.removeItem('username');
+      }
+    });
+    cy.wait('@getGames');
     cy.clearCookies();
   });
 
@@ -99,12 +116,12 @@ describe('games_page', () => {
     cy.contains('.error', 'Failed to load games').should('be.visible');
   });
 
-  it('opens game page on click', () => {
+  it('redirects to login on game click when logged out', () => {
     cy.wait(500);
 
     cy.get('.game-card').its('length').should('be.gte', 1);
     cy.get('.game-card .game-body').first().click();
-    cy.url().should('match', /\/games\/.+/);
+    cy.url().should('include', '/login');
   });
 
 });
